@@ -88,7 +88,7 @@ jobs:
       # 기본 동작 그대로 둔다. 태그를 밀었으면 그 태그를, 릴리스 PR 이 머지됐으면
       # 버전이 올라간 그 커밋을 받는다. 초안 릴리스에는 아직 태그가 없으므로
       # 태그 이름으로 받으려 하면 안 된다.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
@@ -120,7 +120,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: 설치 안내를 붙이고 릴리스를 공개한다
         env:
