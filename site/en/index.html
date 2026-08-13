@@ -1,8 +1,8 @@
 <!doctype html>
 <!--
   If the address changes (for example when a custom domain is added), the only
-  thing to edit in this file is https://tap-tap-desktop.vercel.app. Update index.html
-  and sitemap.xml as well.
+  thing to edit in this file is https://tap-tap-desktop.vercel.app. Update
+  index.html, sitemap.xml, robots.txt and llms.txt as well.
 -->
 <html lang="en">
   <head>
@@ -16,7 +16,7 @@
     <title>tap-tap · A free desktop pet your teammates can feel</title>
     <meta
       name="description"
-      content="Put a 3D animal friend on your desktop. Tap your character and your teammates' characters dance on theirs. Free for macOS and Windows, no account needed."
+      content="Put a 3D animal friend on your desktop. Tap yours and your teammates' characters dance on theirs. Free for macOS and Windows, no sign up, just a nickname and a six character code."
     />
     <link rel="canonical" href="https://tap-tap-desktop.vercel.app/en/" />
     <link rel="alternate" hreflang="ko" href="https://tap-tap-desktop.vercel.app/" />
@@ -52,8 +52,9 @@
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" href="/assets/icon-32.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/assets/icon-180.png" />
-    <meta name="theme-color" content="#f5efe1" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#211c17" media="(prefers-color-scheme: dark)" />
+    <!-- Top of the wallpaper gradient, so the address bar reads as part of the page. -->
+    <meta name="theme-color" content="#a9a5bd" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#14121a" media="(prefers-color-scheme: dark)" />
 
     <link rel="stylesheet" href="/style.css" />
     <link rel="preload" as="image" href="/assets/hero-cat.png" />
@@ -62,8 +63,9 @@
 
     <!--
       Structured data. Every sentence here must also be visible on the page — text
-      that only machines can see loses points with search engines and answer engines alike.
-      When the dates change, change <lastmod> in sitemap.xml too.
+      that only machines can see loses points with search engines and answer engines
+      alike. Edit the copy above and you must edit this too; when the dates change,
+      move <lastmod> in sitemap.xml with them.
     -->
     <script type="application/ld+json">
       {
@@ -108,7 +110,7 @@
             "@id": "https://tap-tap-desktop.vercel.app/en/#webpage",
             "url": "https://tap-tap-desktop.vercel.app/en/",
             "name": "tap-tap · A free desktop pet your teammates can feel",
-            "description": "Put a 3D animal friend on your desktop. Tap your character and your teammates' characters dance on theirs. Free for macOS and Windows, no account needed.",
+            "description": "Put a 3D animal friend on your desktop. Tap yours and your teammates' characters dance on theirs. Free for macOS and Windows, no sign up, just a nickname and a six character code.",
             "inLanguage": "en",
             "isPartOf": {
               "@id": "https://tap-tap-desktop.vercel.app/#website"
@@ -123,9 +125,6 @@
             "dateModified": "2026-08-13",
             "hasPart": [
               {
-                "@id": "https://tap-tap-desktop.vercel.app/en/#howto-setup"
-              },
-              {
                 "@id": "https://tap-tap-desktop.vercel.app/en/#howto-macos"
               },
               {
@@ -139,7 +138,7 @@
                 "name": "What is tap-tap?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "A macOS and Windows app that keeps a 3D animal character on your desktop. Tap your own character and everyone on that team sees theirs dance. It is free and there is no account."
+                  "text": "A macOS and Windows app that keeps a 3D animal character on your desktop. Tap your own and everyone on that team sees theirs dance. It is free and there is no sign up."
                 }
               },
               {
@@ -148,16 +147,7 @@
                 "name": "Do my teammates need it too?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Yes. The character has to be on their desktop for the nudge to land. One person creates a team, gets an invite code, and everyone else types it in."
-                }
-              },
-              {
-                "@type": "Question",
-                "@id": "https://tap-tap-desktop.vercel.app/en/#faq-code",
-                "name": "What does an invite code look like?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Six characters, letters and numbers, with the easily confused 0, O, 1 and I left out. It expires 24 hours after it is issued and you can draw a new one any time."
+                  "text": "Yes. The character has to be on their desktop for the nudge to land. One person creates a team, gets a six character code, and everyone else types it in."
                 }
               },
               {
@@ -166,7 +156,7 @@
                 "name": "Is it really free?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Yes. No ads, no paid tier. The source is public, so you can build it yourself instead if you prefer."
+                  "text": "Yes. No ads, no paid tier. No email and no password either."
                 }
               },
               {
@@ -175,7 +165,7 @@
                 "name": "Can I use it alone?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "A character appears for each team you are in, so you need at least one team. A team of one is still a team, and the character lives on your desktop just the same. There is simply nobody to nudge yet."
+                  "text": "A character appears for each team you are in, so you need at least one team. A team of one is still a team and the character lives on your desktop just the same. There is simply nobody to nudge yet. Up to three teams, five people each."
                 }
               },
               {
@@ -184,25 +174,16 @@
                 "name": "Can I install it on a work computer?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "The Windows installer never asks for administrator rights and installs for your account only. It is not code signed though, so company policy may still stop it. If somebody needs to check, point them at the GitHub repository."
+                  "text": "All that travels is the fact that somebody tapped, plus a name. Nothing on your screen and none of your files goes anywhere. It never asks for administrator rights either."
                 }
               },
               {
                 "@type": "Question",
-                "@id": "https://tap-tap-desktop.vercel.app/en/#faq-quiet",
-                "name": "Will it get in the way?",
+                "@id": "https://tap-tap-desktop.vercel.app/en/#faq-first-open",
+                "name": "A box appears the first time. What if it will not open?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Clicks in the empty space around the character pass straight through to your desktop, so your icons stay reachable. It makes no sound, and the menu bar icon hides every character at once."
-                }
-              },
-              {
-                "@type": "Question",
-                "@id": "https://tap-tap-desktop.vercel.app/en/#faq-unsigned",
-                "name": "Why does it say \"unidentified developer\"?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Because it is not code signed yet, and that certificate costs money every year. It does not mean the app is dangerous, it means nobody is vouching for it. On macOS right click and choose Open; on Windows choose More info, then Run anyway. The steps are just above."
+                  "text": "That happens once. Follow the steps above and it opens normally from then on. If you would rather check for yourself, all the code that makes it is public."
                 }
               }
             ]
@@ -235,6 +216,7 @@
               "zh"
             ],
             "isAccessibleForFree": true,
+            "license": "https://github.com/hayoung-99/tap-tap/blob/main/LICENSE",
             "author": {
               "@id": "https://tap-tap-desktop.vercel.app/#author"
             },
@@ -258,11 +240,11 @@
             "featureList": [
               "A 3D animal character lives on your desktop",
               "Tap your own character and everyone on that team sees theirs dance",
-              "No account: join with a nickname and a six character invite code",
+              "No sign up: join with a nickname and a six character code",
               "Clicks in the empty space around the character pass through to the desktop",
-              "Remembers where you dragged it and any scale between 25% and 200%",
+              "Remembers where you dragged it and how big you made it",
+              "Makes no sound, and the menu bar icon hides every character at once",
               "Up to 3 teams per person, up to 5 people per team",
-              "Korean, English, Japanese and Chinese",
               "Free on macOS and Windows"
             ],
             "offers": {
@@ -274,39 +256,9 @@
           },
           {
             "@type": "HowTo",
-            "@id": "https://tap-tap-desktop.vercel.app/en/#howto-setup",
-            "name": "Create a tap-tap team and invite your teammates",
-            "description": "No servers to run and no sign up. One person creates a team and shares the code.",
-            "totalTime": "PT2M",
-            "step": [
-              {
-                "@type": "HowToStep",
-                "position": 1,
-                "name": "Create a team",
-                "text": "Pick a name, create the team, and a six character invite code appears.",
-                "url": "https://tap-tap-desktop.vercel.app/en/#step-1"
-              },
-              {
-                "@type": "HowToStep",
-                "position": 2,
-                "name": "Share the code",
-                "text": "Teammates enter it to join. Codes expire after 24 hours and you can reissue anytime.",
-                "url": "https://tap-tap-desktop.vercel.app/en/#step-2"
-              },
-              {
-                "@type": "HowToStep",
-                "position": 3,
-                "name": "Tap",
-                "text": "Tap your character and everyone on that team sees theirs dance, with your name below it.",
-                "url": "https://tap-tap-desktop.vercel.app/en/#step-3"
-              }
-            ]
-          },
-          {
-            "@type": "HowTo",
             "@id": "https://tap-tap-desktop.vercel.app/en/#howto-macos",
-            "name": "Open tap-tap for the first time on macOS (past the unidentified developer warning)",
-            "description": "The app is not code signed, so macOS says it cannot verify the developer. These steps clear it once.",
+            "name": "Open tap-tap for the first time on macOS",
+            "description": "Your computer checks with you once. Do this and it opens normally from then on.",
             "totalTime": "PT1M",
             "step": [
               {
@@ -324,7 +276,13 @@
               {
                 "@type": "HowToStep",
                 "position": 3,
-                "text": "Press Open in the dialog once. It opens normally from then on.",
+                "text": "Press Open in the box that appears.",
+                "url": "https://tap-tap-desktop.vercel.app/en/#guide-macos"
+              },
+              {
+                "@type": "HowToStep",
+                "position": 4,
+                "text": "Still stuck? Go to System Settings → Privacy & Security and press Open Anyway near the bottom.",
                 "url": "https://tap-tap-desktop.vercel.app/en/#guide-macos"
               }
             ]
@@ -332,20 +290,20 @@
           {
             "@type": "HowTo",
             "@id": "https://tap-tap-desktop.vercel.app/en/#howto-windows",
-            "name": "Install tap-tap on Windows (past the SmartScreen warning)",
-            "description": "The app is not code signed, so the blue SmartScreen panel appears. It never asks for administrator rights.",
+            "name": "Install tap-tap on Windows",
+            "description": "Your computer checks with you once. Do this and it opens normally from then on.",
             "totalTime": "PT1M",
             "step": [
               {
                 "@type": "HowToStep",
                 "position": 1,
-                "text": "Double click the installer you downloaded.",
+                "text": "Double click the file you downloaded.",
                 "url": "https://tap-tap-desktop.vercel.app/en/#guide-windows"
               },
               {
                 "@type": "HowToStep",
                 "position": 2,
-                "text": "When the blue Windows protected your PC box appears, click More info.",
+                "text": "When the blue box appears, click More info.",
                 "url": "https://tap-tap-desktop.vercel.app/en/#guide-windows"
               },
               {
@@ -364,394 +322,181 @@
   <body>
     <a class="skip" href="#main">Skip to content</a>
 
-    <header class="masthead">
-      <div class="wrap">
-        <a class="brand" href="/en/">
-          <img
-            src="/assets/icon-32.png"
-            srcset="/assets/icon-32.png 1x, /assets/icon-180.png 2x"
-            alt=""
-            width="28"
-            height="28"
-          />
-          TAP TAP
-        </a>
-        <nav>
-          <a href="#download">Download</a>
-          <a href="#install">First launch</a>
-          <a class="hide-narrow" href="https://github.com/hayoung-99/tap-tap">GitHub</a>
-          <a class="lang" href="/" hreflang="ko" lang="ko">한국어</a>
-        </nav>
-      </div>
-    </header>
+    <!--
+      Two of the cast lean in from the far edges — the app's own gesture,
+      performed before you read a word about it.
 
-    <main id="main">
-      <!-- Hero -->
-      <div class="wrap">
-        <section class="hero">
-          <div class="hero-copy">
-            <h1>A small friend<br />on your desktop</h1>
-            <p class="lead">
-              Tap your own character and your teammates' characters dance on their screens.
-            </p>
-            <div class="hero-actions">
-              <a
-                class="btn"
-                href="https://github.com/hayoung-99/tap-tap/releases/latest"
-                data-hero-download
-                >Download</a
-              >
-              <a class="btn ghost" href="#download">All downloads</a>
-              <span class="note">Free · No account · macOS and Windows</span>
+      Nothing to read here, so it is hidden from screen readers, and the artwork
+      lives in style.css as a background rather than an <img>. Narrow viewports
+      hide this whole block, so they never download 220KB they cannot see.
+    -->
+    <div class="peekers" aria-hidden="true">
+      <span class="peek peek-panda from-left"></span>
+      <span class="peek peek-bunny from-right"></span>
+      <span class="peek peek-dog from-left"></span>
+    </div>
+
+    <div class="stage">
+      <div class="window">
+        <!-- The signature: window chrome. It says where this app lives before you read a word. -->
+        <header class="titlebar">
+          <svg class="lights" viewBox="0 0 56 12" aria-hidden="true" focusable="false">
+            <circle cx="6" cy="6" r="6" fill="#ff5f57" />
+            <circle cx="26" cy="6" r="6" fill="#febc2e" />
+            <circle cx="46" cy="6" r="6" fill="#28c840" />
+          </svg>
+          <span class="title">tap-tap</span>
+          <nav>
+            <a href="#characters">Characters</a>
+            <a href="#download">Download</a>
+            <a href="#faq">Questions</a>
+            <a class="lang" href="/" hreflang="ko" lang="ko">한국어</a>
+          </nav>
+        </header>
+
+        <main id="main">
+          <!-- Hero -->
+          <section class="pane hero">
+            <div>
+              <h1>A <em>small friend</em><br />on your desktop</h1>
+              <p class="lead">Tap your own character and your teammates' characters dance on theirs.</p>
+              <div class="actions">
+                <a class="btn" href="https://github.com/hayoung-99/tap-tap/releases/latest" data-hero-download>Download</a>
+                <a class="btn ghost" href="#download">All versions</a>
+              </div>
+              <p class="note">Free · No sign up · macOS and Windows</p>
             </div>
-          </div>
+          </section>
 
-          <div class="hero-stage">
-            <img
-              class="pet"
-              src="/assets/hero-cat.png"
-              alt="A white cat character standing on the desktop"
-              width="760"
-              height="900"
-              fetchpriority="high"
-            />
-            <img
-              class="window"
-              src="/assets/team-window-en.png"
-              alt="The tap-tap window showing a list of teams"
-              width="800"
-              height="1560"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        </section>
-      </div>
+          <!-- Stands on the window's edge. This one image explains the whole idea. -->
+          <img class="escapee" src="/assets/hero-cat.png" alt="A white cat character standing on the desktop" width="760" height="900" fetchpriority="high" />
 
-      <!-- The cast -->
-      <section class="cast" id="characters">
-        <div class="wrap">
-          <div class="section-head rise">
+          <!--
+            The one pane that shows what opens after you download. It is also the
+            only pane with a different background and without the label → heading →
+            body rhythm. If every pane matched, scrolling would go flat.
+          -->
+          <section class="pane shot-pane">
+            <div class="app-frame">
+              <img class="app-shot" src="/assets/team-window-en.png" alt="The tap-tap window with one team open and one member online" width="800" height="1560" loading="lazy" decoding="async" />
+            </div>
+            <div class="shot-copy">
+              <h2>This is what<br />opens up</h2>
+              <p>Create a team and you get a six character code. Your teammates type it in, and that is it.</p>
+            </div>
+          </section>
+
+          <!-- Characters -->
+          <section class="pane" id="characters">
+            <p class="label">Characters</p>
             <h2>Pick one of five</h2>
-            <p>
-              Every team gets its own character. Choose a different animal per team and you can
-              tell at a glance which team a nudge came from.
-            </p>
-          </div>
+            <p class="sub">Every team gets its own. Choose a different animal per team and you can tell at a glance which team a nudge came from.</p>
+            <img class="strip" src="/assets/characters.png" alt="Happy Cat, Chubby Dog, Pudgy Panda, Dumb Duck and Hop Bunny standing in a row" width="1760" height="460" loading="lazy" decoding="async" />
+            <dl class="facts">
+              <div><dt>Clicks pass through</dt><dd>The empty space around the character belongs to your desktop. Your icons stay reachable.</dd></div>
+              <div><dt>It remembers</dt><dd>Where you dragged it and how big you made it, next time too.</dd></div>
+              <div><dt>It stays quiet</dt><dd>It makes no sound, and the menu bar icon hides every character at once.</dd></div>
+            </dl>
+          </section>
 
-          <img
-            class="cast-strip rise"
-            src="/assets/characters.png"
-            alt="Happy Cat, Chubby Dog, Pudgy Panda, Dumb Duck and Hop Bunny standing in a row"
-            width="1760"
-            height="460"
-            loading="lazy"
-            decoding="async"
-          />
-
-          <dl class="cast-facts">
-            <div>
-              <dt>Clicks pass through</dt>
-              <dd>The empty space around the character belongs to your desktop. Your icons stay reachable.</dd>
-            </div>
-            <div>
-              <dt>Position and size stick</dt>
-              <dd>Drag it anywhere, scale it between 25% and 200%. It comes back the same way.</dd>
-            </div>
-            <div>
-              <dt>Four languages</dt>
-              <dd>Korean, English, Japanese and Chinese. It follows your system setting first.</dd>
-            </div>
-          </dl>
-        </div>
-      </section>
-
-      <!-- How it works -->
-      <section id="how-it-works">
-        <div class="wrap flow">
-          <div class="flow-shot rise">
-            <img
-              src="/assets/team-window-en.png"
-              alt="The team list screen with one team and one member online"
-              width="800"
-              height="1560"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-
-          <div>
-            <div class="section-head">
-              <h2>Three steps, then done</h2>
-              <p>No servers to run and no sign up. One person creates a team and shares the code.</p>
-            </div>
-
-            <ol class="flow-steps">
-              <li id="step-1">
-                <span class="bead" aria-hidden="true">1</span>
-                <div>
-                  <h3>Create a team</h3>
-                  <p>Pick a name, create the team, and a six character invite code appears.</p>
-                </div>
-              </li>
-              <li id="step-2">
-                <span class="bead" aria-hidden="true">2</span>
-                <div>
-                  <h3>Share the code</h3>
-                  <p>Teammates enter it to join. Codes expire after 24 hours and you can reissue anytime.</p>
-                </div>
-              </li>
-              <li id="step-3">
-                <span class="bead" aria-hidden="true">3</span>
-                <div>
-                  <h3>Tap</h3>
-                  <p>Tap your character and everyone on that team sees theirs dance, with your name below it.</p>
-                </div>
-              </li>
-            </ol>
-          </div>
-        </div>
-      </section>
-
-      <!-- Download -->
-      <section class="downloads" id="download">
-        <div class="wrap">
-          <div class="dl-head">
-            <div class="section-head">
-              <p class="eyebrow">Download</p>
-              <h2>Pick the file for your machine</h2>
-            </div>
-            <span class="release-tag" data-release-tag>Latest</span>
-          </div>
-
-          <div class="dl-list">
-            <div class="dl-row" data-asset="mac-arm64" data-label="macOS">
+          <!-- Download -->
+          <section class="pane" id="download">
+            <div class="pane-head">
               <div>
-                <div class="name">macOS (Apple Silicon)<span class="flag">FOR YOU</span></div>
-                <div class="meta">M1 and later. .dmg file</div>
+                <p class="label">Download</p>
+                <h2>The file for your machine</h2>
               </div>
-              <a class="btn" href="https://github.com/hayoung-99/tap-tap/releases/latest">Download</a>
+              <span class="tag" data-release-tag>Latest</span>
             </div>
 
-            <div class="dl-row" data-asset="mac-x64" data-label="macOS">
-              <div>
-                <div class="name">macOS (Intel)<span class="flag">FOR YOU</span></div>
-                <div class="meta">Macs from before 2020. .dmg file</div>
-              </div>
-              <a class="btn" href="https://github.com/hayoung-99/tap-tap/releases/latest">Download</a>
-            </div>
-
-            <div class="dl-row" data-asset="windows" data-label="Windows">
-              <div>
-                <div class="name">Windows<span class="flag">FOR YOU</span></div>
-                <div class="meta">64 bit. Installer (.exe)</div>
-              </div>
-              <a class="btn" href="https://github.com/hayoung-99/tap-tap/releases/latest">Download</a>
-            </div>
-          </div>
-
-          <p class="dl-fallback">
-            Not sure which Mac you have? Open the Apple menu and choose
-            <strong>About This Mac</strong>. If it says "Chip" you want Apple Silicon. If it says
-            "Processor" you want Intel.
-          </p>
-
-          <p class="dl-fallback" data-pending-notice hidden>
-            No installers have been published yet. They will show up here as soon as they are ready.
-            <a href="https://github.com/hayoung-99/tap-tap/releases">Check the releases page</a>
-          </p>
-        </div>
-      </section>
-
-      <!-- First launch -->
-      <section id="install">
-        <div class="wrap">
-          <div class="section-head">
-            <h2>Your computer will warn you</h2>
-          </div>
-
-          <div class="warn-intro">
-            <p>
-              <strong>This app is not code signed.</strong> Signing means paying Apple and
-              Microsoft every year for a certificate, and we are not there yet. So your operating
-              system tells you it cannot verify who made it.
-            </p>
-            <p>
-              That does not mean the app is dangerous, but it does mean nobody is vouching for it.
-              Which is why the source code is fully public. The steps below get you past the
-              warning once.
-            </p>
-          </div>
-
-          <div class="guides">
-            <article class="guide" id="guide-macos">
-              <h3>macOS <span>Unidentified developer</span></h3>
-              <ol>
-                <li>Move the app into your <strong>Applications</strong> folder.</li>
-                <li>
-                  <strong>Right click the app and choose Open.</strong> Right click, not double
-                  click.
-                </li>
-                <li>Press <strong>Open</strong> in the dialog once. It opens normally from then on.</li>
-              </ol>
-              <div class="aside">
-                If it still says the app is damaged, run this once in Terminal.
-                <div class="copy-line">
-                  <code id="xattr-cmd">xattr -dr com.apple.quarantine /Applications/tap-tap.app</code>
-                  <button type="button" data-copy="xattr-cmd">Copy</button>
+            <div class="dl-list">
+              <div class="dl-row" data-asset="mac-arm64" data-label="macOS">
+                <div>
+                  <div class="name">macOS — newer Macs</div>
+                  <div class="meta">Made from late 2020 onwards</div>
                 </div>
+                <a class="btn" href="https://github.com/hayoung-99/tap-tap/releases/latest">Download</a>
               </div>
-            </article>
-
-            <article class="guide" id="guide-windows">
-              <h3>Windows <span>SmartScreen</span></h3>
-              <ol>
-                <li>Double click the installer you downloaded.</li>
-                <li>When the blue <strong>Windows protected your PC</strong> box appears, click <strong>More info</strong>.</li>
-                <li>Click <strong>Run anyway</strong> and the install continues.</li>
-              </ol>
-              <div class="aside">
-                It never asks for administrator rights. It installs for your account only and can be
-                removed from the usual apps list.
+              <div class="dl-row" data-asset="mac-x64" data-label="macOS">
+                <div>
+                  <div class="name">macOS — older Macs</div>
+                  <div class="meta">Bought before mid 2020</div>
+                </div>
+                <a class="btn" href="https://github.com/hayoung-99/tap-tap/releases/latest">Download</a>
               </div>
-            </article>
-          </div>
-        </div>
-      </section>
+              <div class="dl-row" data-asset="windows" data-label="Windows">
+                <div>
+                  <div class="name">Windows</div>
+                  <div class="meta">Double click it to install</div>
+                </div>
+                <a class="btn" href="https://github.com/hayoung-99/tap-tap/releases/latest">Download</a>
+              </div>
+            </div>
 
-      <!-- Good to know -->
-      <section id="good-to-know">
-        <div class="wrap">
-          <div class="section-head">
-            <p class="eyebrow">Good to know</p>
-            <h2>Said up front</h2>
-          </div>
+            <p class="hint">
+              Not sure which one? Open the Apple menu and choose
+              <strong>About This Mac</strong>. If it says "Chip" take the top one. If it
+              says "Processor" take the one below.
+            </p>
+            <p class="hint" data-pending-notice hidden>
+              Nothing has been published yet. It will show up here as soon as it is ready.
+              <a href="https://github.com/hayoung-99/tap-tap/releases">Check the releases page</a>
+            </p>
+          </section>
 
-          <div class="notes-grid">
-            <div>
-              <h3>There are no accounts</h3>
-              <p>No email, no password. A device identifier created at install time is how it finds your teams.</p>
-            </div>
-            <div>
-              <h3>Only the nudge travels</h3>
-              <p>The fact that somebody tapped, plus a nickname. Nothing on your screen goes anywhere.</p>
-            </div>
-            <div>
-              <h3>Three teams, five people</h3>
-              <p>One person can be in up to three teams, five members each. Every team gets its own character.</p>
-            </div>
-            <div>
-              <h3>Windows keeps itself current</h3>
-              <p>
-                New versions download quietly and apply when you click. macOS is not signed,
-                so it only tells you a new version is out and you download it yourself.
-              </p>
-            </div>
-            <div>
-              <h3>Read the source</h3>
-              <p>
-                If an unsigned app makes you uneasy, read the code and build it yourself. It is all on
-                <a href="https://github.com/hayoung-99/tap-tap">GitHub</a>.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+          <!-- First launch -->
+          <section class="pane" id="install">
+            <p class="label">First launch</p>
+            <h2>Once, the first time</h2>
+            <p class="sub">Your computer checks with you once. Do this and it opens normally from then on.</p>
 
-      <!-- FAQ -->
-      <section class="faq" id="faq">
-        <div class="wrap">
-          <div class="section-head">
-            <p class="eyebrow">Questions</p>
+            <div class="guides">
+              <div id="guide-macos">
+                <h3>macOS</h3>
+                <ol>
+                  <li>Move the app into your <strong>Applications</strong> folder.</li>
+                  <li><strong>Right click the app and choose Open.</strong> Right click, not double click.</li>
+                  <li>Press <strong>Open</strong> in the box that appears.</li>
+                  <li>Still stuck? Go to <strong>System Settings → Privacy &amp; Security</strong> and press <strong>Open Anyway</strong> near the bottom.</li>
+                </ol>
+              </div>
+              <div id="guide-windows">
+                <h3>Windows</h3>
+                <ol>
+                  <li>Double click the file you downloaded.</li>
+                  <li>When the blue box appears, click <strong>More info</strong>.</li>
+                  <li>Click <strong>Run anyway</strong> and the install continues.</li>
+                </ol>
+                <p class="hint">It never asks for administrator rights.</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Questions -->
+          <section class="pane" id="faq">
+            <p class="label">Questions</p>
             <h2>Things you might wonder</h2>
-          </div>
+            <div class="qa-list">
+              <div class="qa" id="faq-what"><h3>What is tap-tap?</h3><p>A macOS and Windows app that keeps a 3D animal character on your desktop. Tap your own and everyone on that team sees theirs dance. It is free and there is no sign up.</p></div>
+              <div class="qa" id="faq-teammates"><h3>Do my teammates need it too?</h3><p>Yes. The character has to be on their desktop for the nudge to land. One person creates a team, gets a six character code, and everyone else types it in.</p></div>
+              <div class="qa" id="faq-free"><h3>Is it really free?</h3><p>Yes. No ads, no paid tier. No email and no password either.</p></div>
+              <div class="qa" id="faq-alone"><h3>Can I use it alone?</h3><p>A character appears for each team you are in, so you need at least one team. A team of one is still a team and the character lives on your desktop just the same. There is simply nobody to nudge yet. Up to three teams, five people each.</p></div>
+              <div class="qa" id="faq-work"><h3>Can I install it on a work computer?</h3><p>All that travels is the fact that somebody tapped, plus a name. Nothing on your screen and none of your files goes anywhere. It never asks for administrator rights either.</p></div>
+              <div class="qa" id="faq-first-open"><h3>A box appears the first time. What if it will not open?</h3><p>That happens once. Follow the steps above and it opens normally from then on. If you would rather check for yourself, all the code that makes it is public.</p></div>
+            </div>
+          </section>
+        </main>
 
-          <div class="qa-list">
-            <article class="qa" id="faq-what">
-              <h3>What is tap-tap?</h3>
-              <p>
-                A macOS and Windows app that keeps a 3D animal character on your desktop. Tap
-                your own character and everyone on that team sees theirs dance. It is free and
-                there is no account.
-              </p>
-            </article>
-
-            <article class="qa" id="faq-teammates">
-              <h3>Do my teammates need it too?</h3>
-              <p>
-                Yes. The character has to be on their desktop for the nudge to land. One person
-                creates a team, gets an invite code, and everyone else types it in.
-              </p>
-            </article>
-
-            <article class="qa" id="faq-code">
-              <h3>What does an invite code look like?</h3>
-              <p>
-                Six characters, letters and numbers, with the easily confused 0, O, 1 and I left
-                out. It expires 24 hours after it is issued and you can draw a new one any time.
-              </p>
-            </article>
-
-            <article class="qa" id="faq-free">
-              <h3>Is it really free?</h3>
-              <p>
-                Yes. No ads, no paid tier. The source is public, so you can build it yourself
-                instead if you prefer.
-              </p>
-            </article>
-
-            <article class="qa" id="faq-alone">
-              <h3>Can I use it alone?</h3>
-              <p>
-                A character appears for each team you are in, so you need at least one team. A
-                team of one is still a team, and the character lives on your desktop just the
-                same. There is simply nobody to nudge yet.
-              </p>
-            </article>
-
-            <article class="qa" id="faq-work">
-              <h3>Can I install it on a work computer?</h3>
-              <p>
-                The Windows installer never asks for administrator rights and installs for your
-                account only. It is not code signed though, so company policy may still stop it.
-                If somebody needs to check, point them at the
-                <a href="https://github.com/hayoung-99/tap-tap">GitHub repository</a>.
-              </p>
-            </article>
-
-            <article class="qa" id="faq-quiet">
-              <h3>Will it get in the way?</h3>
-              <p>
-                Clicks in the empty space around the character pass straight through to your
-                desktop, so your icons stay reachable. It makes no sound, and the menu bar icon
-                hides every character at once.
-              </p>
-            </article>
-
-            <article class="qa" id="faq-unsigned">
-              <h3>Why does it say "unidentified developer"?</h3>
-              <p>
-                Because it is not code signed yet, and that certificate costs money every year.
-                It does not mean the app is dangerous, it means nobody is vouching for it. On
-                macOS right click and choose Open; on Windows choose More info, then Run anyway.
-                <a href="#install">The steps are just above.</a>
-              </p>
-            </article>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer>
-      <div class="wrap">
-        <span>tap-tap · Free to use and to change</span>
-        <nav>
-          <a href="https://github.com/hayoung-99/tap-tap">GitHub</a>
-          <a href="https://github.com/hayoung-99/tap-tap/releases">Releases</a>
-          <a href="/" hreflang="ko" lang="ko">한국어</a>
-        </nav>
+        <footer>
+          <span>tap-tap · Free to use and to change</span>
+          <nav>
+            <a href="https://github.com/hayoung-99/tap-tap">GitHub</a>
+            <a href="https://github.com/hayoung-99/tap-tap/releases">Releases</a>
+            <a href="/" hreflang="ko" lang="ko">한국어</a>
+          </nav>
+        </footer>
       </div>
-    </footer>
+    </div>
 
     <script type="application/json" id="dl-strings">
       {
