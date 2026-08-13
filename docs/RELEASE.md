@@ -10,18 +10,23 @@ Electron 을 빌드하지는 않습니다. 빌드는 10분이 넘고, 실제로 
 전체 그림은 이렇습니다.
 
 ```
-Actions ▸ release ▸ Run workflow  (또는 태그를 직접 민다)
+PR 을 main 에 머지한다
         │
+        ├──────────────▶ Vercel 이 랜딩페이지를 다시 올린다 (여기서 끝)
         ▼
-GitHub Actions
+release-please 가 "다음 릴리스" PR 을 만들어 둔다
+   커밋의 feat/fix 를 읽어 버전을 정하고 변경 목록을 적는다
+        │
+        ▼  ← 내보낼 때가 되면 그 PR 을 머지한다 (사람이 정하는 유일한 지점)
+        │
    ├── macOS 러너   → arm64 · x64 dmg/zip ─┐
    └── Windows 러너 → setup.exe            │  (초안 릴리스에 올라감)
         │                                  │
         ▼  둘 다 끝나면                    ▼
-   설치 안내를 본문에 붙이고 초안을 공개로 바꾼다
+   설치 안내 + 변경 목록을 본문에 붙이고 초안을 공개로 바꾼다
         │
-        ▼
-랜딩페이지(Vercel)가 /releases/latest 를 읽어 받기 버튼을 채운다
+        ├──▶ 랜딩페이지의 받기 버튼이 새 파일을 가리킨다 (다시 배포할 필요 없음)
+        └──▶ Windows 앱들이 조용히 받아 두었다가 갈아끼운다
 ```
 
 ---
@@ -91,17 +96,29 @@ MVP 단계라면 **공개 저장소 + 공개 릴리스**가 가장 단순합니�
    - `SUPABASE_URL` — `https://xxxx.supabase.co`
    - `SUPABASE_ANON_KEY` — `eyJ…` 로 시작하는 긴 문자열
 2. **Settings → Actions → General → Workflow permissions** 에서
-   **Read and write permissions** 인지 확인합니다. 릴리스를 만들려면 필요합니다.
+   - **Read and write permissions** 인지 — 릴리스를 만들려면 필요합니다
+   - **Allow GitHub Actions to create and approve pull requests** 가 켜져 있는지 —
+     release-please 가 릴리스 PR 을 만들려면 필요합니다
 3. 릴리스를 내면 [`.github/workflows/release.yml`](../.github/workflows/release.yml) 이
    빌드하면서 그 값을 앱에 구워 넣고 Releases 에 올립니다.
 
-**새 버전 내는 법 — Actions 탭에서 누르기만 하면 됩니다.**
+**새 버전 내는 법 — PR 하나를 머지하면 됩니다.**
 
-저장소 화면 → **Actions → release → Run workflow** → `patch` / `minor` / `major`
-중 하나를 고르고 실행. 버전을 올리고 태그를 만드는 것까지 워크플로가 합니다.
-손으로 할 일이 없습니다.
+main 에 무언가 머지될 때마다 release-please 가 **"다음 릴리스" PR** 을 만들어 두고
+계속 갱신합니다. 커밋 메시지의 `feat:` / `fix:` 를 읽어 버전을 정하고 변경 목록을
+`CHANGELOG.md` 에 적어 둡니다. 그 PR 은 **머지하기 전까지 아무 일도 하지 않습니다.**
 
-터미널에서 하고 싶다면 이 길도 그대로 열려 있습니다.
+내보낼 때가 되면 그 PR 을 머지하세요. 그 순간 태그와 릴리스가 만들어지고, 빌드가
+이어서 돌고, 설치 파일이 다 올라가면 공개됩니다.
+
+| 커밋 | 올라가는 자리 |
+|---|---|
+| `fix:` | patch (0.1.0 → 0.1.1) |
+| `feat:` | minor (0.1.0 → 0.2.0) |
+| `feat!:` 또는 본문에 `BREAKING CHANGE:` | major (0.1.0 → 1.0.0) |
+| `chore:` `ci:` `docs:` `refactor:` `test:` | 올리지 않음 (변경 목록에도 안 보임) |
+
+급할 때는 태그를 직접 밀어도 됩니다. 그 길도 그대로 열려 있습니다.
 
 ```bash
 npm version patch && git push --follow-tags
@@ -109,12 +126,17 @@ npm version patch && git push --follow-tags
 
 빌드는 두 러너에서 나눠 돌고, **둘 다 끝나야** 릴리스가 공개됩니다. 그전까지는
 초안(draft) 상태라 랜딩페이지에도 앱의 자동 업데이트에도 잡히지 않습니다.
-반쪽짜리 릴리스가 최신 버전으로 보이는 일을 막기 위해서입니다.
+설치 파일이 하나도 없는 릴리스가 최신 버전으로 잡히면 둘 다 헛걸음하기 때문입니다.
 
-> 태그를 만드는 일과 빌드하는 일이 **한 워크플로 안에** 있는 이유가 있습니다.
-> GITHUB_TOKEN 으로 민 태그는 다른 워크플로를 깨우지 못합니다(무한 반복을 막으려는
-> GitHub 의 규칙입니다). "태그만 만드는 워크플로"를 따로 두면 빌드가 영영 시작되지
-> 않습니다.
+> release-please 와 빌드가 **한 워크플로 안에** 있는 이유가 있습니다.
+> GITHUB_TOKEN 이 만든 태그는 다른 워크플로를 깨우지 못합니다(무한 반복을 막으려는
+> GitHub 의 규칙입니다). 릴리스를 만드는 일과 빌드하는 일을 나눠 두면 빌드가 영영
+> 시작되지 않습니다.
+
+> 첫 릴리스 PR 은 `0.1.0` 을 제안합니다. `.release-please-manifest.json` 의 기준값이
+> `0.0.0` 이고 지금까지 `feat:` 커밋이 있기 때문입니다. 아직 아무것도 릴리스한 적이
+> 없으므로 이게 맞습니다. 버전이 마음에 안 들면 **PR 을 머지하기 전에** 그 PR 위에서
+> 고치면 됩니다.
 
 `service_role` 키는 **절대** 넣지 마세요. RLS 를 통째로 무시하는 키입니다.
 
