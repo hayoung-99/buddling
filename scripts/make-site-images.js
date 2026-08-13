@@ -34,7 +34,26 @@ const SHOTS = [
   { shot: 'hero', file: 'hero-cat.png', width: 760, height: 900, transparent: true },
   { shot: 'characters', file: 'characters.png', width: 1760, height: 460, transparent: true },
   { shot: 'og', file: 'og.png', width: 1200, height: 630, transparent: false },
+  { shot: 'peek-panda', file: 'peek-panda.png', width: 340, height: 460, transparent: true },
+  { shot: 'peek-bunny', file: 'peek-bunny.png', width: 340, height: 460, transparent: true },
+  { shot: 'peek-dog', file: 'peek-dog.png', width: 340, height: 460, transparent: true },
 ]
+
+/**
+ * 이름을 대면 그것만 다시 뜬다. 하나를 손보는데 나머지 그림까지 새로 쓰이면
+ * 커밋에 상관없는 이진 파일이 딸려 오기 때문이다.
+ *
+ *   npm run site-images                    전부
+ *   npm run site-images -- peek-panda      하나만
+ */
+const only = process.argv.slice(2).filter((arg) => !arg.startsWith('-'))
+const targets = only.length ? SHOTS.filter((s) => only.includes(s.shot)) : SHOTS
+
+if (!targets.length) {
+  console.error(`그런 그림이 없습니다: ${only.join(', ')}`)
+  console.error(`고를 수 있는 것: ${SHOTS.map((s) => s.shot).join(', ')}`)
+  process.exit(1)
+}
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -83,7 +102,7 @@ async function capture({ shot, file, width, height, transparent }) {
 app.whenReady().then(async () => {
   try {
     fs.mkdirSync(OUT_DIR, { recursive: true })
-    for (const spec of SHOTS) await capture(spec)
+    for (const spec of targets) await capture(spec)
     app.exit(0)
   } catch (error) {
     console.error(error)
