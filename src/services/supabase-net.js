@@ -71,28 +71,35 @@ function createSupabaseNet({ url, anonKey, deviceId }) {
 
     rooms.set(team.id, { channel, member })
 
-    await new Promise((resolve, reject) => {
-      const timeout = setTimeout(
-        () => reject(new Error('error.realtimeTimeout')),
-        15000,
-      )
+    try {
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(
+          () => reject(new Error('error.realtimeTimeout')),
+          15000,
+        )
 
-      channel.subscribe(async (status, error) => {
-        emitter.emit('status', { teamId: team.id, status })
-        if (status === 'SUBSCRIBED') {
-          clearTimeout(timeout)
-          await channel.track({
-            memberId: member.id,
-            nickname: member.nickname,
-            characterKey: member.characterKey,
-          })
-          resolve()
-        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          clearTimeout(timeout)
-          reject(toFriendlyError(error ?? new Error(status)))
-        }
+        channel.subscribe(async (status, error) => {
+          emitter.emit('status', { teamId: team.id, status })
+          if (status === 'SUBSCRIBED') {
+            clearTimeout(timeout)
+            await channel.track({
+              memberId: member.id,
+              nickname: member.nickname,
+              characterKey: member.characterKey,
+            })
+            resolve()
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            clearTimeout(timeout)
+            reject(toFriendlyError(error ?? new Error(status)))
+          }
+        })
       })
-    })
+    } catch (error) {
+      // 한 번도 붙지 못한 채널을 그냥 두면, Supabase 쪽에서 프로세스가 끝날 때까지
+      // 10초마다 재조인을 시도한다. 여기서 걷어내고 다시 붙이는 일은 부르는 쪽에 맡긴다.
+      await disconnect(team.id)
+      throw error
+    }
   }
 
   /** teamId 를 주면 그 팀만, 없으면 전부 끊는다 */
@@ -206,6 +213,9 @@ function createSupabaseNet({ url, anonKey, deviceId }) {
 
     connect,
     disconnect,
+
+    /** 지금 채널이 열려 있는 팀들. 다시 붙여야 할 팀을 가려내는 데 쓴다. */
+    connectedTeamIds: () => [...rooms.keys()],
 
     async sendTap({ teamId, toMemberId = null }) {
       const room = requireRoom(teamId)

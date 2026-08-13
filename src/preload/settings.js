@@ -7,11 +7,11 @@ async function call(channel, payload) {
   return result?.value
 }
 
+/** 설정 창이 쓸 수 있는 것 전부. */
+contextBridge.exposeInMainWorld('settingsApi', {
+  getState: () => call('app:state'),
+  onState: (handler) => ipcRenderer.on('state', (_event, state) => handler(state)),
 
-/** 크기 조절 패널이 쓸 수 있는 것 전부. */
-contextBridge.exposeInMainWorld('sizeApi', {
-  getScale: () => call('size:get'),
-  /** @param {boolean} live 슬라이더를 아직 끄는 중인가 */
-  setScale: (scale, live = false) => ipcRenderer.send('size:set', { scale, live }),
-  close: () => ipcRenderer.send('size:close'),
+  setPower: (level) => call('settings:power', level),
+  setLanguage: (preference) => call('settings:language', preference),
 })

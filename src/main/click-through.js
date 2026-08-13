@@ -13,6 +13,15 @@ const { screen } = require('electron')
 
 const FOLLOW_INTERVAL = 16 // 약 60fps
 
+/**
+ * 끌기가 저절로 끝나는 시간(ms).
+ *
+ * 끝을 알리는 길은 렌더러의 mouseup 하나뿐인데, 창이 그 사이 숨겨지거나 포커스를
+ * 빼앗기면 그 신호가 영영 안 온다. 그러면 커서를 좇는 타이머가 계속 돈다.
+ * 실제로 이만큼 오래 끄는 사람은 없으므로, 여기까지 오면 끝난 것으로 본다.
+ */
+const DRAG_TIMEOUT = 10000
+
 function attachPointerControl(window, { onDragEnd } = {}) {
   let interactive = false
   let drag = null
@@ -43,24 +52,28 @@ function attachPointerControl(window, { onDragEnd } = {}) {
       offsetX: cursor.x - x,
       offsetY: cursor.y - y,
       timer: setInterval(follow, FOLLOW_INTERVAL),
+      watchdog: setTimeout(endDrag, DRAG_TIMEOUT),
     }
     apply()
   }
 
-  function endDrag() {
+  function stopFollowing() {
     if (!drag) return
     clearInterval(drag.timer)
+    clearTimeout(drag.watchdog)
     drag = null
+  }
+
+  function endDrag() {
+    if (!drag) return
+    stopFollowing()
     apply()
     if (window.isDestroyed()) return
     const [x, y] = window.getPosition()
     onDragEnd?.({ x, y })
   }
 
-  window.on('closed', () => {
-    if (drag) clearInterval(drag.timer)
-    drag = null
-  })
+  window.on('closed', stopFollowing)
 
   return { setInteractive, startDrag, endDrag }
 }

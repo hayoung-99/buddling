@@ -15,7 +15,9 @@ export function addLighting(scene) {
   const key = new THREE.DirectionalLight(0xfff4e2, 2.1)
   key.position.set(2.6, 5.4, 4.2)
   key.castShadow = true
-  key.shadow.mapSize.set(1024, 1024)
+  // 창이 260×320 라 1024 는 과하다. 512 로도 흐릿한 바닥 그림자는 똑같이 나오면서
+  // 그림자 패스가 4분의 1로 줄어든다 — 늘 켜져 있는 앱이라 이 차이가 크다.
+  key.shadow.mapSize.set(512, 512)
   key.shadow.radius = 4
   key.shadow.bias = -0.0015
   const cam = key.shadow.camera
@@ -65,7 +67,7 @@ export function createStage({ canvas, yaw = -0.2 }) {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap
 
   const scene = new THREE.Scene()
-  addLighting(scene)
+  const lights = addLighting(scene)
   scene.add(createShadowCatcher())
 
   // 위쪽에 여백을 넉넉히 둔다 — 폴짝 뛸 때 머리가 잘리면 안 되고,
@@ -79,13 +81,30 @@ export function createStage({ canvas, yaw = -0.2 }) {
   stand.rotation.y = yaw
   scene.add(stand)
 
-  function resize() {
+  /** 지금 쓰는 화면 배율 상한. 절전 단계가 바꾼다. */
+  let pixelRatioCap = 2
+
+  function resize(cap = pixelRatioCap) {
+    pixelRatioCap = cap
     const width = canvas.clientWidth || 1
     const height = canvas.clientHeight || 1
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, pixelRatioCap))
     renderer.setSize(width, height, false)
     camera.aspect = width / height
     camera.updateProjectionMatrix()
+  }
+
+  /**
+   * 그림자를 매 프레임 다시 그릴지 정한다.
+   *
+   * 캐릭터가 가만히 서서 숨만 쉬는 동안 그림자는 사실상 변하지 않는다. 그런데도
+   * 매 프레임 그림자 패스를 한 번 더 도는 것은 순전한 낭비다. 끌 때는 마지막
+   * 한 장을 최신으로 갱신해 두고 멈춘다.
+   */
+  function setShadowsLive(live) {
+    if (lights.key.shadow.autoUpdate === live) return
+    lights.key.shadow.autoUpdate = live
+    if (!live) lights.key.shadow.needsUpdate = true
   }
 
   function render() {
@@ -94,5 +113,5 @@ export function createStage({ canvas, yaw = -0.2 }) {
 
   resize()
 
-  return { renderer, scene, camera, stand, resize, render }
+  return { renderer, scene, camera, stand, lights, resize, setShadowsLive, render }
 }

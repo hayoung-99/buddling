@@ -22,6 +22,7 @@ function registerIpc({ session, app }) {
     for (const { window } of app.pets.values()) send(window, channel, payload)
     for (const window of app.teamDetails.values()) send(window, channel, payload)
     send(app.teamWindow, channel, payload)
+    send(app.settingsWindow, channel, payload)
   }
 
   // ── 세션 → 렌더러 ──
@@ -66,6 +67,7 @@ function registerIpc({ session, app }) {
     session.publish()
     return session.snapshot()
   })
+  handle('settings:power', (level) => session.setPower(level))
 
   // ── 캐릭터 창 전용 ──
   ipcMain.on('pet:tap', (_event, { teamId }) => {
@@ -87,6 +89,7 @@ function registerIpc({ session, app }) {
       { label: t('app.openDetail'), click: () => app.openTeamDetail(teamId) },
       { label: t('app.openList'), click: () => app.openTeamWindow() },
       { label: t('app.resize'), click: () => app.openSizePanel(teamId) },
+      { label: t('app.settings'), click: () => app.openSettings() },
       { type: 'separator' },
       { label: t('app.hideAll'), click: () => app.setPetVisible(false) },
       { label: t('app.quit'), click: () => app.quit() },
@@ -95,6 +98,7 @@ function registerIpc({ session, app }) {
 
   ipcMain.on('window:team', () => app.openTeamWindow())
   ipcMain.on('window:team-detail', (_event, teamId) => app.openTeamDetail(teamId))
+  ipcMain.on('window:settings', () => app.openSettings())
 
   /**
    * 새 버전 안내를 눌렀을 때 받는 곳 페이지를 연다.
@@ -127,8 +131,9 @@ function registerIpc({ session, app }) {
       resetHint: t('size.reset'),
     }
   })
-  ipcMain.on('size:set', (_event, scale) => {
-    if (app.sizePanelTeamId) app.setPetScale(app.sizePanelTeamId, scale)
+  // 끄는 동안(live)에는 창 크기만 바꾸고, 손을 뗐을 때 한 번만 창들에 알린다
+  ipcMain.on('size:set', (_event, { scale, live = false } = {}) => {
+    if (app.sizePanelTeamId) app.setPetScale(app.sizePanelTeamId, scale, { live })
   })
   ipcMain.on('size:close', () => app.closeSizePanel())
 }

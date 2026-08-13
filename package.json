@@ -12,6 +12,8 @@
     "tray-icon": "node scripts/make-tray-icon.js",
     "app-icon": "electron scripts/make-app-icon.js",
     "site-images": "electron scripts/make-site-images.js",
+    "site": "node scripts/serve-site.js",
+    "site:open": "node scripts/serve-site.js --open",
     "dist": "node scripts/bake-config.js && electron-builder",
     "test": "vitest run",
     "test:watch": "vitest",

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { createSession } from '../src/main/session.js'
 import { createFakeServer, createFakeNet, MAX_TEAMS_PER_DEVICE } from '../src/services/fake-net.js'
 
@@ -170,5 +170,110 @@ describe('세션 — 설정이 없을 때', () => {
     })
     const session = createSession({ url: '', anonKey: '', store })
     expect(session.snapshot().memberships).toHaveLength(1)
+  })
+})
+
+/**
+ * 다음 호출 한 번만 실패하게 만든다.
+ * 인터넷이 잠깐 없는 상황을 흉내 내는 데 쓴다.
+ */
+function failOnce(net, method, when = () => true) {
+  const original = net[method].bind(net)
+  let used = false
+  net[method] = async (...args) => {
+    if (!used && when(...args)) {
+      used = true
+      throw new Error('offline')
+    }
+    return original(...args)
+  }
+}
+
+describe('세션 — 끊긴 연결 되살리기', () => {
+  let ctx
+  beforeEach(() => {
+    ctx = makeSession()
+  })
+  afterEach(async () => {
+    vi.useRealTimers()
+    await ctx.session.dispose()
+  })
+
+  /** 팀을 만들어 두고, 앱을 껐다 켠 것처럼 연결만 끊어 둔다 */
+  async function teamsThenOffline(names) {
+    const ids = []
+    for (const name of names) {
+      const state = await ctx.session.createTeam({ name, nickname: '나영' })
+      ids.push(state.memberships.at(-1).team.id)
+    }
+    await ctx.net.disconnect()
+    return ids
+  }
+
+  it('서버 목록을 못 읽어도 캐시해 둔 소속으로 연결은 시도한다', async () => {
+    await teamsThenOffline(['디자인팀'])
+    failOnce(ctx.net, 'getMyTeams')
+
+    await ctx.session.restore()
+
+    expect(ctx.net.connectedTeamIds()).toHaveLength(1)
+  })
+
+  it('한 팀이 안 붙어도 나머지 팀은 붙는다 — 하나 때문에 전부 조용해지면 안 된다', async () => {
+    const [first, second] = await teamsThenOffline(['팀A', '팀B'])
+    failOnce(ctx.net, 'connect', (team) => team.id === first)
+
+    await ctx.session.restore()
+
+    expect(ctx.net.connectedTeamIds()).toEqual([second])
+  })
+
+  it('한 번 실패해도 스스로 다시 붙는다 — 켤 때 와이파이가 아직 없을 수 있다', async () => {
+    vi.useFakeTimers()
+    await teamsThenOffline(['디자인팀'])
+    failOnce(ctx.net, 'connect')
+
+    await ctx.session.restore()
+    expect(ctx.net.connectedTeamIds()).toHaveLength(0)
+
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(ctx.net.connectedTeamIds()).toHaveLength(1)
+  })
+
+  it('절전에서 깨어났을 때처럼 밖에서 부르면 곧바로 다시 맞춘다', async () => {
+    await teamsThenOffline(['디자인팀'])
+    failOnce(ctx.net, 'connect')
+    await ctx.session.restore()
+
+    await ctx.session.recover()
+
+    expect(ctx.net.connectedTeamIds()).toHaveLength(1)
+  })
+
+  it('앱을 끄면 재시도 예약도 함께 사라진다', async () => {
+    vi.useFakeTimers()
+    await teamsThenOffline(['디자인팀'])
+    failOnce(ctx.net, 'connect')
+    await ctx.session.restore()
+
+    await ctx.session.dispose()
+    await vi.advanceTimersByTimeAsync(60000)
+
+    expect(ctx.net.connectedTeamIds()).toHaveLength(0)
+  })
+})
+
+describe('세션 — 팀을 떠난 뒤 흔적 지우기', () => {
+  it('팀에서 나가면 연타 기록도 함께 지워, 다시 들어갔을 때 첫 콕이 막히지 않는다', async () => {
+    const ctx = makeSession()
+    const created = await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    const teamId = created.memberships[0].team.id
+
+    expect(await ctx.session.tap({ teamId })).toBe(true)
+    await ctx.session.leaveTeam(teamId)
+
+    // 같은 팀 이름으로 다시 만들어도 새 팀이라 막힐 이유가 없다
+    const again = await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    expect(await ctx.session.tap({ teamId: again.memberships[0].team.id })).toBe(true)
   })
 })

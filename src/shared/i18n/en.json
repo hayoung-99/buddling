@@ -1,7 +1,18 @@
 {
   "language.label": "Language",
 
+  "settings.title": "Settings",
+  "settings.power": "Power use",
+  "settings.powerHint": "tap-tap stays on screen until you shut down. Choose how much it should hold back while your character is idle.",
+  "power.smooth": "Smooth",
+  "power.smoothHint": "Moves as smoothly as possible. Uses the most battery.",
+  "power.balanced": "Balanced",
+  "power.balancedHint": "Saves power without you noticing. Right for most people.",
+  "power.saver": "Saver",
+  "power.saverHint": "Saves the most. Motion is a little choppy and the character looks slightly rougher.",
+
   "app.quit": "Quit tap-tap",
+  "app.settings": "Settings…",
   "app.openList": "Open team list",
   "app.openDetail": "Open this team",
   "app.detail": "Open",

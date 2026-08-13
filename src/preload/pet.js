@@ -24,6 +24,9 @@ contextBridge.exposeInMainWorld('petApi', {
   onCharacter: (handler) => ipcRenderer.on('character', (_event, key) => handler(key)),
   onTap: (handler) => ipcRenderer.on('tap', (_event, payload) => handler(payload)),
 
+  /** 컴퓨터가 잠들거나 화면이 잠기면 false, 깨어나면 true */
+  onRenderState: (handler) => ipcRenderer.on('render', (_event, active) => handler(active)),
+
   /** 커서가 캐릭터 위에 있는 동안만 true. false면 클릭이 바탕화면으로 통과된다. */
   setInteractive: (interactive) => ipcRenderer.send('pet:interactive', { teamId, interactive }),
 

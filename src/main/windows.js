@@ -70,6 +70,9 @@ function createPetWindow({ teamId, index = 0 }) {
     fullscreenable: false,
     maximizable: false,
     minimizable: false,
+    // 캐릭터를 없애는 길은 트레이의 "숨기기"와 팀 나가기뿐이다.
+    // 이걸 열어 두면 맥에서 ⌘W 로 캐릭터가 닫혀 버린다.
+    closable: false,
     title: 'tap-tap',
     webPreferences: {
       preload: path.join(__dirname, '..', 'preload', 'pet.js'),
@@ -151,12 +154,34 @@ function placeSizeWindow(sizeWindow, petWindow) {
   sizeWindow.setBounds({ x, y, ...SIZE_PANEL })
 }
 
+/** 절전 강도와 언어를 고르는 창 */
+function createSettingsWindow() {
+  const window = new BrowserWindow({
+    width: 420,
+    height: 560,
+    minWidth: 380,
+    minHeight: 440,
+    title: 'tap-tap',
+    backgroundColor: '#f5efe1',
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, '..', 'preload', 'settings.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  })
+
+  window.loadFile(path.join(ROOT, 'src', 'renderer', 'settings', 'index.html'))
+  window.once('ready-to-show', () => window.show())
+  return window
+}
+
 /** 내 팀 목록 창 */
 function createTeamWindow() {
   const window = new BrowserWindow({
     width: 400,
-    // 언어 고르는 칸이 맨 아래에 있어서, 스크롤하지 않고도 보이도록 넉넉히 잡는다
-    height: 780,
+    height: 700,
     minWidth: 360,
     minHeight: 520,
     title: 'tap-tap',
@@ -210,6 +235,7 @@ module.exports = {
   createTeamWindow,
   createTeamDetailWindow,
   createSizeWindow,
+  createSettingsWindow,
   placeSizeWindow,
   resizePetWindow,
   clampScale,

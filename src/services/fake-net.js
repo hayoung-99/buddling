@@ -293,6 +293,9 @@ function createFakeNet({ server, deviceId }) {
 
     disconnect,
 
+    /** 지금 붙어 있는 팀들 (supabase-net 과 같은 규약) */
+    connectedTeamIds: () => [...rooms.keys()],
+
     async sendTap({ teamId, toMemberId = null }) {
       const room = rooms.get(teamId)
       if (!room) throw new Error('error.notConnected')

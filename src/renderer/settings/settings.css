@@ -1,0 +1,75 @@
+/* 팀 창(team.css)의 크림색 톤을 그대로 쓰고, 여기서는 라디오 목록만 더한다. */
+
+.hint {
+  margin-bottom: 14px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 라벨 전체가 누를 수 있는 카드다 — 작은 동그라미만 노리지 않아도 된다 */
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  cursor: pointer;
+}
+
+.choice:hover {
+  border-color: rgba(74, 63, 51, 0.24);
+}
+
+.choice:has(input:checked) {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1.5px var(--accent) inset;
+}
+
+.choice:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* team.css 의 input 은 글자 넣는 칸을 위한 것이라 폭이 100% 다. 동그라미는 되돌린다. */
+.choice input[type='radio'] {
+  flex: none;
+  width: auto;
+  margin-top: 2px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  accent-color: var(--accent);
+}
+
+.choice .text {
+  flex: 1;
+  min-width: 0;
+}
+
+.choice .name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.choice .desc {
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* 이 창에서는 언어 칸도 한 항목이라 가운데가 아니라 왼쪽에 붙는다 */
+.settings-language {
+  justify-content: flex-start;
+  margin-top: 0;
+}

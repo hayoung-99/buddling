@@ -18,6 +18,8 @@ const MAX_VISIBLE = 3
 
 export function createNameplate(container) {
   let scale = 1
+  /** 이름표 → 지울 시각을 재는 타이머. 이름표가 사라지면 항목도 함께 사라진다. */
+  const timers = new WeakMap()
 
   /**
    * @param {string} nickname 찌른 사람
@@ -33,12 +35,20 @@ export function createNameplate(container) {
     const room = window.innerHeight - 26 * scale
     container.style.top = `${Math.min(anchor.bottom - 6 * scale, room)}px`
 
+    // CSS 애니메이션이 끝나면 알아서 사라지지만, 창이 가려져 있으면 그 신호가 안 온다.
+    // 그래서 시간이 다 되면 지우는 보조 타이머를 하나씩 달아 둔다.
+    const arm = (chip) => {
+      clearTimeout(timers.get(chip))
+      timers.set(chip, setTimeout(() => chip.remove(), LIFE_MS + 400))
+    }
+
     // 같은 사람이 연달아 찌르면 새로 띄우지 않고 시간만 늘려준다
     const existing = [...container.children].find((chip) => chip.textContent === name)
     if (existing) {
       existing.classList.remove('chip')
       void existing.offsetWidth
       existing.classList.add('chip')
+      arm(existing) // 애니메이션만 되감고 타이머를 그대로 두면 늘린 만큼 살지 못한다
       return
     }
 
@@ -48,7 +58,7 @@ export function createNameplate(container) {
     chip.className = 'chip'
     chip.textContent = name
     chip.addEventListener('animationend', () => chip.remove())
-    setTimeout(() => chip.remove(), LIFE_MS + 400)
+    arm(chip)
     container.append(chip)
   }
 

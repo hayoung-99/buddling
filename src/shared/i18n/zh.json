@@ -1,7 +1,18 @@
 {
   "language.label": "语言",
 
+  "settings.title": "设置",
+  "settings.power": "省电",
+  "settings.powerHint": "tap-tap 会一直显示到你关机。请选择角色闲着时要节省多少。",
+  "power.smooth": "流畅",
+  "power.smoothHint": "动作最流畅，也最耗电。",
+  "power.balanced": "均衡",
+  "power.balancedHint": "在你察觉不到的地方省电，多数人用这个就够了。",
+  "power.saver": "省电",
+  "power.saverHint": "最省电。动作会略有卡顿，角色看起来也会稍微粗糙一些。",
+
   "app.quit": "退出 tap-tap",
+  "app.settings": "设置…",
   "app.openList": "打开团队列表",
   "app.openDetail": "打开该团队",
   "app.detail": "打开",

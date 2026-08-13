@@ -16,6 +16,15 @@ const { getLanguage } = require('./i18n')
 
 const TAP_THROTTLE_MS = 300
 
+/**
+ * 연결이 안 될 때 다시 해 보기까지 기다리는 시간(ms).
+ *
+ * 이 앱은 컴퓨터를 켤 때 같이 뜬다. 그런데 그 순간에는 와이파이가 아직 안 붙어 있는
+ * 일이 흔하다. 다시 시도하지 않으면 사용자는 앱을 껐다 켜기 전까지 영영 혼자다.
+ * 뒤로 갈수록 뜸하게 두드려서, 인터넷이 오래 없어도 배터리를 갉아먹지 않게 한다.
+ */
+const RETRY_DELAYS = [5000, 15000, 30000, 60000]
+
 /** 한 기기가 동시에 속할 수 있는 팀 수 (supabase/schema.sql 과 맞춘다) */
 const MAX_TEAMS = 3
 
@@ -38,6 +47,10 @@ function createSession({ url, anonKey, store = defaultStore, net: injectedNet = 
   const lastTapAt = new Map()
   /** 새 버전이 나왔을 때 { version, url }. 없으면 null. */
   let update = null
+  /** 다시 붙어 보기까지의 대기. 성공하면 처음으로 되돌린다. */
+  let retryStep = 0
+  let retryTimer = null
+  let disposed = false
 
   try {
     net = injectedNet ?? createNet({ url, anonKey, deviceId })
@@ -81,6 +94,7 @@ function createSession({ url, anonKey, store = defaultStore, net: injectedNet = 
       deviceId,
       nickname: store.get('nickname'),
       language: getLanguage(),
+      power: store.get('power'),
       maxTeams: MAX_TEAMS,
       maxMembers: MAX_MEMBERS,
       update,
@@ -114,22 +128,89 @@ function createSession({ url, anonKey, store = defaultStore, net: injectedNet = 
     if (memberships.size >= MAX_TEAMS) throw new Error('TEAM_LIMIT_REACHED')
   }
 
+  /** 더 이상 속하지 않는 팀에 딸린 것들을 함께 지운다 (안 그러면 계속 쌓인다) */
+  function forget(teamId) {
+    onlineIds.delete(teamId)
+    connections.delete(teamId)
+    lastTapAt.delete(teamId)
+  }
+
+  /** 서버가 준 목록으로 소속을 갈아끼운다 */
+  async function applyTeams(list) {
+    const next = new Map(list.map((entry) => [entry.team.id, entry]))
+
+    // 서버에서 사라진 팀은 연결을 끊는다 (다른 기기에서 나갔거나 팀이 지워졌다)
+    for (const id of memberships.keys()) {
+      if (next.has(id)) continue
+      await net.disconnect(id)
+      forget(id)
+    }
+    memberships = next
+    commit()
+  }
+
   /** 서버에서 내 소속을 통째로 다시 불러온다 */
   async function refresh() {
     if (!net) return
     try {
-      const list = await net.getMyTeams()
-      const next = new Map(list.map((entry) => [entry.team.id, entry]))
-
-      // 서버에서 사라진 팀은 연결을 끊는다 (다른 기기에서 나갔거나 팀이 지워졌다)
-      for (const id of memberships.keys()) {
-        if (!next.has(id)) await net.disconnect(id)
-      }
-      memberships = next
-      commit()
+      await applyTeams(await net.getMyTeams())
     } catch (error) {
       emitter.emit('error', toFriendlyError(error).message)
     }
+  }
+
+  function cancelRetry() {
+    clearTimeout(retryTimer)
+    retryTimer = null
+    retryStep = 0
+  }
+
+  function scheduleRetry() {
+    if (disposed || retryTimer || !net) return
+    const delay = RETRY_DELAYS[Math.min(retryStep, RETRY_DELAYS.length - 1)]
+    retryStep += 1
+    retryTimer = setTimeout(() => {
+      retryTimer = null
+      syncConnections()
+    }, delay)
+    // 이 타이머 때문에 앱이 종료되지 못하는 일이 없게 한다
+    retryTimer.unref?.()
+  }
+
+  /**
+   * 소속을 서버와 맞추고, 아직 안 붙은 팀을 붙인다.
+   *
+   * 한 팀이 실패해도 나머지는 계속 시도한다 — 팀 하나가 말썽이라고 나머지 둘까지
+   * 조용해지면 안 된다. 하나라도 못 붙었으면 잠시 뒤에 통째로 다시 해 본다.
+   */
+  async function syncConnections() {
+    if (!net || disposed) return
+    let everythingWorked = true
+
+    try {
+      await applyTeams(await net.getMyTeams())
+    } catch (error) {
+      // 서버를 못 읽어도 캐시된 소속으로 연결은 시도해 본다
+      everythingWorked = false
+      // 인터넷이 오래 없으면 같은 실패가 계속 되풀이된다. 그때마다 알리면 잔소리가 되니
+      // 한 번 어긋난 뒤 처음 한 번만 말한다. 다시 붙으면 알림도 처음으로 돌아간다.
+      if (retryStep === 0) emitter.emit('error', toFriendlyError(error).message)
+    }
+
+    const connected = new Set(net.connectedTeamIds())
+    for (const entry of memberships.values()) {
+      if (connected.has(entry.team.id)) continue
+      try {
+        await net.connect(entry.team, entry.member)
+      } catch {
+        // 화면에는 이미 connection 상태로 보이고 있다. 여기서는 다시 시도할 일만 남긴다.
+        everythingWorked = false
+      }
+    }
+
+    if (everythingWorked) cancelRetry()
+    else scheduleRetry()
+    publish()
   }
 
   /** 새로 들어간 팀을 실제 연결까지 반영한다 */
@@ -157,18 +238,16 @@ function createSession({ url, anonKey, store = defaultStore, net: injectedNet = 
         publish()
         return
       }
-      try {
-        const list = await net.getMyTeams()
-        memberships = new Map(list.map((entry) => [entry.team.id, entry]))
-        commit()
+      await syncConnections()
+    },
 
-        for (const entry of memberships.values()) {
-          await net.connect(entry.team, entry.member)
-        }
-      } catch (error) {
-        emitter.emit('error', toFriendlyError(error).message)
-        publish()
-      }
+    /**
+     * 끊겼을지 모르는 연결을 다시 맞춘다.
+     * 컴퓨터가 절전에서 깨어났을 때처럼, 그 사이 무슨 일이 있었는지 모를 때 부른다.
+     */
+    async recover() {
+      cancelRetry()
+      await syncConnections()
     },
 
     async createTeam({ name, nickname, characterKey = 'cat' }) {
@@ -216,8 +295,7 @@ function createSession({ url, anonKey, store = defaultStore, net: injectedNet = 
     async leaveTeam(teamId) {
       if (net && memberships.has(teamId)) await net.leaveTeam(teamId)
       memberships.delete(teamId)
-      onlineIds.delete(teamId)
-      connections.delete(teamId)
+      forget(teamId)
       commit()
       return snapshot()
     },
@@ -272,6 +350,13 @@ function createSession({ url, anonKey, store = defaultStore, net: injectedNet = 
       return snapshot()
     },
 
+    /** 절전 강도. 창들은 상태로 받아 곧바로 반영한다. */
+    setPower(level) {
+      store.set({ power: level })
+      publish()
+      return snapshot()
+    },
+
     /**
      * 새 버전이 나왔다는 사실만 받아 둔다.
      *
@@ -284,6 +369,8 @@ function createSession({ url, anonKey, store = defaultStore, net: injectedNet = 
     },
 
     async dispose() {
+      disposed = true
+      cancelRetry()
       await net?.disconnect()
       emitter.clear()
     },

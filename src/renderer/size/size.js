@@ -17,12 +17,17 @@ function show(percent) {
   value.textContent = `${percent}%`
 }
 
-function apply(percent) {
+/**
+ * @param {boolean} live 슬라이더를 아직 끄는 중인가.
+ *   끄는 동안에는 창 크기만 바뀌고, 손을 뗐을 때 저장한 값이 다른 창들에 알려진다.
+ */
+function apply(percent, live = false) {
   show(percent)
-  window.sizeApi.setScale(percent / 100)
+  window.sizeApi.setScale(percent / 100, live)
 }
 
-range.addEventListener('input', () => apply(Number(range.value)))
+range.addEventListener('input', () => apply(Number(range.value), true))
+range.addEventListener('change', () => apply(Number(range.value)))
 reset.addEventListener('click', () => apply(DEFAULT_PERCENT))
 
 document.addEventListener('keydown', (event) => {

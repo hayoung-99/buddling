@@ -23,6 +23,9 @@ contextBridge.exposeInMainWorld('teamApi', {
   /** 팀 상세 창을 연다 (이미 열려 있으면 앞으로 가져온다) */
   openTeam: (id) => ipcRenderer.send('window:team-detail', id),
 
+  /** 절전 강도와 언어를 고르는 창을 연다 */
+  openSettings: () => ipcRenderer.send('window:settings'),
+
   /** 새 버전을 받을 수 있는 곳을 브라우저로 연다 (주소는 메인이 정한다) */
   openDownloadPage: () => ipcRenderer.send('window:open-download'),
 

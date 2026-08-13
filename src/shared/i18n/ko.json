@@ -1,7 +1,18 @@
 {
   "language.label": "언어",
 
+  "settings.title": "설정",
+  "settings.power": "절전",
+  "settings.powerHint": "tap-tap 은 컴퓨터를 끌 때까지 계속 떠 있어요. 캐릭터가 가만히 있을 때 얼마나 아낄지 고르세요.",
+  "power.smooth": "부드럽게",
+  "power.smoothHint": "가장 매끄럽게 움직여요. 배터리를 가장 많이 써요.",
+  "power.balanced": "균형",
+  "power.balancedHint": "눈에 띄지 않게 아껴요. 대부분 이걸로 충분해요.",
+  "power.saver": "절약",
+  "power.saverHint": "가장 아껴요. 움직임이 살짝 끊기고 캐릭터가 조금 거칠어 보여요.",
+
   "app.quit": "tap-tap 종료",
+  "app.settings": "설정…",
   "app.openList": "팀 목록 열기",
   "app.openDetail": "이 팀 자세히 보기",
   "app.detail": "자세히 보기",

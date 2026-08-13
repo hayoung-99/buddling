@@ -11,9 +11,9 @@
  */
 
 import { getCharacter } from '../../shared/characters.js'
-import { createTranslator, LANGUAGES } from '../../shared/i18n/index.js'
+import { createTranslator } from '../../shared/i18n/index.js'
 import { renderCharacterThumbnails } from './thumbnails.js'
-import { el, createToast, createRenderer, createRunner, languagePicker } from './ui.js'
+import { el, createToast, createRenderer, createRunner } from './ui.js'
 
 const thumbnails = renderCharacterThumbnails()
 const render = createRenderer(document.getElementById('app'))
@@ -254,13 +254,11 @@ function updateBanner() {
   ]
 }
 
-function languageRow() {
-  return languagePicker({
-    languages: LANGUAGES,
-    current: state.language,
-    label: t('language.label'),
-    onPick: (value) => run(() => window.teamApi.setLanguage(value)),
-  })
+/** 언어와 절전 강도는 설정 창에 모여 있다. 여기서는 그리로 가는 길만 둔다. */
+function settingsRow() {
+  return el('div', { class: 'footer' }, [
+    el('button', { text: t('app.settings'), onclick: () => window.teamApi.openSettings() }),
+  ])
 }
 
 function draw() {
@@ -273,7 +271,7 @@ function draw() {
       ? listView()
       : onboardingView()
 
-  render([...updateBanner(), ...view, languageRow()])
+  render([...updateBanner(), ...view, settingsRow()])
 }
 
 window.teamApi.onState((next) => {

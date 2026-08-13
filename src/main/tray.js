@@ -38,6 +38,7 @@ function createTray(app) {
         ...teamItems,
         { type: 'separator' },
         { label: t('app.openList'), click: () => app.openTeamWindow() },
+        { label: t('app.settings'), click: () => app.openSettings() },
         {
           label: app.isPetVisible() ? t('app.hideAll') : t('app.showAll'),
           click: () => app.setPetVisible(!app.isPetVisible()),

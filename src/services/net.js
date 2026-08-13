@@ -23,6 +23,7 @@
  * @property {(teamId: string) => Promise<void>} leaveTeam
  * @property {(team: Team, member: Member) => Promise<void>} connect
  * @property {(teamId?: string) => Promise<void>} disconnect
+ * @property {() => string[]} connectedTeamIds
  * @property {(payload: {teamId: string, toMemberId: string|null}) => Promise<void>} sendTap
  * @property {(teamId: string) => Promise<void>} announceRosterChange
  * @property {(teamId: string) => string[]} onlineIn

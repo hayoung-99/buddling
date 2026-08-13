@@ -17,12 +17,14 @@
 
 import * as THREE from 'three'
 import { getCharacter } from '../../shared/characters.js'
+import { powerProfile } from '../../shared/power.js'
 import { createCritter, disposeCritter, scaleToStandardHeight } from './critter.js'
 import { createStage } from './scene.js'
 import { createAnimator } from './animations.js'
 import { createBubble } from './bubble.js'
 import { createNameplate } from './nameplate.js'
 import { createNotes } from './notes.js'
+import { createPacer } from './pacer.js'
 
 const canvas = document.getElementById('stage')
 const bubble = createBubble(document.getElementById('bubble'))
@@ -56,6 +58,8 @@ let hotZone = { left: 0, top: 0, right: 0, bottom: 0, centerX: 0 }
 let interactive = false
 let pixelsPerUnit = 0
 let notes = null
+/** 지금 쓰는 절전 프로필. 설정 창에서 바꾸면 갈아끼운다. */
+let profile = powerProfile(null)
 
 function setCharacter(key) {
   const next = getCharacter(key)
@@ -210,7 +214,22 @@ function myMembership(state) {
   return state?.memberships?.find((entry) => entry.team.id === window.petApi.teamId) ?? null
 }
 
+/**
+ * 절전 단계를 바꾼다.
+ * 해상도 상한이 달라졌을 때만 다시 그릴 준비를 한다 — 캔버스 크기가 바뀌면
+ * 화면 좌표도 달라져서 클릭 영역을 다시 재야 한다.
+ */
+function setPower(level) {
+  const next = powerProfile(level)
+  const resized = next.pixelRatioCap !== profile.pixelRatioCap
+  profile = next
+  if (!resized) return
+  stage.resize(profile.pixelRatioCap)
+  updateHotZone()
+}
+
 function applyState(state) {
+  setPower(state?.power)
   const mine = myMembership(state)
   if (mine) setCharacter(mine.member.characterKey)
 }
@@ -224,14 +243,74 @@ setCharacter('cat')
 syncOverlayScale()
 
 // ── 렌더 루프 ──
+/**
+ * 이 앱은 컴퓨터를 켠 순간부터 끌 때까지 떠 있다. 그래서 "아무 일도 없을 때 얼마나
+ * 게으르게 구는가"가 곧 배터리와 팬 소리를 정한다.
+ *
+ * 규칙은 셋이다.
+ *   1. 창이 안 보이면 (트레이에서 숨겼거나 컴퓨터가 잠들었으면) 아예 그리지 않는다.
+ *   2. 가만히 있으면 절전 단계가 정한 만큼만 그리고, 그림자는 멈춰 세운다.
+ *   3. 찔렸거나 만지는 중이면 넉넉히 그린다 — 반응이 굼떠 보이면 안 된다.
+ */
 const clock = new THREE.Clock()
-stage.renderer.setAnimationLoop(() => {
-  const delta = clock.getDelta()
+const pacer = createPacer()
+
+/** 지금 눈에 띄게 움직이는 중인가 */
+function isBusy() {
+  return Boolean(
+    animator?.isDancing ||
+      animator?.isTwitching ||
+      animator?.isHopping ||
+      notes?.count ||
+      interactive ||
+      drag,
+  )
+  // 말풍선과 이름표는 CSS 애니메이션이라 이 루프와 무관하게 부드럽게 흐른다.
+}
+
+function frame() {
+  const busy = isBusy()
+  const step = pacer.tick(clock.getDelta(), busy ? profile.activeFps : profile.idleFps)
+  if (step === null) return
+
+  stage.setShadowsLive(busy || profile.idleShadows)
+
   if (animator) {
-    animator.update(delta)
+    animator.update(step)
     // 말풍선도 같이 떠오른다. 창 위에 닿으면 bubble 쪽에서 알아서 멈춘다.
     bubble.setLift(critter.root.position.y * stage.stand.scale.y * pixelsPerUnit)
-    notes?.update(delta)
+    notes?.update(step)
   }
   stage.render()
+}
+
+let running = false
+
+function startLoop() {
+  if (running) return
+  running = true
+  // 멈춰 있던 시간이 애니메이션에 한꺼번에 밀려들지 않도록 시계를 털어 낸다
+  clock.getDelta()
+  pacer.reset()
+  stage.renderer.setAnimationLoop(frame)
+}
+
+function stopLoop() {
+  if (!running) return
+  running = false
+  stage.renderer.setAnimationLoop(null)
+}
+
+/** 창이 숨겨지거나 최소화되면 브라우저가 알려 준다 */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopLoop()
+  else startLoop()
 })
+
+/** 컴퓨터가 잠들거나 화면이 잠기면 메인 프로세스가 알려 준다 */
+window.petApi.onRenderState((active) => {
+  if (active && !document.hidden) startLoop()
+  else stopLoop()
+})
+
+startLoop()
