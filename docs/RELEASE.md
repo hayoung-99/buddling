@@ -2,10 +2,15 @@
 
 랜딩페이지 → GitHub Releases → 앱 다운로드 흐름으로 외부에 공개할 때 필요한 것들입니다.
 
+밀 때마다 도는 검사가 따로 있습니다 — [`ci.yml`](../.github/workflows/ci.yml) 이
+`main` 으로 가는 push 와 모든 PR 에서 단위 테스트와 랜딩페이지 점검을 돌립니다.
+Electron 을 빌드하지는 않습니다. 빌드는 10분이 넘고, 실제로 깨지는 것은 거의 언제나
+코드와 문구이기 때문입니다.
+
 전체 그림은 이렇습니다.
 
 ```
-태그를 민다 (git push origin v0.1.0)
+Actions ▸ release ▸ Run workflow  (또는 태그를 직접 민다)
         │
         ▼
 GitHub Actions
@@ -87,17 +92,29 @@ MVP 단계라면 **공개 저장소 + 공개 릴리스**가 가장 단순합니�
    - `SUPABASE_ANON_KEY` — `eyJ…` 로 시작하는 긴 문자열
 2. **Settings → Actions → General → Workflow permissions** 에서
    **Read and write permissions** 인지 확인합니다. 릴리스를 만들려면 필요합니다.
-3. 태그를 밀면 [`.github/workflows/release.yml`](../.github/workflows/release.yml) 이
+3. 릴리스를 내면 [`.github/workflows/release.yml`](../.github/workflows/release.yml) 이
    빌드하면서 그 값을 앱에 구워 넣고 Releases 에 올립니다.
 
+**새 버전 내는 법 — Actions 탭에서 누르기만 하면 됩니다.**
+
+저장소 화면 → **Actions → release → Run workflow** → `patch` / `minor` / `major`
+중 하나를 고르고 실행. 버전을 올리고 태그를 만드는 것까지 워크플로가 합니다.
+손으로 할 일이 없습니다.
+
+터미널에서 하고 싶다면 이 길도 그대로 열려 있습니다.
+
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+npm version patch && git push --follow-tags
 ```
 
 빌드는 두 러너에서 나눠 돌고, **둘 다 끝나야** 릴리스가 공개됩니다. 그전까지는
-초안(draft) 상태라 랜딩페이지에 잡히지 않습니다. 반쪽짜리 릴리스가 최신 버전으로
-보이는 일을 막기 위해서입니다.
+초안(draft) 상태라 랜딩페이지에도 앱의 자동 업데이트에도 잡히지 않습니다.
+반쪽짜리 릴리스가 최신 버전으로 보이는 일을 막기 위해서입니다.
+
+> 태그를 만드는 일과 빌드하는 일이 **한 워크플로 안에** 있는 이유가 있습니다.
+> GITHUB_TOKEN 으로 민 태그는 다른 워크플로를 깨우지 못합니다(무한 반복을 막으려는
+> GitHub 의 규칙입니다). "태그만 만드는 워크플로"를 따로 두면 빌드가 영영 시작되지
+> 않습니다.
 
 `service_role` 키는 **절대** 넣지 마세요. RLS 를 통째로 무시하는 키입니다.
 

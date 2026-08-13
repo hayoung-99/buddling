@@ -1,17 +1,27 @@
-# 태그를 밀면 앱을 빌드해서 GitHub Releases 에 올린다.
+# 앱을 빌드해서 GitHub Releases 에 올린다.
 #
-#   git tag v0.1.0 && git push origin v0.1.0
+# 시작하는 길이 둘이다.
 #
-# Supabase 접속 정보는 저장소에 두지 않고 여기서 주입한다.
-# 리포지토리 Settings → Secrets and variables → Actions 에
-# SUPABASE_URL / SUPABASE_ANON_KEY 를 등록해 두세요.
+#   1) Actions 탭 → release → Run workflow → patch/minor/major 고르기
+#      버전을 올리고 태그를 만드는 것까지 여기서 한다. 손으로 할 일이 없다.
 #
-# 흐름은 두 단계다.
-#   build   mac(arm64·x64) / win 을 각각 빌드해 **초안(draft) 릴리스**에 올린다
-#   publish 두 빌드가 다 끝나면 설치 안내를 본문에 붙이고 초안을 공개로 바꾼다
+#   2) 직접 태그를 밀어도 된다
+#        npm version patch && git push --follow-tags
 #
-# 초안을 거치는 이유: 한쪽 빌드만 올라간 반쪽짜리 릴리스가 랜딩 페이지에
-# 최신 버전으로 잡히는 일을 막기 위해서다. 랜딩은 /releases/latest 를 본다.
+# 두 길을 한 워크플로 안에 둔 이유가 있다. GITHUB_TOKEN 으로 민 태그는 다른
+# 워크플로를 깨우지 못한다(무한 반복을 막으려는 GitHub 의 규칙이다). 그래서
+# "태그만 만드는 워크플로"를 따로 두면 빌드가 영영 시작되지 않는다.
+#
+# Supabase 접속 정보는 저장소에 두지 않는다. Settings → Secrets and variables
+# → Actions 에 SUPABASE_URL / SUPABASE_ANON_KEY 를 등록해 두면 여기서 굽는다.
+#
+# 흐름은 세 단계다.
+#   tag      (Run workflow 로 시작했을 때만) 버전을 올리고 태그를 만든다
+#   build    mac(arm64·x64) / win 을 각각 빌드해 **초안(draft) 릴리스**에 올린다
+#   publish  두 빌드가 다 끝나면 설치 안내를 본문에 붙이고 초안을 공개로 바꾼다
+#
+# 초안을 거치는 이유: 한쪽 빌드만 올라간 반쪽짜리 릴리스가 최신 버전으로 잡히는
+# 일을 막기 위해서다. 랜딩페이지도 앱의 자동 업데이트도 /releases/latest 를 본다.
 #
 # 주의: 코드 서명을 하지 않으므로 받는 사람은 macOS Gatekeeper·Windows SmartScreen
 # 경고를 한 번 넘겨야 합니다. 자세한 안내는 docs/RELEASE.md 에 있습니다.
@@ -21,9 +31,56 @@ name: release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: '어느 자리를 올릴까요'
+        type: choice
+        options: [patch, minor, major]
+        default: patch
 
 jobs:
+  # ── Run workflow 로 시작했을 때만 돈다 ──────────────────
+  tag:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    outputs:
+      tag: ${{ steps.bump.outputs.tag }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # 올리기 전에 한 번 더 본다. 깨진 것에 버전을 붙이면 되돌리기가 번거롭다.
+      - run: npm test
+      - run: npm run check:site
+
+      - name: 버전 올리고 태그 만들기
+        id: bump
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          npm version "$BUMP" -m "chore(release): v%s"
+          git push --follow-tags
+          echo "tag=v$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: tag
+    # 태그를 직접 밀었을 때는 위 job 이 통째로 건너뛰어진다. 그래도 빌드는 해야 한다.
+    if: always() && (needs.tag.result == 'success' || needs.tag.result == 'skipped')
+
     permissions:
       contents: write
 
@@ -39,7 +96,10 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      # Run workflow 로 왔다면 방금 만든 태그를, 아니면 밀린 태그를 그대로 받는다
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.tag.outputs.tag || github.ref }}
 
       - uses: actions/setup-node@v4
         with:
@@ -63,7 +123,8 @@ jobs:
         run: npx electron-builder ${{ matrix.target }} --publish always
 
   publish:
-    needs: build
+    needs: [tag, build]
+    if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
 
     permissions:
@@ -71,11 +132,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.tag.outputs.tag || github.ref }}
 
       - name: 설치 안내를 붙이고 릴리스를 공개한다
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ needs.tag.outputs.tag || github.ref_name }}
         run: |
           sed "s/{version}/${TAG}/g" docs/release-notes.md > "${RUNNER_TEMP}/notes.md"
           gh release edit "${TAG}" \

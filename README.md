@@ -105,6 +105,7 @@ npm run app-icon      # 앱 아이콘(icns·ico·파비콘) 다시 생성
 npm run site-images   # 랜딩페이지에 쓰는 그림 다시 생성
 npm run site          # 랜딩페이지를 Vercel 과 같은 규칙으로 로컬에서 띄운다
 npm run site:open     # 띄우고 브라우저까지 연다
+npm run check:site    # 랜딩페이지가 스스로 어긋나지 않았는지 (CI 도 이걸 돌린다)
 npm run dist          # 설치 파일 만들기 (접속 정보를 앱에 구워 넣습니다)
 ```
 

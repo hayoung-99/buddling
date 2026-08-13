@@ -1,0 +1,41 @@
+# 밀 때마다 도는 검사.
+#
+# 릴리스 워크플로 안에서도 테스트를 돌리지만, 그때는 이미 태그를 민 뒤다.
+# 깨진 것을 릴리스하는 날에 알게 되면 늦다. 그래서 여기서 먼저 본다.
+#
+# Electron 을 빌드하지는 않는다. 빌드는 10분이 넘고 러너를 셋 잡아먹는데,
+# 실제로 깨지는 것은 거의 언제나 코드와 문구다. 빌드는 태그를 밀 때 한다.
+
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# 같은 브랜치에 연달아 밀면 앞의 것은 멈춘다. 어차피 볼 것은 마지막 결과다.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Supabase 없이 도는 검사. 네 언어 열쇠가 어긋나면 여기서 걸린다.
+      - name: 단위 테스트
+        run: npm test
+
+      # 파일 참조 · 주소 일치 · 구조화 데이터 · hreflang · sitemap
+      - name: 랜딩페이지 점검
+        run: npm run check:site

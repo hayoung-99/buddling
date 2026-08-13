@@ -17,6 +17,7 @@
     "dist": "node scripts/bake-config.js && electron-builder",
     "test": "vitest run",
     "test:watch": "vitest",
+    "check:site": "node scripts/check-site.js",
     "check": "node scripts/e2e-check.js",
     "check:expiry": "node scripts/check-expiry.js"
   },
