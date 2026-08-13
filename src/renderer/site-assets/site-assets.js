@@ -8,6 +8,8 @@
  *   ?shot=peek-panda  판다가 오른쪽으로 기대어 얼굴을 내민다 (랜딩 왼쪽 위)
  *   ?shot=peek-bunny  토끼가 왼쪽으로 기대어 얼굴을 내민다  (랜딩 오른쪽 가운데)
  *   ?shot=peek-dog    강아지가 오른쪽으로 기대어 얼굴을 내민다 (랜딩 왼쪽 아래)
+ *   ?shot=peek-duck   오리가 왼쪽으로 기대어 얼굴을 내민다   (랜딩 오른쪽 네 번째)
+ *   ?shot=peek-cat    고양이가 오른쪽으로 기대어 얼굴을 내민다 (랜딩 왼쪽 다섯 번째)
  */
 
 import * as THREE from 'three'
@@ -79,6 +81,27 @@ const LAYOUT = {
     yaw: 0.4,
     roll: -0.3,
     panX: 0.13,
+    spanX: 1.6,
+  },
+  // 오리는 귀가 없어서 세로가 짧다. 더 당겨야 얼굴이 다른 넷과 같은 크기로 보인다.
+  'peek-duck': {
+    specs: [getCharacter('duck')],
+    spacing: 0,
+    headroom: 0.94,
+    lift: 0.06,
+    yaw: -0.44,
+    roll: 0.34,
+    panX: -0.03,
+    spanX: 1.6,
+  },
+  'peek-cat': {
+    specs: [getCharacter('cat')],
+    spacing: 0,
+    headroom: 1.04,
+    lift: 0.02,
+    yaw: 0.46,
+    roll: -0.34,
+    panX: 0.17,
     spanX: 1.6,
   },
 }[shot]

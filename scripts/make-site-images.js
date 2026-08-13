@@ -37,6 +37,8 @@ const SHOTS = [
   { shot: 'peek-panda', file: 'peek-panda.png', width: 340, height: 460, transparent: true },
   { shot: 'peek-bunny', file: 'peek-bunny.png', width: 340, height: 460, transparent: true },
   { shot: 'peek-dog', file: 'peek-dog.png', width: 340, height: 460, transparent: true },
+  { shot: 'peek-duck', file: 'peek-duck.png', width: 340, height: 460, transparent: true },
+  { shot: 'peek-cat', file: 'peek-cat.png', width: 340, height: 460, transparent: true },
 ]
 
 /**
