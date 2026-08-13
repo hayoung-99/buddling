@@ -506,6 +506,20 @@ section { padding-block: clamp(3.5rem, 8vw, 6.5rem); }
 .notes-grid p { margin-top: 0.5rem; color: var(--ink-soft); font-size: 0.97rem; }
 .notes-grid a { color: var(--accent); }
 
+/* ── 자주 묻는 것 ──────────────────────────────────── */
+/* 크림색 섹션이 네 개 연달아 오므로 받기 섹션처럼 바닥색을 한 번 바꿔 준다. */
+
+.faq { background: var(--sunk); }
+.qa-list {
+  margin-top: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem 3rem;
+}
+.qa { border-top: 1px solid var(--line); padding-top: 1.1rem; }
+.qa p { margin-top: 0.5rem; color: var(--ink-soft); font-size: 0.97rem; }
+.qa a { color: var(--accent); }
+
 /* ── 꼬리말 ─────────────────────────────────────────── */
 
 footer {

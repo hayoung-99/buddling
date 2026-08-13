@@ -1,4 +1,28 @@
+# tap-tap 랜딩페이지.
+# 숨길 것이 없습니다. 검색엔진도, 답변을 만드는 AI 도 전부 읽어도 됩니다.
+
 User-agent: *
 Allow: /
+
+# 답변형 AI·학습 크롤러에게도 같은 허락을 이름을 불러 남겨 둡니다.
+# 이름이 적힌 크롤러는 자기 그룹만 읽고 위의 User-agent: * 는 건너뜁니다.
+# 나중에 무언가를 막을 일이 생기면 반드시 두 곳을 함께 고치세요.
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: anthropic-ai
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: Bingbot
+User-agent: CCBot
+User-agent: cohere-ai
+Allow: /
+
+# 사람과 기계가 함께 읽을 요약: https://tap-tap.vercel.app/llms.txt
 
 Sitemap: https://tap-tap.vercel.app/sitemap.xml

@@ -8,11 +8,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="robots"
+      content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+    />
 
-    <title>tap-tap · A desktop pet your teammates can feel</title>
+    <title>tap-tap · A free desktop pet your teammates can feel</title>
     <meta
       name="description"
-      content="Put a 3D animal friend on your desktop. Tap your own character and your teammates' characters dance on their screens. Free for macOS and Windows, no account needed."
+      content="Put a 3D animal friend on your desktop. Tap your character and your teammates' characters dance on theirs. Free for macOS and Windows, no account needed."
     />
     <link rel="canonical" href="https://tap-tap.vercel.app/en/" />
     <link rel="alternate" hreflang="ko" href="https://tap-tap.vercel.app/" />
@@ -24,7 +28,7 @@
     <meta property="og:locale" content="en_US" />
     <meta property="og:locale:alternate" content="ko_KR" />
     <meta property="og:url" content="https://tap-tap.vercel.app/en/" />
-    <meta property="og:title" content="tap-tap · A desktop pet your teammates can feel" />
+    <meta property="og:title" content="tap-tap · A free desktop pet your teammates can feel" />
     <meta
       property="og:description"
       content="Tap your own character and your teammates' characters dance. The lightest way to say I am here without saying anything."
@@ -32,8 +36,18 @@
     <meta property="og:image" content="https://tap-tap.vercel.app/assets/og.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:alt" content="Five characters standing in a row: a cat, a dog, a panda, a duck and a bunny" />
+
+    <!-- X falls back to og:*, but Slack, Discord and several link-reading AIs check twitter:* first. -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="tap-tap · A free desktop pet your teammates can feel" />
+    <meta
+      name="twitter:description"
+      content="Tap your own character and your teammates' characters dance. The lightest way to say I am here without saying anything."
+    />
+    <meta name="twitter:image" content="https://tap-tap.vercel.app/assets/og.png" />
+    <meta name="twitter:image:alt" content="Five characters standing in a row: a cat, a dog, a panda, a duck and a bunny" />
 
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" href="/assets/icon-32.png" type="image/png" sizes="32x32" />
@@ -43,25 +57,306 @@
 
     <link rel="stylesheet" href="/style.css" />
     <link rel="preload" as="image" href="/assets/hero-cat.png" />
+    <!-- download.js reads the GitHub release the moment the page opens. Warm the connection early. -->
+    <link rel="preconnect" href="https://api.github.com" crossorigin />
 
+    <!--
+      Structured data. Every sentence here must also be visible on the page — text
+      that only machines can see loses points with search engines and answer engines alike.
+      When the dates change, change <lastmod> in sitemap.xml too.
+    -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "tap-tap",
-        "description": "A desktop app that puts a 3D animal friend on your screen. Tap your own character and your teammates' characters dance on theirs.",
-        "url": "https://tap-tap.vercel.app/en/",
-        "image": "https://tap-tap.vercel.app/assets/og.png",
-        "applicationCategory": "CommunicationApplication",
-        "operatingSystem": "macOS, Windows",
-        "downloadUrl": "https://github.com/alice-0130/tap-tap/releases/latest",
-        "softwareVersion": "0.1.0",
-        "inLanguage": ["ko", "en", "ja", "zh"],
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        }
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://tap-tap.vercel.app/#website",
+            "url": "https://tap-tap.vercel.app/",
+            "name": "tap-tap",
+            "inLanguage": [
+              "ko",
+              "en"
+            ],
+            "publisher": {
+              "@id": "https://tap-tap.vercel.app/#author"
+            }
+          },
+          {
+            "@type": "Person",
+            "@id": "https://tap-tap.vercel.app/#author",
+            "name": "alice-0130",
+            "url": "https://github.com/alice-0130",
+            "sameAs": [
+              "https://github.com/alice-0130"
+            ]
+          },
+          {
+            "@type": "ImageObject",
+            "@id": "https://tap-tap.vercel.app/#og-image",
+            "url": "https://tap-tap.vercel.app/assets/og.png",
+            "contentUrl": "https://tap-tap.vercel.app/assets/og.png",
+            "width": 1200,
+            "height": 630,
+            "caption": "Five characters standing in a row: a cat, a dog, a panda, a duck and a bunny"
+          },
+          {
+            "@type": [
+              "WebPage",
+              "FAQPage"
+            ],
+            "@id": "https://tap-tap.vercel.app/en/#webpage",
+            "url": "https://tap-tap.vercel.app/en/",
+            "name": "tap-tap · A free desktop pet your teammates can feel",
+            "description": "Put a 3D animal friend on your desktop. Tap your character and your teammates' characters dance on theirs. Free for macOS and Windows, no account needed.",
+            "inLanguage": "en",
+            "isPartOf": {
+              "@id": "https://tap-tap.vercel.app/#website"
+            },
+            "about": {
+              "@id": "https://tap-tap.vercel.app/#app"
+            },
+            "primaryImageOfPage": {
+              "@id": "https://tap-tap.vercel.app/#og-image"
+            },
+            "datePublished": "2026-08-13",
+            "dateModified": "2026-08-13",
+            "hasPart": [
+              {
+                "@id": "https://tap-tap.vercel.app/en/#howto-setup"
+              },
+              {
+                "@id": "https://tap-tap.vercel.app/en/#howto-macos"
+              },
+              {
+                "@id": "https://tap-tap.vercel.app/en/#howto-windows"
+              }
+            ],
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "@id": "https://tap-tap.vercel.app/en/#faq-what",
+                "name": "What is tap-tap?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "A macOS and Windows app that keeps a 3D animal character on your desktop. Tap your own character and everyone on that team sees theirs dance. It is free and there is no account."
+                }
+              },
+              {
+                "@type": "Question",
+                "@id": "https://tap-tap.vercel.app/en/#faq-teammates",
+                "name": "Do my teammates need it too?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. The character has to be on their desktop for the nudge to land. One person creates a team, gets an invite code, and everyone else types it in."
+                }
+              },
+              {
+                "@type": "Question",
+                "@id": "https://tap-tap.vercel.app/en/#faq-code",
+                "name": "What does an invite code look like?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Six characters, letters and numbers, with the easily confused 0, O, 1 and I left out. It expires 24 hours after it is issued and you can draw a new one any time."
+                }
+              },
+              {
+                "@type": "Question",
+                "@id": "https://tap-tap.vercel.app/en/#faq-free",
+                "name": "Is it really free?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. No ads, no paid tier. The source is public, so you can build it yourself instead if you prefer."
+                }
+              },
+              {
+                "@type": "Question",
+                "@id": "https://tap-tap.vercel.app/en/#faq-alone",
+                "name": "Can I use it alone?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "A character appears for each team you are in, so you need at least one team. A team of one is still a team, and the character lives on your desktop just the same. There is simply nobody to nudge yet."
+                }
+              },
+              {
+                "@type": "Question",
+                "@id": "https://tap-tap.vercel.app/en/#faq-work",
+                "name": "Can I install it on a work computer?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "The Windows installer never asks for administrator rights and installs for your account only. It is not code signed though, so company policy may still stop it. If somebody needs to check, point them at the GitHub repository."
+                }
+              },
+              {
+                "@type": "Question",
+                "@id": "https://tap-tap.vercel.app/en/#faq-quiet",
+                "name": "Will it get in the way?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Clicks in the empty space around the character pass straight through to your desktop, so your icons stay reachable. It makes no sound, and the menu bar icon hides every character at once."
+                }
+              },
+              {
+                "@type": "Question",
+                "@id": "https://tap-tap.vercel.app/en/#faq-unsigned",
+                "name": "Why does it say \"unidentified developer\"?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Because it is not code signed yet, and that certificate costs money every year. It does not mean the app is dangerous, it means nobody is vouching for it. On macOS right click and choose Open; on Windows choose More info, then Run anyway. The steps are just above."
+                }
+              }
+            ]
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://tap-tap.vercel.app/#app",
+            "name": "tap-tap",
+            "description": "A desktop app that puts a 3D animal friend on your screen. Tap your own character and your teammates' characters dance on theirs.",
+            "url": "https://tap-tap.vercel.app/en/",
+            "image": {
+              "@id": "https://tap-tap.vercel.app/#og-image"
+            },
+            "screenshot": [
+              "https://tap-tap.vercel.app/assets/team-window-en.png",
+              "https://tap-tap.vercel.app/assets/characters.png"
+            ],
+            "applicationCategory": "CommunicationApplication",
+            "applicationSubCategory": "Desktop pet app",
+            "operatingSystem": "macOS, Windows",
+            "downloadUrl": "https://github.com/alice-0130/tap-tap/releases/latest",
+            "installUrl": "https://tap-tap.vercel.app/en/#download",
+            "softwareVersion": "0.1.0",
+            "datePublished": "2026-08-13",
+            "dateModified": "2026-08-13",
+            "inLanguage": [
+              "ko",
+              "en",
+              "ja",
+              "zh"
+            ],
+            "isAccessibleForFree": true,
+            "author": {
+              "@id": "https://tap-tap.vercel.app/#author"
+            },
+            "publisher": {
+              "@id": "https://tap-tap.vercel.app/#author"
+            },
+            "sameAs": [
+              "https://github.com/alice-0130/tap-tap"
+            ],
+            "mainEntityOfPage": {
+              "@id": "https://tap-tap.vercel.app/en/#webpage"
+            },
+            "softwareHelp": [
+              {
+                "@id": "https://tap-tap.vercel.app/en/#howto-macos"
+              },
+              {
+                "@id": "https://tap-tap.vercel.app/en/#howto-windows"
+              }
+            ],
+            "featureList": [
+              "A 3D animal character lives on your desktop",
+              "Tap your own character and everyone on that team sees theirs dance",
+              "No account: join with a nickname and a six character invite code",
+              "Clicks in the empty space around the character pass through to the desktop",
+              "Remembers where you dragged it and any scale between 25% and 200%",
+              "Up to 3 teams per person, up to 5 people per team",
+              "Korean, English, Japanese and Chinese",
+              "Free on macOS and Windows"
+            ],
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD",
+              "availability": "https://schema.org/InStock"
+            }
+          },
+          {
+            "@type": "HowTo",
+            "@id": "https://tap-tap.vercel.app/en/#howto-setup",
+            "name": "Create a tap-tap team and invite your teammates",
+            "description": "No servers to run and no sign up. One person creates a team and shares the code.",
+            "totalTime": "PT2M",
+            "step": [
+              {
+                "@type": "HowToStep",
+                "position": 1,
+                "name": "Create a team",
+                "text": "Pick a name, create the team, and a six character invite code appears.",
+                "url": "https://tap-tap.vercel.app/en/#step-1"
+              },
+              {
+                "@type": "HowToStep",
+                "position": 2,
+                "name": "Share the code",
+                "text": "Teammates enter it to join. Codes expire after 24 hours and you can reissue anytime.",
+                "url": "https://tap-tap.vercel.app/en/#step-2"
+              },
+              {
+                "@type": "HowToStep",
+                "position": 3,
+                "name": "Tap",
+                "text": "Tap your character and everyone on that team sees theirs dance, with your name below it.",
+                "url": "https://tap-tap.vercel.app/en/#step-3"
+              }
+            ]
+          },
+          {
+            "@type": "HowTo",
+            "@id": "https://tap-tap.vercel.app/en/#howto-macos",
+            "name": "Open tap-tap for the first time on macOS (past the unidentified developer warning)",
+            "description": "The app is not code signed, so macOS says it cannot verify the developer. These steps clear it once.",
+            "totalTime": "PT1M",
+            "step": [
+              {
+                "@type": "HowToStep",
+                "position": 1,
+                "text": "Move the app into your Applications folder.",
+                "url": "https://tap-tap.vercel.app/en/#guide-macos"
+              },
+              {
+                "@type": "HowToStep",
+                "position": 2,
+                "text": "Right click the app and choose Open. Right click, not double click.",
+                "url": "https://tap-tap.vercel.app/en/#guide-macos"
+              },
+              {
+                "@type": "HowToStep",
+                "position": 3,
+                "text": "Press Open in the dialog once. It opens normally from then on.",
+                "url": "https://tap-tap.vercel.app/en/#guide-macos"
+              }
+            ]
+          },
+          {
+            "@type": "HowTo",
+            "@id": "https://tap-tap.vercel.app/en/#howto-windows",
+            "name": "Install tap-tap on Windows (past the SmartScreen warning)",
+            "description": "The app is not code signed, so the blue SmartScreen panel appears. It never asks for administrator rights.",
+            "totalTime": "PT1M",
+            "step": [
+              {
+                "@type": "HowToStep",
+                "position": 1,
+                "text": "Double click the installer you downloaded.",
+                "url": "https://tap-tap.vercel.app/en/#guide-windows"
+              },
+              {
+                "@type": "HowToStep",
+                "position": 2,
+                "text": "When the blue Windows protected your PC box appears, click More info.",
+                "url": "https://tap-tap.vercel.app/en/#guide-windows"
+              },
+              {
+                "@type": "HowToStep",
+                "position": 3,
+                "text": "Click Run anyway and the install continues.",
+                "url": "https://tap-tap.vercel.app/en/#guide-windows"
+              }
+            ]
+          }
+        ]
       }
     </script>
   </head>
@@ -72,7 +367,13 @@
     <header class="masthead">
       <div class="wrap">
         <a class="brand" href="/en/">
-          <img src="/assets/icon-180.png" alt="" width="28" height="28" />
+          <img
+            src="/assets/icon-32.png"
+            srcset="/assets/icon-32.png 1x, /assets/icon-180.png 2x"
+            alt=""
+            width="28"
+            height="28"
+          />
           TAP TAP
         </a>
         <nav>
@@ -121,13 +422,14 @@
               width="800"
               height="1560"
               loading="lazy"
+              decoding="async"
             />
           </div>
         </section>
       </div>
 
       <!-- The cast -->
-      <section class="cast">
+      <section class="cast" id="characters">
         <div class="wrap">
           <div class="section-head rise">
             <h2>Pick one of five</h2>
@@ -140,10 +442,11 @@
           <img
             class="cast-strip rise"
             src="/assets/characters.png"
-            alt="Happy Cat, Tubby Dog, Fuzzy Panda, Dum Duck and Hop Bunny standing in a row"
+            alt="Happy Cat, Chubby Dog, Pudgy Panda, Dumb Duck and Hop Bunny standing in a row"
             width="1760"
             height="460"
             loading="lazy"
+            decoding="async"
           />
 
           <dl class="cast-facts">
@@ -164,7 +467,7 @@
       </section>
 
       <!-- How it works -->
-      <section>
+      <section id="how-it-works">
         <div class="wrap flow">
           <div class="flow-shot rise">
             <img
@@ -173,6 +476,7 @@
               width="800"
               height="1560"
               loading="lazy"
+              decoding="async"
             />
           </div>
 
@@ -183,21 +487,21 @@
             </div>
 
             <ol class="flow-steps">
-              <li>
+              <li id="step-1">
                 <span class="bead" aria-hidden="true">1</span>
                 <div>
                   <h3>Create a team</h3>
                   <p>Pick a name, create the team, and a six character invite code appears.</p>
                 </div>
               </li>
-              <li>
+              <li id="step-2">
                 <span class="bead" aria-hidden="true">2</span>
                 <div>
                   <h3>Share the code</h3>
                   <p>Teammates enter it to join. Codes expire after 24 hours and you can reissue anytime.</p>
                 </div>
               </li>
-              <li>
+              <li id="step-3">
                 <span class="bead" aria-hidden="true">3</span>
                 <div>
                   <h3>Tap</h3>
@@ -280,7 +584,7 @@
           </div>
 
           <div class="guides">
-            <article class="guide">
+            <article class="guide" id="guide-macos">
               <h3>macOS <span>Unidentified developer</span></h3>
               <ol>
                 <li>Move the app into your <strong>Applications</strong> folder.</li>
@@ -299,7 +603,7 @@
               </div>
             </article>
 
-            <article class="guide">
+            <article class="guide" id="guide-windows">
               <h3>Windows <span>SmartScreen</span></h3>
               <ol>
                 <li>Double click the installer you downloaded.</li>
@@ -316,7 +620,7 @@
       </section>
 
       <!-- Good to know -->
-      <section>
+      <section id="good-to-know">
         <div class="wrap">
           <div class="section-head">
             <p class="eyebrow">Good to know</p>
@@ -350,6 +654,89 @@
                 <a href="https://github.com/alice-0130/tap-tap">GitHub</a>.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section class="faq" id="faq">
+        <div class="wrap">
+          <div class="section-head">
+            <p class="eyebrow">Questions</p>
+            <h2>Things you might wonder</h2>
+          </div>
+
+          <div class="qa-list">
+            <article class="qa" id="faq-what">
+              <h3>What is tap-tap?</h3>
+              <p>
+                A macOS and Windows app that keeps a 3D animal character on your desktop. Tap
+                your own character and everyone on that team sees theirs dance. It is free and
+                there is no account.
+              </p>
+            </article>
+
+            <article class="qa" id="faq-teammates">
+              <h3>Do my teammates need it too?</h3>
+              <p>
+                Yes. The character has to be on their desktop for the nudge to land. One person
+                creates a team, gets an invite code, and everyone else types it in.
+              </p>
+            </article>
+
+            <article class="qa" id="faq-code">
+              <h3>What does an invite code look like?</h3>
+              <p>
+                Six characters, letters and numbers, with the easily confused 0, O, 1 and I left
+                out. It expires 24 hours after it is issued and you can draw a new one any time.
+              </p>
+            </article>
+
+            <article class="qa" id="faq-free">
+              <h3>Is it really free?</h3>
+              <p>
+                Yes. No ads, no paid tier. The source is public, so you can build it yourself
+                instead if you prefer.
+              </p>
+            </article>
+
+            <article class="qa" id="faq-alone">
+              <h3>Can I use it alone?</h3>
+              <p>
+                A character appears for each team you are in, so you need at least one team. A
+                team of one is still a team, and the character lives on your desktop just the
+                same. There is simply nobody to nudge yet.
+              </p>
+            </article>
+
+            <article class="qa" id="faq-work">
+              <h3>Can I install it on a work computer?</h3>
+              <p>
+                The Windows installer never asks for administrator rights and installs for your
+                account only. It is not code signed though, so company policy may still stop it.
+                If somebody needs to check, point them at the
+                <a href="https://github.com/alice-0130/tap-tap">GitHub repository</a>.
+              </p>
+            </article>
+
+            <article class="qa" id="faq-quiet">
+              <h3>Will it get in the way?</h3>
+              <p>
+                Clicks in the empty space around the character pass straight through to your
+                desktop, so your icons stay reachable. It makes no sound, and the menu bar icon
+                hides every character at once.
+              </p>
+            </article>
+
+            <article class="qa" id="faq-unsigned">
+              <h3>Why does it say "unidentified developer"?</h3>
+              <p>
+                Because it is not code signed yet, and that certificate costs money every year.
+                It does not mean the app is dangerous, it means nobody is vouching for it. On
+                macOS right click and choose Open; on Windows choose More info, then Run anyway.
+                <a href="#install">The steps are just above.</a>
+              </p>
+            </article>
           </div>
         </div>
       </section>

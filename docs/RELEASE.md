@@ -180,20 +180,33 @@ tap-tap-0.1.0-setup.exe      Windows
 받는 사람이 처음 닿는 곳입니다. [`site/`](../site/) 에 있고 빌드 도구가 없습니다.
 HTML·CSS 파일 그대로 Vercel 에 올라갑니다.
 
+올리기 전에 로컬에서 먼저 확인하세요. Vercel 과 같은 주소 해석 규칙과 같은 헤더(CSP
+포함)로 띄우므로, 여기서 멀쩡하면 배포해도 멀쩡합니다.
+
+```bash
+npm run site         # http://localhost:4173
+npm run site:open    # 브라우저까지 연다
+```
+
 ```bash
 cd site
 npx vercel login     # 처음 한 번
 npx vercel --prod
 ```
 
-배포하고 나면 주소가 정해집니다. **그 주소를 네 곳에 반영하세요.**
+배포하고 나면 주소가 정해집니다. **그 주소를 다섯 곳에 반영하세요.**
 
 | 파일 | 무엇 |
 |---|---|
 | `site/index.html` | canonical · hreflang · og:url · og:image · JSON-LD |
 | `site/en/index.html` | 위와 같음 |
 | `site/sitemap.xml` | 두 페이지의 loc |
-| `site/robots.txt` | Sitemap 줄 |
+| `site/robots.txt` | Sitemap 줄 · llms.txt 를 가리키는 주석 |
+| `site/llms.txt` | 본문 안의 주소들 |
+
+`site/sitemap.xml` 의 `lastmod` 는 **내용을 실제로 고친 날**을 적습니다. 배포할 때마다
+올리면 구글이 값을 못 믿고 통째로 무시하니, 없는 것만 못합니다. 고칠 때는 양쪽
+index.html 의 JSON-LD 안 `datePublished`·`dateModified` 도 같은 날짜로 함께 옮기세요.
 
 받기 버튼은 페이지가 열릴 때 GitHub 의 최신 릴리스를 읽어 채웁니다. 릴리스가 아직
 없으면 "곧 올라옵니다"로 보이고, 자바스크립트가 꺼져 있으면 릴리스 목록 페이지로
