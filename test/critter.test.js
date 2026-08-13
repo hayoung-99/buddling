@@ -119,7 +119,20 @@ describe('볼따구 빗금', () => {
 
   it('가운데 빗금이 가장 길다', () => {
     const { parts } = createCritter(getCharacter('cat'))
-    const lengths = parts.cheekL.children.map((s) => s.geometry.parameters.length)
+
+    /*
+     * geometry.parameters 를 읽지 않고 실제 크기를 잰다.
+     *
+     * 예전에는 parameters.length 를 봤는데, Three.js 가 CapsuleGeometry 의 그 칸을
+     * height 로 이름만 바꾸면서 undefined 가 되어 검사가 깨졌다. 우리가 알고 싶은 것은
+     * "가운데가 더 길다"이지 그 값이 어느 이름으로 담겨 있는가가 아니다.
+     */
+    const lengths = parts.cheekL.children.map((stroke) => {
+      stroke.geometry.computeBoundingBox()
+      const box = stroke.geometry.boundingBox
+      return box.max.y - box.min.y
+    })
+
     expect(lengths[1]).toBeGreaterThan(lengths[0])
     expect(lengths[1]).toBeGreaterThan(lengths[2])
   })

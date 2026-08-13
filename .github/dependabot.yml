@@ -33,3 +33,9 @@ updates:
       interval: monthly
     commit-message:
       prefix: ci
+    groups:
+      # 액션 업데이트는 대부분 러너 안에서만 도는 일이라 하나로 묶어 본다.
+      # 메이저까지 묶는 이유: 액션의 메이저는 보통 러너 Node 버전이 올라가는
+      # 정도이고, 무엇보다 CI 가 스스로 그 변경으로 돌아 보므로 깨지면 바로 드러난다.
+      actions:
+        update-types: [major, minor, patch]
