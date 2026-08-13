@@ -18,6 +18,7 @@
 
 const { startUpdateCheck } = require('./update-check')
 const { startAutoUpdate } = require('./auto-update')
+const { startMorningSchedule } = require('./update-schedule')
 
 /** 이 플랫폼에서 받아서 설치까지 할 수 있는가 */
 function canAutoInstall(platform) {
@@ -32,16 +33,28 @@ function canAutoInstall(platform) {
  *   ready=true  이미 받아 뒀다   → "지금 적용하기" (install 을 부른다)
  *   ready=false 아직 못 받았다   → "받으러 가기"   (url 을 연다)
  *
+ * 언제 확인할지는 두 길이 똑같다 — 아침에 하루 한 번(`update-schedule.js`).
+ * 그 일정을 여기서 만들어 넘긴다. 어느 길로 가든 같은 시각에 움직여야
+ * 사람이 겪는 모습이 플랫폼마다 달라지지 않는다.
+ *
  * @param {{
  *   currentVersion: string,
  *   platform: string,
  *   onUpdate: (info: { version: string, ready: boolean, url: string|null }) => void,
+ *   readLastDay: () => string|null,
+ *   writeLastDay: (day: string) => void,
  * }} options
  * @returns {{ stop: () => void, install: () => void }}
  */
-function startUpdates({ currentVersion, platform, onUpdate }) {
-  /** 알림만 하는 길. 자동 설치가 안 되거나, 되다 실패했을 때 쓴다. */
-  const startNotifying = () => startUpdateCheck({ currentVersion, onUpdate })
+function startUpdates({ currentVersion, platform, onUpdate, readLastDay, writeLastDay }) {
+  const schedule = (check) => startMorningSchedule({ onDue: check, readLastDay, writeLastDay })
+
+  /**
+   * 알림만 하는 길. 자동 설치가 안 되거나, 되다 실패했을 때 쓴다.
+   * 실패해서 갈아탄 경우에는 기다리지 않고 바로 한 번 본다.
+   */
+  const startNotifying = (immediate = false) =>
+    startUpdateCheck({ currentVersion, onUpdate, schedule, immediate })
 
   if (!canAutoInstall(platform)) {
     const watcher = startNotifying()
@@ -54,11 +67,12 @@ function startUpdates({ currentVersion, platform, onUpdate }) {
   let updater
   try {
     updater = startAutoUpdate({
+      schedule,
       onReady: ({ version }) => onUpdate({ version, ready: true, url: null }),
       onFailure: () => {
         // 받지 못했으니 사람이 직접 받게 한다. 조용히 넘어가면
         // 키를 갈았을 때 왜 연결이 끊겼는지 알 길이 없다.
-        if (!fallback) fallback = startNotifying()
+        if (!fallback) fallback = startNotifying(true)
       },
     })
   } catch (error) {

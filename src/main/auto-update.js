@@ -15,17 +15,19 @@
  * 코드 서명이 없어도 "받다가 깨졌거나 바뀐 파일"은 걸러진다.
  */
 
-const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000 // 받아 두는 일이라 좀 더 자주 봐도 된다
-const FIRST_CHECK_DELAY_MS = 8000 // 앱이 뜨는 동안은 방해하지 않는다
-
 /**
+ * 언제 볼지는 `update-schedule.js` 가 정한다 — 아침에 하루 한 번이다.
+ * 받아 두는 일이라 더 자주 봐도 되지만, 일하는 도중에 "받았어요" 줄이 불쑥
+ * 뜨는 편보다 하루를 시작할 때 한 번 뜨는 편이 낫다.
+ *
  * @param {{
  *   onReady: (info: { version: string }) => void,
  *   onFailure: () => void,
+ *   schedule: (check: () => void) => { stop: () => void },
  * }} options
  * @returns {{ stop: () => void, install: () => void }}
  */
-function startAutoUpdate({ onReady, onFailure }) {
+function startAutoUpdate({ onReady, onFailure, schedule }) {
   const { autoUpdater } = require('electron-updater')
 
   let stopped = false
@@ -51,23 +53,17 @@ function startAutoUpdate({ onReady, onFailure }) {
     onFailure()
   })
 
-  const check = () => {
+  const scheduled = schedule(() => {
     if (stopped || downloaded) return
     // checkForUpdates 는 실패하면 위의 'error' 로도 알려주지만,
     // 반환된 약속이 거부되는 경로도 있어 여기서도 삼켜 준다.
     autoUpdater.checkForUpdates()?.catch(() => {})
-  }
-
-  const first = setTimeout(check, FIRST_CHECK_DELAY_MS)
-  const repeat = setInterval(check, CHECK_INTERVAL_MS)
-  first.unref?.()
-  repeat.unref?.()
+  })
 
   return {
     stop() {
       stopped = true
-      clearTimeout(first)
-      clearInterval(repeat)
+      scheduled.stop()
     },
 
     /** 지금 갈아끼운다. 앱이 꺼졌다가 새 버전으로 다시 뜬다. */

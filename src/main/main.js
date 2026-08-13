@@ -287,6 +287,9 @@ electronApp.whenReady().then(async () => {
       currentVersion: electronApp.getVersion(),
       platform: process.platform,
       onUpdate: (info) => app.session.setUpdate(info),
+      // 앱을 껐다 켜도 "아침에 하루 한 번"을 지키려면 어제 봤는지가 남아 있어야 한다
+      readLastDay: () => store.get('lastUpdateCheck'),
+      writeLastDay: (day) => store.set({ lastUpdateCheck: day }),
     })
   }
 

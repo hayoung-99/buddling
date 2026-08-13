@@ -25,8 +25,6 @@ const LATEST_RELEASE_API = `https://api.github.com/repos/${REPO}/releases/latest
  */
 const DOWNLOAD_PAGE = `https://github.com/${REPO}/releases/latest`
 
-const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000 // 하루 한 번이면 충분하다
-const FIRST_CHECK_DELAY_MS = 8000 // 앱이 뜨는 동안은 방해하지 않는다
 const REQUEST_TIMEOUT_MS = 8000
 
 /** "v0.1.0" · "0.1.0" → [0, 1, 0]. 읽을 수 없으면 null. */
@@ -79,7 +77,9 @@ async function fetchLatestVersion() {
 }
 
 /**
- * 주기적으로 확인해서 새 버전이 있으면 한 번 알려준다.
+ * 아침마다 한 번 확인해서 새 버전이 있으면 알려준다.
+ *
+ * 언제 볼지는 `update-schedule.js` 가 정한다. 여기는 "보라고 하면 본다".
  *
  * 네트워크 실패는 조용히 넘긴다 — 알림 기능 때문에 오류 메시지가 뜨면
  * 정작 중요한 오류가 묻힌다.
@@ -90,11 +90,19 @@ async function fetchLatestVersion() {
  * @param {{
  *   currentVersion: string,
  *   onUpdate: (info: { version: string, url: string, ready: false }) => void,
+ *   schedule: (check: () => void) => { stop: () => void },
+ *   immediate?: boolean,
  *   fetchLatest?: () => Promise<string|null>,
  * }} options
  * @returns {{ stop: () => void }}
  */
-function startUpdateCheck({ currentVersion, onUpdate, fetchLatest = fetchLatestVersion }) {
+function startUpdateCheck({
+  currentVersion,
+  onUpdate,
+  schedule,
+  immediate = false,
+  fetchLatest = fetchLatestVersion,
+}) {
   let stopped = false
   let announced = null
 
@@ -108,21 +116,22 @@ function startUpdateCheck({ currentVersion, onUpdate, fetchLatest = fetchLatestV
       announced = latest
       onUpdate({ version: String(latest).replace(/^v/i, ''), url: DOWNLOAD_PAGE, ready: false })
     } catch {
-      // 인터넷이 없거나 GitHub 이 잠깐 안 될 뿐이다. 다음 차례에 다시 본다.
+      // 인터넷이 없거나 GitHub 이 잠깐 안 될 뿐이다. 내일 아침에 다시 본다.
     }
   }
 
-  const first = setTimeout(check, FIRST_CHECK_DELAY_MS)
-  const repeat = setInterval(check, CHECK_INTERVAL_MS)
-  // 이 타이머 때문에 앱이 종료되지 못하는 일이 없게 한다
-  first.unref?.()
-  repeat.unref?.()
+  /*
+   * 내려받기가 실패해 이 길로 갈아탄 경우다. 오늘 몫은 그쪽에서 이미 썼으므로
+   * 일정만 걸면 내일 아침까지 아무 말도 하지 않게 된다. 그러라고 만든 길이 아니다.
+   */
+  if (immediate) check()
+
+  const scheduled = schedule(check)
 
   return {
     stop() {
       stopped = true
-      clearTimeout(first)
-      clearInterval(repeat)
+      scheduled.stop()
     },
   }
 }

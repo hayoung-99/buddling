@@ -172,6 +172,7 @@ src/
 │   ├── tray.js         메뉴바 아이콘
 │   ├── i18n.js         메뉴·오류 문구 번역 (렌더러와 같은 사전을 읽는다)
 │   ├── updates.js      새 버전을 어떻게 가져다줄지 플랫폼 보고 정한다
+│   ├── update-schedule.js  언제 확인할지 (아침에 하루 한 번)
 │   ├── auto-update.js  받아서 설치까지 (Windows)
 │   ├── update-check.js 나왔다고 알리기만 (그 밖 · 내려받기 실패 시)
 │   └── config.js       Supabase 접속 정보 (개발용 파일 / 빌드에 구운 값)

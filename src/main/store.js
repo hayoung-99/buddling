@@ -9,6 +9,8 @@
  *   pets        팀별 화면 설정 — 어디에 얼마만 하게 띄울지
  *   language    고른 언어. 비어 있으면 첫 실행 때 운영체제 언어로 한 번 정해 넣는다.
  *   power       절전 강도. 캐릭터가 가만히 있을 때 얼마나 게으르게 그릴지를 정한다.
+ *   lastUpdateCheck  새 버전을 마지막으로 확인한 날. 앱을 껐다 켜도 하루 한 번을 지키려면
+ *               기억해 둬야 한다.
  *
  * 쓰기는 잠깐 모았다 한 번에 한다 (SAVE_DELAY). 앱을 끄기 직전처럼 미룰 수 없을 때는
  * `flush()` 로 그 자리에서 끝낸다.
@@ -27,6 +29,7 @@ const DEFAULTS = {
   petVisible: true,
   language: null, // 아직 안 고른 상태. 처음 실행할 때 운영체제 언어를 보고 정해진다.
   power: null, // 절전 강도. 아직 안 고르면 'balanced' 로 본다 (src/shared/power.js)
+  lastUpdateCheck: null, // 새 버전을 마지막으로 확인한 날 'YYYY-MM-DD'. 하루 한 번만 보려고 남긴다.
 }
 
 const DEFAULT_PET = { position: null, scale: 1 }
