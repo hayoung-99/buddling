@@ -1,0 +1,558 @@
+/* 컨셉아트의 따뜻한 크림색·둥근 모서리 톤을 유지한다. */
+
+:root {
+  --cream: #f5efe1;
+  --card: #fffaf0;
+  --ink: #4a3f33;
+  --ink-soft: rgba(74, 63, 51, 0.55);
+  --line: rgba(74, 63, 51, 0.12);
+  --accent: #e08a5c;
+  --online: #6fc48a;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.titlebar {
+  -webkit-app-region: drag;
+  /* 스크롤해도 맨 위에 붙어 있는다.
+     macOS 신호등 버튼이 이 자리에 겹치므로, 내용이 그 아래를 지나가면 안 된다. */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cream);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+}
+
+main {
+  padding: 6px 22px 28px;
+}
+
+.loading {
+  padding: 40px 0;
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+h1 {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  margin-bottom: 10px;
+}
+
+p.lead {
+  color: var(--ink-soft);
+  margin-top: 6px;
+}
+
+section {
+  margin-top: 20px;
+}
+
+/* ── 입력 ── */
+
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+input {
+  width: 100%;
+  font: inherit;
+  padding: 11px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--ink);
+  outline: none;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+input:focus {
+  border-color: var(--accent);
+}
+
+input.code {
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-weight: 700;
+  text-align: center;
+}
+
+.field + .field {
+  margin-top: 14px;
+}
+
+/* ── 버튼 ── */
+
+button {
+  font: inherit;
+  font-weight: 700;
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 18px;
+  background: var(--ink);
+  color: var(--cream);
+  cursor: pointer;
+  transition: transform 100ms ease, opacity 120ms ease;
+}
+
+button:active {
+  transform: scale(0.975);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+button.ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--line);
+}
+
+button.tiny {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 999px;
+}
+
+button.block {
+  width: 100%;
+}
+
+.buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.buttons button {
+  flex: 1;
+}
+
+/* ── 초대코드 ── */
+
+.invite {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: 1.5px dashed var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.invite code {
+  flex: 1;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* ── 멤버 목록 ── */
+
+ul.members {
+  list-style: none;
+  background: var(--card);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+ul.members li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+ul.members li + li {
+  border-top: 1px solid var(--line);
+}
+
+ul.members img {
+  width: 40px;
+  height: 44px;
+  object-fit: contain;
+  flex: none;
+}
+
+.who {
+  flex: 1;
+  min-width: 0;
+}
+
+.who .name {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.who .name .me {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.who .status {
+  font-size: 12px;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--line);
+  flex: none;
+}
+
+.dot.on {
+  background: var(--online);
+}
+
+/* ── 캐릭터 고르기 ── */
+
+.picker {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;
+}
+
+.picker button {
+  background: var(--card);
+  border: 2px solid transparent;
+  border-radius: 13px;
+  padding: 6px 2px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  color: var(--ink);
+}
+
+.picker button[aria-pressed='true'] {
+  border-color: var(--accent);
+}
+
+.picker img {
+  width: 100%;
+  max-width: 52px;
+  height: 58px;
+  object-fit: contain;
+}
+
+.picker .label {
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.25;
+}
+
+/* ── 새 버전 알림 ── */
+
+/* 맨 위 한 줄. 눈에 띄되 화면을 가로채지는 않는다 — 하던 일이 우선이다. */
+.update-banner {
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #fff3d6;
+  color: var(--ink);
+  border: 1.5px solid rgba(224, 138, 92, 0.35);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+
+/* ── 안내 / 오류 ── */
+
+.notice {
+  background: #fff3d6;
+  border-radius: 14px;
+  padding: 16px;
+  font-size: 13px;
+}
+
+.notice strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.notice ol {
+  margin: 8px 0 0 18px;
+}
+
+.notice code {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 12px;
+  background: rgba(74, 63, 51, 0.08);
+  padding: 1px 5px;
+  border-radius: 5px;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.error {
+  color: #b4523a;
+  font-size: 13px;
+  margin-top: 12px;
+  min-height: 20px;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translate(-50%, 12px);
+  background: var(--ink);
+  color: var(--cream);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 18px;
+  border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.footer {
+  margin-top: 26px;
+  text-align: center;
+}
+
+.footer button {
+  color: var(--ink-soft);
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px;
+}
+
+.banner {
+  margin-top: 14px;
+  background: #ffe0d3;
+  color: #8c4a2f;
+  border-radius: 12px;
+  padding: 9px 14px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ── 목록·상세 공통 머리 ── */
+
+.top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.quota {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.adding {
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1.5px dashed var(--line);
+}
+
+.adding section:first-of-type {
+  margin-top: 16px;
+}
+
+.quota-note {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+/* ── 초대코드 유효시간 ── */
+
+.invite-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.invite-main .ttl {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.invite.is-expired code {
+  text-decoration: line-through;
+  opacity: 0.4;
+}
+
+.invite.is-expired .ttl {
+  color: #b4523a;
+}
+
+.invite.is-expired {
+  border-color: rgba(180, 82, 58, 0.4);
+}
+
+/* ── 팀 목록 (한 줄씩) ── */
+
+.team-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.team-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: var(--card);
+  border: 1.5px solid transparent;
+  color: var(--ink);
+  text-align: left;
+}
+
+.team-row:hover {
+  border-color: var(--line);
+}
+
+.team-row img {
+  width: 42px;
+  height: 46px;
+  object-fit: contain;
+  flex: none;
+}
+
+.row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.row-name {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.row-sub {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.row-arrow {
+  flex: none;
+  font-size: 20px;
+  color: var(--ink-soft);
+}
+
+/* ── 제자리에서 이름 고쳐 쓰기 ── */
+
+.title-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.title-line h1 {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.edit-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.edit-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+}
+
+/* ── 언어 고르기 ── */
+
+.language {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 26px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.language select {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 8px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--ink);
+}

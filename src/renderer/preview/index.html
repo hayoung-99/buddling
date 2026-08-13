@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>tap-tap 캐릭터 미리보기</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "../../../node_modules/three/build/three.module.js"
+        }
+      }
+    </script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: #f5efe1;
+        color: #4a3f33;
+        font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
+        overflow: hidden;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      #stage { flex: 1; width: 100%; display: block; }
+      #labels {
+        display: flex;
+        padding: 0 0 22px;
+      }
+      #labels div {
+        flex: 1;
+        text-align: center;
+      }
+      .name { font-size: 15px; font-weight: 700; letter-spacing: 0.06em; }
+      .cry { font-size: 12px; opacity: 0.55; margin-top: 3px; }
+      #controls {
+        position: fixed;
+        top: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 8px;
+      }
+      button {
+        font: inherit;
+        font-size: 13px;
+        padding: 7px 16px;
+        border: 0;
+        border-radius: 999px;
+        background: #4a3f33;
+        color: #f5efe1;
+        cursor: pointer;
+      }
+      button.ghost { background: rgba(74, 63, 51, 0.12); color: #4a3f33; }
+    </style>
+  </head>
+  <body>
+    <canvas id="stage"></canvas>
+    <div id="labels"></div>
+    <div id="controls">
+      <button id="dance">전부 춤!</button>
+      <button id="hop" class="ghost">폴짝</button>
+      <button id="spin" class="ghost">회전 보기</button>
+    </div>
+    <script type="module" src="./preview.js"></script>
+  </body>
+</html>

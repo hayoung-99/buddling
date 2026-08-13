@@ -1,0 +1,371 @@
+<!doctype html>
+<!--
+  If the address changes (for example when a custom domain is added), the only
+  thing to edit in this file is https://tap-tap.vercel.app. Update index.html
+  and sitemap.xml as well.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>tap-tap · A desktop pet your teammates can feel</title>
+    <meta
+      name="description"
+      content="Put a 3D animal friend on your desktop. Tap your own character and your teammates' characters dance on their screens. Free for macOS and Windows, no account needed."
+    />
+    <link rel="canonical" href="https://tap-tap.vercel.app/en/" />
+    <link rel="alternate" hreflang="ko" href="https://tap-tap.vercel.app/" />
+    <link rel="alternate" hreflang="en" href="https://tap-tap.vercel.app/en/" />
+    <link rel="alternate" hreflang="x-default" href="https://tap-tap.vercel.app/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="tap-tap" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="ko_KR" />
+    <meta property="og:url" content="https://tap-tap.vercel.app/en/" />
+    <meta property="og:title" content="tap-tap · A desktop pet your teammates can feel" />
+    <meta
+      property="og:description"
+      content="Tap your own character and your teammates' characters dance. The lightest way to say I am here without saying anything."
+    />
+    <meta property="og:image" content="https://tap-tap.vercel.app/assets/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Five characters standing in a row: a cat, a dog, a panda, a duck and a bunny" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/assets/icon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/assets/icon-180.png" />
+    <meta name="theme-color" content="#f5efe1" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#211c17" media="(prefers-color-scheme: dark)" />
+
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="preload" as="image" href="/assets/hero-cat.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "tap-tap",
+        "description": "A desktop app that puts a 3D animal friend on your screen. Tap your own character and your teammates' characters dance on theirs.",
+        "url": "https://tap-tap.vercel.app/en/",
+        "image": "https://tap-tap.vercel.app/assets/og.png",
+        "applicationCategory": "CommunicationApplication",
+        "operatingSystem": "macOS, Windows",
+        "downloadUrl": "https://github.com/alice-0130/tap-tap/releases/latest",
+        "softwareVersion": "0.1.0",
+        "inLanguage": ["ko", "en", "ja", "zh"],
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
+    </script>
+  </head>
+
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="masthead">
+      <div class="wrap">
+        <a class="brand" href="/en/">
+          <img src="/assets/icon-180.png" alt="" width="28" height="28" />
+          TAP TAP
+        </a>
+        <nav>
+          <a href="#download">Download</a>
+          <a href="#install">First launch</a>
+          <a class="hide-narrow" href="https://github.com/alice-0130/tap-tap">GitHub</a>
+          <a class="lang" href="/" hreflang="ko" lang="ko">한국어</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <!-- Hero -->
+      <div class="wrap">
+        <section class="hero">
+          <div class="hero-copy">
+            <h1>A small friend<br />on your desktop</h1>
+            <p class="lead">
+              Tap your own character and your teammates' characters dance on their screens.
+            </p>
+            <div class="hero-actions">
+              <a
+                class="btn"
+                href="https://github.com/alice-0130/tap-tap/releases/latest"
+                data-hero-download
+                >Download</a
+              >
+              <a class="btn ghost" href="#download">All downloads</a>
+              <span class="note">Free · No account · macOS and Windows</span>
+            </div>
+          </div>
+
+          <div class="hero-stage">
+            <img
+              class="pet"
+              src="/assets/hero-cat.png"
+              alt="A white cat character standing on the desktop"
+              width="760"
+              height="900"
+              fetchpriority="high"
+            />
+            <img
+              class="window"
+              src="/assets/team-window.png"
+              alt="The tap-tap window showing a list of teams"
+              width="800"
+              height="1560"
+              loading="lazy"
+            />
+          </div>
+        </section>
+      </div>
+
+      <!-- The cast -->
+      <section class="cast">
+        <div class="wrap">
+          <div class="section-head rise">
+            <h2>Pick one of five</h2>
+            <p>
+              Every team gets its own character. Choose a different animal per team and you can
+              tell at a glance which team a nudge came from.
+            </p>
+          </div>
+
+          <img
+            class="cast-strip rise"
+            src="/assets/characters.png"
+            alt="Happy Cat, Tubby Dog, Fuzzy Panda, Dum Duck and Hop Bunny standing in a row"
+            width="1760"
+            height="460"
+            loading="lazy"
+          />
+
+          <dl class="cast-facts">
+            <div>
+              <dt>Clicks pass through</dt>
+              <dd>The empty space around the character belongs to your desktop. Your icons stay reachable.</dd>
+            </div>
+            <div>
+              <dt>Position and size stick</dt>
+              <dd>Drag it anywhere, scale it between 25% and 200%. It comes back the same way.</dd>
+            </div>
+            <div>
+              <dt>Four languages</dt>
+              <dd>Korean, English, Japanese and Chinese. It follows your system setting first.</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <!-- How it works -->
+      <section>
+        <div class="wrap flow">
+          <div class="flow-shot rise">
+            <img
+              src="/assets/team-window.png"
+              alt="The team list screen with one team and one member online"
+              width="800"
+              height="1560"
+              loading="lazy"
+            />
+          </div>
+
+          <div>
+            <div class="section-head">
+              <h2>Three steps, then done</h2>
+              <p>No servers to run and no sign up. One person creates a team and shares the code.</p>
+            </div>
+
+            <ol class="flow-steps">
+              <li>
+                <span class="bead" aria-hidden="true">1</span>
+                <div>
+                  <h3>Create a team</h3>
+                  <p>Pick a name, create the team, and a six character invite code appears.</p>
+                </div>
+              </li>
+              <li>
+                <span class="bead" aria-hidden="true">2</span>
+                <div>
+                  <h3>Share the code</h3>
+                  <p>Teammates enter it to join. Codes expire after 24 hours and you can reissue anytime.</p>
+                </div>
+              </li>
+              <li>
+                <span class="bead" aria-hidden="true">3</span>
+                <div>
+                  <h3>Tap</h3>
+                  <p>Tap your character and everyone on that team sees theirs dance, with your name below it.</p>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- Download -->
+      <section class="downloads" id="download">
+        <div class="wrap">
+          <div class="dl-head">
+            <div class="section-head">
+              <p class="eyebrow">Download</p>
+              <h2>Pick the file for your machine</h2>
+            </div>
+            <span class="release-tag" data-release-tag>Latest</span>
+          </div>
+
+          <div class="dl-list">
+            <div class="dl-row" data-asset="mac-arm64" data-label="macOS">
+              <div>
+                <div class="name">macOS (Apple Silicon)<span class="flag">FOR YOU</span></div>
+                <div class="meta">M1 and later. .dmg file</div>
+              </div>
+              <a class="btn" href="https://github.com/alice-0130/tap-tap/releases/latest">Download</a>
+            </div>
+
+            <div class="dl-row" data-asset="mac-x64" data-label="macOS">
+              <div>
+                <div class="name">macOS (Intel)<span class="flag">FOR YOU</span></div>
+                <div class="meta">Macs from before 2020. .dmg file</div>
+              </div>
+              <a class="btn" href="https://github.com/alice-0130/tap-tap/releases/latest">Download</a>
+            </div>
+
+            <div class="dl-row" data-asset="windows" data-label="Windows">
+              <div>
+                <div class="name">Windows<span class="flag">FOR YOU</span></div>
+                <div class="meta">64 bit. Installer (.exe)</div>
+              </div>
+              <a class="btn" href="https://github.com/alice-0130/tap-tap/releases/latest">Download</a>
+            </div>
+          </div>
+
+          <p class="dl-fallback">
+            Not sure which Mac you have? Open the Apple menu and choose
+            <strong>About This Mac</strong>. If it says "Chip" you want Apple Silicon. If it says
+            "Processor" you want Intel.
+          </p>
+
+          <p class="dl-fallback" data-pending-notice hidden>
+            No installers have been published yet. They will show up here as soon as they are ready.
+            <a href="https://github.com/alice-0130/tap-tap/releases">Check the releases page</a>
+          </p>
+        </div>
+      </section>
+
+      <!-- First launch -->
+      <section id="install">
+        <div class="wrap">
+          <div class="section-head">
+            <h2>Your computer will warn you</h2>
+          </div>
+
+          <div class="warn-intro">
+            <p>
+              <strong>This app is not code signed.</strong> Signing means paying Apple and
+              Microsoft every year for a certificate, and we are not there yet. So your operating
+              system tells you it cannot verify who made it.
+            </p>
+            <p>
+              That does not mean the app is dangerous, but it does mean nobody is vouching for it.
+              Which is why the source code is fully public. The steps below get you past the
+              warning once.
+            </p>
+          </div>
+
+          <div class="guides">
+            <article class="guide">
+              <h3>macOS <span>Unidentified developer</span></h3>
+              <ol>
+                <li>Move the app into your <strong>Applications</strong> folder.</li>
+                <li>
+                  <strong>Right click the app and choose Open.</strong> Right click, not double
+                  click.
+                </li>
+                <li>Press <strong>Open</strong> in the dialog once. It opens normally from then on.</li>
+              </ol>
+              <div class="aside">
+                If it still says the app is damaged, run this once in Terminal.
+                <div class="copy-line">
+                  <code id="xattr-cmd">xattr -dr com.apple.quarantine /Applications/tap-tap.app</code>
+                  <button type="button" data-copy="xattr-cmd">Copy</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="guide">
+              <h3>Windows <span>SmartScreen</span></h3>
+              <ol>
+                <li>Double click the installer you downloaded.</li>
+                <li>When the blue <strong>Windows protected your PC</strong> box appears, click <strong>More info</strong>.</li>
+                <li>Click <strong>Run anyway</strong> and the install continues.</li>
+              </ol>
+              <div class="aside">
+                It never asks for administrator rights. It installs for your account only and can be
+                removed from the usual apps list.
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Good to know -->
+      <section>
+        <div class="wrap">
+          <div class="section-head">
+            <p class="eyebrow">Good to know</p>
+            <h2>Said up front</h2>
+          </div>
+
+          <div class="notes-grid">
+            <div>
+              <h3>There are no accounts</h3>
+              <p>No email, no password. A device identifier created at install time is how it finds your teams.</p>
+            </div>
+            <div>
+              <h3>Only the nudge travels</h3>
+              <p>The fact that somebody tapped, plus a nickname. Nothing on your screen goes anywhere.</p>
+            </div>
+            <div>
+              <h3>Three teams, five people</h3>
+              <p>One person can be in up to three teams, five members each. Every team gets its own character.</p>
+            </div>
+            <div>
+              <h3>Read the source</h3>
+              <p>
+                If an unsigned app makes you uneasy, read the code and build it yourself. It is all on
+                <a href="https://github.com/alice-0130/tap-tap">GitHub</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <span>tap-tap · Free to use and to change</span>
+        <nav>
+          <a href="https://github.com/alice-0130/tap-tap">GitHub</a>
+          <a href="https://github.com/alice-0130/tap-tap/releases">Releases</a>
+          <a href="/" hreflang="ko" lang="ko">한국어</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script type="application/json" id="dl-strings">
+      {
+        "pending": "Coming soon",
+        "heroFor": "Download for {target}",
+        "copied": "Copied"
+      }
+    </script>
+    <script src="/download.js" type="module"></script>
+  </body>
+</html>

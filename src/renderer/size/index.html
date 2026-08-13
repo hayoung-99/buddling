@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>tap-tap 크기</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        overflow: hidden;
+        user-select: none;
+        -webkit-user-select: none;
+        font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
+        color: #4a3f33;
+      }
+
+      .pill {
+        position: absolute;
+        inset: 6px;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 0 12px;
+        border-radius: 22px;
+        background: #fffaf0;
+        box-shadow: 0 6px 20px rgba(74, 63, 51, 0.26);
+      }
+
+      .cap {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: rgba(74, 63, 51, 0.55);
+        flex: none;
+        max-width: 74px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .value {
+        font-size: 12px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        width: 38px;
+        text-align: right;
+        flex: none;
+      }
+
+      button {
+        flex: none;
+        font: inherit;
+        font-size: 13px;
+        line-height: 1;
+        width: 24px;
+        height: 24px;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(74, 63, 51, 0.09);
+        color: #4a3f33;
+        cursor: pointer;
+      }
+      button:hover { background: rgba(74, 63, 51, 0.17); }
+
+      /* ── 슬라이더 ── */
+      input[type='range'] {
+        flex: 1;
+        min-width: 0;
+        height: 22px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+        cursor: pointer;
+      }
+      input[type='range']::-webkit-slider-runnable-track {
+        height: 5px;
+        border-radius: 3px;
+        background: rgba(74, 63, 51, 0.16);
+      }
+      input[type='range']::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 17px;
+        height: 17px;
+        margin-top: -6px;
+        border-radius: 50%;
+        background: #4a3f33;
+        box-shadow: 0 1px 4px rgba(74, 63, 51, 0.4);
+      }
+      input[type='range']:active::-webkit-slider-thumb { background: #e08a5c; }
+    </style>
+  </head>
+  <body>
+    <div class="pill">
+      <span class="cap"></span>
+      <input id="range" type="range" min="25" max="200" step="5" value="100" />
+      <span class="value" id="value">100%</span>
+      <button id="reset" title="">↺</button>
+    </div>
+    <script src="./size.js"></script>
+  </body>
+</html>

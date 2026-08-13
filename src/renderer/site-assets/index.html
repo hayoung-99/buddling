@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>tap-tap 랜딩 이미지</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "../../../node_modules/three/build/three.module.js"
+        }
+      }
+    </script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; }
+
+      #stage { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+      /* OG 카드에만 쓰는 배경과 글자 */
+      body[data-shot='og'] { background: #f5efe1; }
+
+      /*
+       * 공유 카드에서는 캐릭터가 오른쪽 아래에 서고 글이 왼쪽을 차지한다.
+       * canvas 는 대체 요소라서 width/height 를 auto 로 두면 inset 이 아니라
+       * 속성값(그리기 버퍼 크기)을 따라간다. 그래서 크기를 직접 적어 준다.
+       */
+      body[data-shot='og'] #stage {
+        top: 26%;
+        left: 42%;
+        width: 58%;
+        height: 74%;
+      }
+
+      #card {
+        position: absolute;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 72px 46px;
+        color: #4a3f33;
+        font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
+        /* 한국어는 기본적으로 아무 데서나 줄이 바뀐다. 낱말 단위로 끊는다. */
+        word-break: keep-all;
+      }
+      body[data-shot='og'] #card { display: flex; }
+
+      #card .mark {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: 0.24em;
+        color: #e08a5c;
+      }
+      #card h1 {
+        margin-top: 16px;
+        font-size: 58px;
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        line-height: 1.18;
+        max-width: 9ch;
+      }
+      #card p {
+        margin-top: 18px;
+        font-size: 22px;
+        line-height: 1.5;
+        color: rgba(74, 63, 51, 0.6);
+        max-width: 21ch;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="stage"></canvas>
+    <div id="card">
+      <div class="mark">TAP TAP</div>
+      <h1>바탕화면 위 작은 친구</h1>
+      <p>내 캐릭터를 누르면 팀원들의 캐릭터가 춤을 춥니다.</p>
+    </div>
+    <script type="module" src="./site-assets.js"></script>
+  </body>
+</html>

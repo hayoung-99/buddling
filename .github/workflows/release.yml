@@ -1,0 +1,85 @@
+# 태그를 밀면 앱을 빌드해서 GitHub Releases 에 올린다.
+#
+#   git tag v0.1.0 && git push origin v0.1.0
+#
+# Supabase 접속 정보는 저장소에 두지 않고 여기서 주입한다.
+# 리포지토리 Settings → Secrets and variables → Actions 에
+# SUPABASE_URL / SUPABASE_ANON_KEY 를 등록해 두세요.
+#
+# 흐름은 두 단계다.
+#   build   mac(arm64·x64) / win 을 각각 빌드해 **초안(draft) 릴리스**에 올린다
+#   publish 두 빌드가 다 끝나면 설치 안내를 본문에 붙이고 초안을 공개로 바꾼다
+#
+# 초안을 거치는 이유: 한쪽 빌드만 올라간 반쪽짜리 릴리스가 랜딩 페이지에
+# 최신 버전으로 잡히는 일을 막기 위해서다. 랜딩은 /releases/latest 를 본다.
+#
+# 주의: 코드 서명을 하지 않으므로 받는 사람은 macOS Gatekeeper·Windows SmartScreen
+# 경고를 한 번 넘겨야 합니다. 자세한 안내는 docs/RELEASE.md 에 있습니다.
+
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    permissions:
+      contents: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: --mac --arm64 --x64
+          - os: windows-latest
+            target: --win --x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Supabase 없이도 도는 검사만 여기서 돌린다
+      - run: npm test
+
+      - name: 접속 정보 굽기
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: node scripts/bake-config.js
+
+      - name: 패키징
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder ${{ matrix.target }} --publish always
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 설치 안내를 붙이고 릴리스를 공개한다
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          sed "s/{version}/${TAG}/g" docs/release-notes.md > "${RUNNER_TEMP}/notes.md"
+          gh release edit "${TAG}" \
+            --title "tap-tap ${TAG}" \
+            --notes-file "${RUNNER_TEMP}/notes.md" \
+            --draft=false \
+            --latest
