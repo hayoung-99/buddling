@@ -5,7 +5,7 @@
 > team sees their character dance on their screen. There is no account: you join
 > a team with a nickname and a six character invite code.
 
-Written by GitHub user alice-0130 and built with Electron. The name is always
+Written by GitHub user hayoung-99 and built with Electron. The name is always
 written lowercase and hyphenated: tap-tap. It is unrelated to the TapTap game
 store (taptap.io). The landing page is Korean and English; the app itself runs in
 Korean, English, Japanese and Chinese.
@@ -45,8 +45,8 @@ Korean, English, Japanese and Chinese.
 
 ## Source
 
-- [GitHub repository](https://github.com/alice-0130/tap-tap): full source code.
-- [Releases](https://github.com/alice-0130/tap-tap/releases): installers.
+- [GitHub repository](https://github.com/hayoung-99/tap-tap): full source code.
+- [Releases](https://github.com/hayoung-99/tap-tap/releases): installers.
 
 ## 한국어 요약
 

@@ -14,7 +14,7 @@
  *   사람은 어느 날 갑자기 연결이 끊긴다. 그때 무슨 일인지 알 방법이 있어야 한다.
  */
 
-const REPO = 'alice-0130/tap-tap'
+const REPO = 'hayoung-99/tap-tap'
 
 const LATEST_RELEASE_API = `https://api.github.com/repos/${REPO}/releases/latest`
 

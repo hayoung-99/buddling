@@ -51,7 +51,7 @@ gh repo create tap-tap --public --source=. --remote=origin --push
 README·.gitignore·라이선스는 **아무것도 체크하지 않은** 채로 만듭니다. 그다음:
 
 ```bash
-git remote add origin https://github.com/alice-0130/tap-tap.git
+git remote add origin https://github.com/hayoung-99/tap-tap.git
 git push -u origin main
 ```
 

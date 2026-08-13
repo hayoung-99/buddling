@@ -38,7 +38,7 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "alice-0130",
+        "owner": "hayoung-99",
         "repo": "tap-tap",
         "releaseType": "draft"
       }

@@ -9,7 +9,7 @@
  *   tap-tap-0.1.0-arm64.dmg / tap-tap-0.1.0-x64.dmg / tap-tap-0.1.0-setup.exe
  */
 
-const REPO = 'alice-0130/tap-tap'
+const REPO = 'hayoung-99/tap-tap'
 const LATEST_API = `https://api.github.com/repos/${REPO}/releases/latest`
 
 /** data-asset 값 → 그 자산을 알아보는 방법 */
