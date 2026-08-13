@@ -34,13 +34,13 @@ Korean, English, Japanese and Chinese.
 
 ## Pages
 
-- [tap-tap (Korean)](https://tap-tap.vercel.app/): what it is, the three step
+- [tap-tap (Korean)](https://tap-tap-desktop.vercel.app/): what it is, the three step
   setup, downloads, first-launch instructions, FAQ.
-- [tap-tap (English)](https://tap-tap.vercel.app/en/): the same page in English.
-- [Downloads](https://tap-tap.vercel.app/#download): macOS and Windows builds.
-- [First launch](https://tap-tap.vercel.app/#install): getting past the macOS
+- [tap-tap (English)](https://tap-tap-desktop.vercel.app/en/): the same page in English.
+- [Downloads](https://tap-tap-desktop.vercel.app/#download): macOS and Windows builds.
+- [First launch](https://tap-tap-desktop.vercel.app/#install): getting past the macOS
   "unidentified developer" warning and Windows SmartScreen.
-- [FAQ](https://tap-tap.vercel.app/#faq): what it is, whether teammates need it,
+- [FAQ](https://tap-tap-desktop.vercel.app/#faq): what it is, whether teammates need it,
   what an invite code looks like, and why the first launch warns you.
 
 ## Source
@@ -55,4 +55,4 @@ tap-tap 은 바탕화면에 3D 동물 캐릭터를 띄워 두는 macOS·Windows 
 않고, 닉네임과 여섯 글자 초대코드로 팀에 들어갑니다. 초대코드는 영문과 숫자를
 섞은 여섯 글자이고 24시간 뒤 만료됩니다. 한 사람이 최대 3개 팀, 팀 하나에 최대
 5명이며 팀마다 캐릭터가 한 마리씩 뜹니다. 코드 서명이 없어 처음 열 때 경고가 한
-번 뜨고, 넘기는 방법은 https://tap-tap.vercel.app/#install 에 있습니다.
+번 뜨고, 넘기는 방법은 https://tap-tap-desktop.vercel.app/#install 에 있습니다.

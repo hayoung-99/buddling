@@ -4,19 +4,19 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml"
 >
   <url>
-    <loc>https://tap-tap.vercel.app/</loc>
-    <xhtml:link rel="alternate" hreflang="ko" href="https://tap-tap.vercel.app/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://tap-tap.vercel.app/en/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://tap-tap.vercel.app/" />
+    <loc>https://tap-tap-desktop.vercel.app/</loc>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tap-tap-desktop.vercel.app/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tap-tap-desktop.vercel.app/en/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tap-tap-desktop.vercel.app/" />
     <lastmod>2026-08-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://tap-tap.vercel.app/en/</loc>
-    <xhtml:link rel="alternate" hreflang="ko" href="https://tap-tap.vercel.app/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://tap-tap.vercel.app/en/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://tap-tap.vercel.app/" />
+    <loc>https://tap-tap-desktop.vercel.app/en/</loc>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tap-tap-desktop.vercel.app/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tap-tap-desktop.vercel.app/en/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tap-tap-desktop.vercel.app/" />
     <lastmod>2026-08-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

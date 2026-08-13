@@ -23,6 +23,6 @@ User-agent: CCBot
 User-agent: cohere-ai
 Allow: /
 
-# 사람과 기계가 함께 읽을 요약: https://tap-tap.vercel.app/llms.txt
+# 사람과 기계가 함께 읽을 요약: https://tap-tap-desktop.vercel.app/llms.txt
 
-Sitemap: https://tap-tap.vercel.app/sitemap.xml
+Sitemap: https://tap-tap-desktop.vercel.app/sitemap.xml
