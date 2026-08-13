@@ -3,7 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "description": "바탕화면 위 3D 동물 친구. 내 캐릭터를 클릭하면 팀원들의 캐릭터가 폴짝 뜁니다.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hayoung-99/tap-tap.git"
+  },
+  "homepage": "https://tap-tap-desktop.vercel.app",
   "main": "src/main/main.js",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "start": "electron .",
     "start:second": "TAPTAP_PROFILE=second electron .",
