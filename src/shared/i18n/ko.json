@@ -68,7 +68,6 @@
   "detail.leave": "팀 나가기",
   "detail.gone": "이 팀에서 나왔어요",
   "detail.goneHint": "이 창은 닫으셔도 됩니다.",
-  "detail.nicknameLabel": "닉네임",
 
   "connection.connecting": "연결하는 중…",
   "connection.lost": "연결이 끊겼어요. 다시 연결하는 중…",
@@ -81,7 +80,6 @@
   "toast.newCode": "새 초대코드를 발급했어요",
   "toast.poked": "{name}님을 콕 찔렀어요",
   "toast.tooFast": "잠깐만요, 너무 빨라요",
-  "toast.left": "{name}에서 나왔어요",
   "toast.renamedTeam": "팀 이름을 바꿨어요",
   "toast.renamedNickname": "닉네임을 바꿨어요",
 

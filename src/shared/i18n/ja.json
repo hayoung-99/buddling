@@ -68,7 +68,6 @@
   "detail.leave": "チームを抜ける",
   "detail.gone": "このチームから抜けました",
   "detail.goneHint": "このウィンドウは閉じて大丈夫です。",
-  "detail.nicknameLabel": "ニックネーム",
 
   "connection.connecting": "接続中…",
   "connection.lost": "接続が切れました。再接続しています…",
@@ -81,7 +80,6 @@
   "toast.newCode": "新しい招待コードを発行しました",
   "toast.poked": "{name}さんをつんつんしました",
   "toast.tooFast": "ちょっと待って、早すぎます",
-  "toast.left": "{name} から抜けました",
   "toast.renamedTeam": "チーム名を変更しました",
   "toast.renamedNickname": "ニックネームを変更しました",
 

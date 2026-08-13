@@ -6,11 +6,17 @@
  * 앱과 같은 캐릭터 코드로 그리므로(`src/renderer/site-assets/`), 캐릭터가 바뀌면
  * 다시 돌리기만 하면 랜딩 페이지의 그림도 따라온다. 산출물은 커밋한다.
  *
- * 팀 창 스크린샷은 여기서 만들지 않는다. 진짜 앱을 띄워서 찍어야 하므로
- * 아래 명령으로 따로 뜬 뒤 site/assets/ 로 옮긴다.
+ * 팀 창 스크린샷은 여기서 만들지 않는다. 진짜 앱을 띄워서 찍어야 하기 때문이다.
+ * 랜딩페이지는 **한국어와 영어 두 장**을 쓰므로 둘 다 떠야 한다. 한쪽만 새로 뜨면
+ * 두 페이지의 화면이 서로 다른 버전을 보여주게 된다.
  *
- *   TAPTAP_FAKE_NET=1 TAPTAP_PROFILE=shot TAPTAP_CAPTURE=.preview/site \
+ *   TAPTAP_FAKE_NET=1 TAPTAP_PROFILE=shot TAPTAP_CAPTURE=.preview/ko \
  *     TAPTAP_SEED="디자인팀:나영" TAPTAP_LANG=ko npm start
+ *   cp .preview/ko/team.png site/assets/team-window.png
+ *
+ *   TAPTAP_FAKE_NET=1 TAPTAP_PROFILE=shot TAPTAP_CAPTURE=.preview/en \
+ *     TAPTAP_SEED="Design:Nayoung" TAPTAP_LANG=en npm start
+ *   cp .preview/en/team.png site/assets/team-window-en.png
  */
 
 const fs = require('node:fs')

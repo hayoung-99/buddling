@@ -68,7 +68,6 @@
   "detail.leave": "退出团队",
   "detail.gone": "你已退出这个团队",
   "detail.goneHint": "可以关闭这个窗口了。",
-  "detail.nicknameLabel": "昵称",
 
   "connection.connecting": "连接中…",
   "connection.lost": "连接已断开，正在重新连接…",
@@ -81,7 +80,6 @@
   "toast.newCode": "已生成新的邀请码",
   "toast.poked": "戳了戳 {name}",
   "toast.tooFast": "慢一点，太快了",
-  "toast.left": "已退出 {name}",
   "toast.renamedTeam": "已修改团队名称",
   "toast.renamedNickname": "已修改昵称",
 

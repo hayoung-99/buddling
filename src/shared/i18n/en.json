@@ -68,7 +68,6 @@
   "detail.leave": "Leave team",
   "detail.gone": "You left this team",
   "detail.goneHint": "You can close this window.",
-  "detail.nicknameLabel": "Nickname",
 
   "connection.connecting": "Connecting…",
   "connection.lost": "Connection lost. Reconnecting…",
@@ -81,7 +80,6 @@
   "toast.newCode": "New invite code issued",
   "toast.poked": "Nudged {name}",
   "toast.tooFast": "Hold on, that was quick",
-  "toast.left": "Left {name}",
   "toast.renamedTeam": "Team renamed",
   "toast.renamedNickname": "Nickname changed",
 

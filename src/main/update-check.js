@@ -122,4 +122,4 @@ function startUpdateCheck({ currentVersion, onUpdate, fetchLatest = fetchLatestV
   }
 }
 
-module.exports = { isNewer, startUpdateCheck, fetchLatestVersion, DOWNLOAD_PAGE, REPO }
+module.exports = { isNewer, startUpdateCheck }

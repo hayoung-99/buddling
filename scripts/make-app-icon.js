@@ -11,7 +11,7 @@
  *   build/icon.icns          macOS 앱 아이콘 (iconutil, macOS 에서만)
  *   build/icon.ico           Windows 앱 아이콘
  *   build/icon.png           Linux 앱 아이콘 (512)
- *   site/assets/icon-*.png   랜딩 페이지 파비콘·OG 용
+ *   site/assets/icon-*.png   랜딩 페이지 파비콘 (32 · 180)
  *   site/favicon.ico         랜딩 페이지 파비콘 (구형 브라우저)
  *
  * 산출물은 저장소에 커밋한다. CI 러너에서 Electron 렌더링을 돌리는 것보다
@@ -183,7 +183,6 @@ async function main() {
   write(path.join(BUILD_DIR, 'icon.png'), resize(mac, 512))
 
   // 랜딩 페이지 — 파비콘은 작게 쓰이므로 여백 없는 win 판이 또렷하다
-  write(path.join(SITE_ASSETS, 'icon-512.png'), resize(mac, 512))
   write(path.join(SITE_ASSETS, 'icon-180.png'), resize(win, 180)) // apple-touch-icon
   write(path.join(SITE_ASSETS, 'icon-32.png'), resize(win, 32))
   write(path.join(ROOT, 'site', 'favicon.ico'), icoFrom(win, FAVICON_SIZES))

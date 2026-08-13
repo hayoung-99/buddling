@@ -74,7 +74,6 @@ function applyRelease(release) {
     matched += 1
 
     link.href = asset.browser_download_url
-    link.removeAttribute('aria-disabled')
     if (meta) meta.textContent = `${asset.name} · ${formatSize(asset.size)}`
   }
 

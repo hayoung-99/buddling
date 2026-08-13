@@ -1,20 +1,21 @@
 node_modules/
 dist/
-.env
 .DS_Store
 *.log
+
+# 개발용 캡처 (TAPTAP_CAPTURE 로 언제든 다시 뜰 수 있다)
 .preview/
-# 접속 정보를 구워 넣은 파일. 경로를 가리지 않고 전부 막는다 —
+
+# 접속 정보가 든 파일들. 경로를 가리지 않고 전부 막는다 —
 # 도구가 실수로 다른 곳에 떨어뜨려도 커밋되지 않게 하기 위해서다.
+.env
 config.generated.json
 
-# Vercel (랜딩 페이지 배포 시 생기는 로컬 연결 정보)
+# Vercel 이 남기는 로컬 연결 정보
 .vercel/
-site/.vercel/
 
-# 아이콘 만들다 남는 중간 산출물 — 최종 icns/ico/png 는 커밋한다
+# 아이콘 만들 때 잠깐 생기는 중간 폴더 (최종 icns·ico·png 는 커밋한다)
 build/icon.iconset/
-build/*.raw.png
 
 # Playwright MCP 가 남기는 스크린샷·스냅샷
 .playwright-mcp/
