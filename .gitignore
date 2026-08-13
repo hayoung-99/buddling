@@ -15,3 +15,6 @@ site/.vercel/
 # 아이콘 만들다 남는 중간 산출물 — 최종 icns/ico/png 는 커밋한다
 build/icon.iconset/
 build/*.raw.png
+
+# Playwright MCP 가 남기는 스크린샷·스냅샷
+.playwright-mcp/
