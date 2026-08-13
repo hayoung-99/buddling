@@ -20,6 +20,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 const crypto = require('node:crypto')
 const { app } = require('electron')
+const { writeJsonAtomically } = require('./write-json')
 
 const DEFAULTS = {
   deviceId: null,
@@ -65,10 +66,20 @@ function load() {
 
 function write() {
   if (!filePath) return
-  // 쓰다가 죽어도 기존 파일이 깨지지 않도록 임시 파일에 쓴 뒤 교체한다
-  const temporary = `${filePath}.tmp`
-  fs.writeFileSync(temporary, JSON.stringify(state, null, 2))
-  fs.renameSync(temporary, filePath)
+
+  const result = writeJsonAtomically(filePath, state)
+  if (result.ok) return
+
+  /*
+   * 저장에 실패했다고 앱을 죽이지 않는다.
+   *
+   * 이 함수는 예약된 타이머 안에서도 불린다. 거기서 예외가 새어 나가면 아무도
+   * 잡지 않아 메인 프로세스가 통째로 죽고, 사용자는 캐릭터 대신 오류창을 본다.
+   * 자리·크기를 한 번 못 적는 것과는 비교가 안 되는 손해다.
+   *
+   * 다음 저장 때 다시 시도한다. 상태는 메모리에 그대로 있으므로 그때 한꺼번에 적힌다.
+   */
+  console.error('[tap-tap] 설정을 저장하지 못했습니다', result.error)
 }
 
 function save() {
