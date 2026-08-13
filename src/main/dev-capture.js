@@ -21,7 +21,8 @@
  *   TAPTAP_LANG="ja"              그 언어로 바꿔 놓고 찍는다
  *   TAPTAP_SWITCH_LANG="zh"       화면에서 언어를 바꾼 것처럼 IPC 로 전환한다
  *   TAPTAP_SCROLL="1"             팀 창을 아래로 굴려 놓고 찍는다 (고정 헤더 확인용)
- *   TAPTAP_UPDATE="0.2.0"         새 버전이 나온 것처럼 만들어 알림 줄을 확인한다
+ *   TAPTAP_UPDATE="0.2.0"         새 버전이 나온 것처럼 만든다 ("받으러 가기")
+ *   TAPTAP_UPDATE="0.2.0:ready"   이미 받아 둔 것처럼 만든다 ("지금 적용하기")
  */
 
 const fs = require('node:fs')
@@ -42,11 +43,14 @@ async function captureIfRequested(app, electronApp) {
     await wait(500)
   }
 
-  // 실제로 GitHub 을 보지 않고 "새 버전이 나왔다" 상태만 만들어 본다
+  // 실제로 GitHub 을 보지 않고 "새 버전이 있다" 상태만 만들어 본다
   if (process.env.TAPTAP_UPDATE) {
+    const [version, state] = process.env.TAPTAP_UPDATE.split(':')
+    const ready = state === 'ready'
     app.session.setUpdate({
-      version: process.env.TAPTAP_UPDATE,
-      url: 'https://example.com/download',
+      version,
+      ready,
+      url: ready ? null : 'https://example.com/download',
     })
     await wait(400)
   }

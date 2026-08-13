@@ -16,6 +16,8 @@
 
   "update.available": "Version {version} is out",
   "update.action": "Get it",
+  "update.ready": "Version {version} is downloaded",
+  "update.restart": "Restart now",
 
   "setup.title": "Almost ready",
   "setup.lead": "Supabase connection details are missing.",

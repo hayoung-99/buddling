@@ -1,11 +1,13 @@
 /**
- * 새 버전이 나왔는지 알아보고 알려주기만 한다. 받아서 설치하지는 않는다.
+ * 새 버전이 나왔는지 알아보고 **알려주기만** 한다. 받아서 설치하지는 않는다.
  *
- * 왜 자동 업데이트가 아닌가:
- *   코드 서명이 없으면 macOS 는 electron-updater 의 자동 설치를 거부한다.
- *   반쪽만 도는 자동 업데이트는 "됐다는데 안 됐다"가 되어 더 헷갈린다.
- *   서명을 붙이는 시점에 여기를 electron-updater 로 갈아끼우면 된다
- *   (docs/RELEASE.md 의 "앞으로 검토할 것" 참고).
+ * 설치까지 하는 길은 `auto-update.js` 에 따로 있고, 어느 쪽을 쓸지는
+ * `updates.js` 가 플랫폼을 보고 정한다. 이 파일은 그중 "알리기만" 하는 쪽이다.
+ *
+ * 이 길이 필요한 이유는 두 가지다.
+ *   - macOS 는 코드 서명이 없으면 자동 설치가 구조적으로 불가능하다
+ *   - Windows 라도 내려받기가 실패할 수 있다. 그때 조용히 넘어가는 대신
+ *     사람에게 알려서 직접 받게 한다
  *
  * 굳이 알림이라도 두는 이유:
  *   Supabase 접속 정보가 앱에 구워져 나가기 때문에, 키를 갈면 예전 버전을 쓰던
@@ -82,9 +84,12 @@ async function fetchLatestVersion() {
  * 네트워크 실패는 조용히 넘긴다 — 알림 기능 때문에 오류 메시지가 뜨면
  * 정작 중요한 오류가 묻힌다.
  *
+ * `ready: false` 를 실어 보낸다 — 받아 둔 것이 없으니 화면은 "받으러 가기"를
+ * 보여줘야 한다는 뜻이다. 받아 둔 경우는 `auto-update.js` 가 true 로 보낸다.
+ *
  * @param {{
  *   currentVersion: string,
- *   onUpdate: (info: { version: string, url: string }) => void,
+ *   onUpdate: (info: { version: string, url: string, ready: false }) => void,
  *   fetchLatest?: () => Promise<string|null>,
  * }} options
  * @returns {{ stop: () => void }}
@@ -101,7 +106,7 @@ function startUpdateCheck({ currentVersion, onUpdate, fetchLatest = fetchLatestV
       if (!isNewer(currentVersion, latest)) return
 
       announced = latest
-      onUpdate({ version: String(latest).replace(/^v/i, ''), url: DOWNLOAD_PAGE })
+      onUpdate({ version: String(latest).replace(/^v/i, ''), url: DOWNLOAD_PAGE, ready: false })
     } catch {
       // 인터넷이 없거나 GitHub 이 잠깐 안 될 뿐이다. 다음 차례에 다시 본다.
     }

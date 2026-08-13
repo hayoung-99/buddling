@@ -28,6 +28,7 @@
       "src/**/*",
       "!src/renderer/preview/**",
       "!src/renderer/icon/**",
+      "!src/renderer/site-assets/**",
       "assets/**/*",
       "node_modules/three/build/three.module.js",
       "package.json"
@@ -91,6 +92,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
     "dotenv": "^16.4.5",
+    "electron-updater": "^6.8.9",
     "three": "^0.169.0",
     "ws": "^8.18.0"
   },

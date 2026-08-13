@@ -230,20 +230,26 @@ function listView() {
 // ────────────────────────────────────────────────────────────
 
 /**
- * 새 버전이 나왔을 때만 맨 위에 한 줄.
+ * 새 버전이 있을 때만 맨 위에 한 줄. 두 가지 얼굴이 있다.
  *
- * 앱이 스스로 받아서 설치하지는 않는다 — 서명이 없어 그 길이 막혀 있다.
- * 대신 받는 곳으로 데려다준다. (src/main/update-check.js 참고)
+ *   이미 받아 뒀다 → "받았어요 · 지금 적용하기"  누르면 다시 시작하며 갈아끼운다
+ *   아직 못 받았다 → "나왔어요 · 받으러 가기"    누르면 받는 곳을 브라우저로 연다
+ *
+ * 어느 쪽인지는 메인이 정해서 `update.ready` 로 알려준다. 화면은 플랫폼을
+ * 알 필요가 없다. (src/main/updates.js 참고)
  */
 function updateBanner() {
   if (!state.update) return []
 
+  const { version, ready } = state.update
+  const label = ready ? t('update.restart') : t('update.action')
+
   return [
     el('button', {
       class: 'update-banner',
-      title: t('update.action'),
-      text: `${t('update.available', { version: state.update.version })} · ${t('update.action')} ›`,
-      onclick: () => window.teamApi.openDownloadPage(),
+      title: label,
+      text: `${t(ready ? 'update.ready' : 'update.available', { version })} · ${label} ›`,
+      onclick: () => (ready ? window.teamApi.installUpdate() : window.teamApi.openDownloadPage()),
     }),
   ]
 }

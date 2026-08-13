@@ -26,6 +26,9 @@ contextBridge.exposeInMainWorld('teamApi', {
   /** 새 버전을 받을 수 있는 곳을 브라우저로 연다 (주소는 메인이 정한다) */
   openDownloadPage: () => ipcRenderer.send('window:open-download'),
 
+  /** 이미 받아 둔 새 버전을 지금 적용한다 (앱이 다시 시작된다) */
+  installUpdate: () => ipcRenderer.send('update:install'),
+
   onState: (handler) => ipcRenderer.on('state', (_event, state) => handler(state)),
   onError: (handler) => ipcRenderer.on('app-error', (_event, message) => handler(message)),
 

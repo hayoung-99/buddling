@@ -107,6 +107,14 @@ function registerIpc({ session, app }) {
     if (url) shell.openExternal(url)
   })
 
+  /**
+   * 이미 받아 둔 새 버전을 지금 적용한다. 앱이 꺼졌다가 새 버전으로 다시 뜬다.
+   * 받아 둔 것이 없으면 아무 일도 일어나지 않는다.
+   */
+  ipcMain.on('update:install', () => {
+    if (session.snapshot().update?.ready) app.updates?.install()
+  })
+
   // ── 크기 조절 패널 ──
   handle('size:get', () => {
     const entry = session

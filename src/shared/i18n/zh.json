@@ -16,6 +16,8 @@
 
   "update.available": "新版本 {version} 已发布",
   "update.action": "去下载",
+  "update.ready": "新版本 {version} 已下载好",
+  "update.restart": "立即应用",
 
   "setup.title": "还差一点就好了",
   "setup.lead": "还没有 Supabase 的连接信息。",

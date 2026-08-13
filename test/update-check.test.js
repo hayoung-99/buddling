@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { isNewer, startUpdateCheck } from '../src/main/update-check.js'
+import { canAutoInstall } from '../src/main/updates.js'
 
 describe('isNewer', () => {
   it('뒷자리가 올라간 것도 새 버전으로 본다', () => {
@@ -64,6 +65,9 @@ describe('startUpdateCheck', () => {
     await runFirstCheck()
     expect(onUpdate).toHaveBeenCalledTimes(1)
     expect(onUpdate.mock.calls[0][0].version).toBe('0.2.0')
+    // 이 길은 받아 두지 않는다. 화면이 "받으러 가기"를 보여줘야 한다는 뜻이다.
+    expect(onUpdate.mock.calls[0][0].ready).toBe(false)
+    expect(onUpdate.mock.calls[0][0].url).toMatch(/^https:\/\/github\.com\//)
 
     // 다음 날 다시 확인해도 같은 버전이면 두 번 알리지 않는다
     await vi.advanceTimersByTimeAsync(25 * 60 * 60 * 1000)
@@ -114,5 +118,23 @@ describe('startUpdateCheck', () => {
     watcher.stop()
     await runFirstCheck()
     expect(onUpdate).not.toHaveBeenCalled()
+  })
+})
+
+describe('canAutoInstall', () => {
+  it('Windows 에서만 받아서 설치까지 한다', () => {
+    expect(canAutoInstall('win32')).toBe(true)
+  })
+
+  it('macOS 에서는 시도하지 않는다 — 코드 서명 없이는 반드시 실패한다', () => {
+    // Squirrel.Mac 이 실행 중인 앱의 서명과 새 앱의 서명을 대조한다.
+    // 되는 척하다 실패하는 것이 조용히 알리기만 하는 것보다 나쁘다.
+    expect(canAutoInstall('darwin')).toBe(false)
+  })
+
+  it('모르는 플랫폼이면 알림만 한다', () => {
+    for (const platform of ['linux', 'freebsd', '', undefined]) {
+      expect(canAutoInstall(platform)).toBe(false)
+    }
   })
 })

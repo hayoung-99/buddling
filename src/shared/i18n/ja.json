@@ -16,6 +16,8 @@
 
   "update.available": "新しいバージョン {version} が出ました",
   "update.action": "受け取りに行く",
+  "update.ready": "新しいバージョン {version} を受け取りました",
+  "update.restart": "今すぐ適用",
 
   "setup.title": "あと少しで準備完了です",
   "setup.lead": "Supabase の接続情報がまだありません。",

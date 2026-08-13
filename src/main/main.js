@@ -27,7 +27,7 @@ const { attachPointerControl } = require('./click-through')
 const { createSession } = require('./session')
 const { createTray } = require('./tray')
 const { registerIpc } = require('./ipc')
-const { startUpdateCheck } = require('./update-check')
+const { startUpdates } = require('./updates')
 
 // 프로필을 나누면 같은 컴퓨터에서 여러 인스턴스를 띄울 수 있다
 if (process.env.TAPTAP_PROFILE) {
@@ -49,7 +49,8 @@ const app = {
   sizePanelTeamId: null,
   session: null,
   tray: null,
-  updateCheck: null,
+  /** 새 버전 좇기. `{ stop, install }` — 개발 중에는 null 이다. */
+  updates: null,
 
   petWindow(teamId) {
     return app.pets.get(teamId)?.window ?? null
@@ -200,10 +201,12 @@ electronApp.whenReady().then(async () => {
   app.tray = createTray(app)
   app.session.on('teams', () => app.syncPetWindows())
 
-  // 개발 중에는 확인하지 않는다 — 저장소의 버전이 늘 더 높게 보이기 때문이다
+  // 개발 중에는 확인하지 않는다 — 저장소의 버전이 늘 더 높게 보이고,
+  // 패키징하지 않은 앱은 electron-updater 가 갈아끼울 수도 없다
   if (electronApp.isPackaged) {
-    app.updateCheck = startUpdateCheck({
+    app.updates = startUpdates({
       currentVersion: electronApp.getVersion(),
+      platform: process.platform,
       onUpdate: (info) => app.session.setUpdate(info),
     })
   }
@@ -228,7 +231,7 @@ electronApp.on('activate', () => {
 })
 
 electronApp.on('before-quit', async () => {
-  app.updateCheck?.stop()
+  app.updates?.stop()
   await app.session?.dispose()
 })
 

@@ -16,6 +16,8 @@
 
   "update.available": "새 버전 {version} 이 나왔어요",
   "update.action": "받으러 가기",
+  "update.ready": "새 버전 {version} 을 받아 뒀어요",
+  "update.restart": "지금 적용하기",
 
   "setup.title": "조금만 더 준비하면 돼요",
   "setup.lead": "Supabase 연결 정보가 아직 없어요.",

@@ -202,7 +202,70 @@ npx vercel --prod
 새 버전을 낸 뒤에는 랜딩페이지를 다시 배포할 필요가 없습니다. 다만 `softwareVersion`
 과 앱 안의 문구가 크게 달라졌다면 한 번 훑어보세요.
 
-## 8. 앞으로 검토할 것
+## 8. 자동 업데이트
+
+새 버전을 올리면 **Windows 사용자는 아무것도 하지 않아도 갈아탑니다.**
+
+| | Windows | macOS |
+|---|---|---|
+| 새 버전 확인 | 6시간마다 | 하루 한 번 |
+| 내려받기 | 조용히 알아서 | 안 함 |
+| 적용 | 배너를 누르면 즉시, 안 누르면 다음 종료 때 | 사람이 직접 받아서 설치 |
+
+**macOS 가 빠진 이유는 코드 서명입니다.** Squirrel.Mac 이 실행 중인 앱의 서명과
+새로 받은 앱의 서명을 대조하기 때문에, 서명이 없으면 설치가 반드시 실패합니다.
+electron-builder 문서도 못을 박아 두었습니다 — *"Code signing is a mandatory
+requirement for auto-updating on macOS."* 그래서 맥에서는 아예 시도하지 않고
+"새 버전이 나왔어요 · 받으러 가기" 배너만 띄웁니다. 되는 척하다 실패하는 것이
+제일 나쁩니다.
+
+### 어떻게 이어져 있나
+
+```
+                    src/main/updates.js   ← 플랫폼을 보고 길을 고른다
+                       ╱               ╲
+        auto-update.js                   update-check.js
+     (electron-updater)                  (GitHub API 로 확인만)
+        받아서 설치까지                       나왔다고 알리기만
+                       ╲               ╱
+                     session.setUpdate({ version, ready, url })
+                                 │
+                     팀 창 맨 위 배너 (list.js)
+```
+
+화면은 플랫폼을 모릅니다. `ready` 가 true 면 "지금 적용하기", false 면
+"받으러 가기"를 보여줄 뿐입니다.
+
+내려받기가 실패하면 **알림 쪽으로 흘러내립니다.** 조용히 넘어가면 4장처럼 키를
+갈았을 때 사용자가 왜 연결이 끊겼는지 알 길이 없기 때문입니다.
+
+### 받아오는 곳
+
+앱 안의 `app-update.yml` 에 적혀 있고, 그 값은 `package.json` 의 `build.publish`
+에서 빌드할 때 만들어집니다. **저장소를 옮기면 거기 한 곳만 고치면 됩니다.**
+
+받은 파일이 진짜인지는 릴리스의 `latest.yml` 에 적힌 SHA512 로 대조합니다.
+코드 서명이 없어도 받다가 깨졌거나 바뀐 파일은 걸러집니다.
+
+> `app-update.yml` 에 `releaseType: draft` 가 적혀 나가지만 **업데이터는 그 값을
+> 읽지 않습니다.** 발행할 때만 쓰는 설정입니다. 업데이터는 `/releases/latest` 를
+> 보므로 초안 릴리스는 잡히지 않습니다.
+
+### 확인하는 법
+
+자동 업데이트는 **패키징한 앱에서만** 돕니다(`app.isPackaged`). 개발 중에는 저장소의
+버전이 늘 더 높게 보여 쓸모가 없기 때문입니다. 배너 모양만 보려면:
+
+```bash
+TAPTAP_FAKE_NET=1 TAPTAP_CAPTURE=.preview/upd TAPTAP_SEED="디자인팀:나영" \
+  TAPTAP_UPDATE="0.2.0:ready" npm start     # "지금 적용하기"
+  TAPTAP_UPDATE="0.2.0"       npm start     # "받으러 가기"
+```
+
+진짜 흐름은 Windows 에서 **버전이 다른 두 릴리스**로 확인해야 합니다. 낮은 버전을
+설치해 두고 높은 버전을 릴리스한 뒤, 앱을 켜고 몇 초 기다리면 배너가 떠야 합니다.
+
+## 9. 앞으로 검토할 것
 
 지금은 넣지 않았지만, 쓰는 사람이 늘면 차례로 필요해지는 것들입니다.
 
@@ -226,19 +289,23 @@ OV 인증서는 발급이 빠르지만 SmartScreen 평판이 쌓일 때까지 �
 바로 통과하지만 비쌉니다. 하드웨어 토큰이 필요 없는
 **Azure Trusted Signing** 이 CI 와 붙이기 가장 편합니다.
 
-### 자동 업데이트 (electron-updater)
+### macOS 자동 업데이트
 
-**서명이 붙기 전에는 도입하지 마세요.** macOS 는 서명이 없으면 electron-updater 의
-자동 설치가 실패합니다. Windows 만 동작하는 반쪽짜리는 더 헷갈립니다.
+Windows 는 이미 받아서 설치까지 합니다(아래 "자동 업데이트" 참고). **macOS 만 남아
+있고, 남은 이유가 곧 코드 서명입니다.**
 
-서명을 붙인 뒤라면 이미 절반은 되어 있습니다.
+서명을 붙이고 나면 고칠 곳은 한 군데입니다.
 
-- `package.json` 의 `build.publish` 가 GitHub 으로 잡혀 있어, 빌드할 때
-  `latest.yml` · `latest-mac.yml` 이 자동으로 함께 올라갑니다
-- 지금 있는 [`src/main/update-check.js`](../src/main/update-check.js) 가 그대로
-  교체 지점입니다. "알려주기"를 "받아서 설치하기"로 바꾸면 됩니다
-- 화면 쪽은 [`src/renderer/team/list.js`](../src/renderer/team/list.js) 의
-  `updateBanner()` 문구만 바뀝니다 (`update.*` 열쇠는 네 언어에 이미 있습니다)
+```js
+// src/main/updates.js
+function canAutoInstall(platform) {
+  return platform === 'win32' || platform === 'darwin'
+}
+```
+
+`test/update-check.test.js` 의 "macOS 에서는 시도하지 않는다" 검사도 함께 뒤집으면
+됩니다. 나머지는 손댈 곳이 없습니다 — 받아 두는 것도, 배너도, 적용도 이미
+플랫폼과 무관하게 짜여 있습니다.
 
 ### 팀 생성 스팸 막기
 
