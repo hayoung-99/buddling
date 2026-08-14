@@ -62,6 +62,7 @@
   "list.members": "成员 {count}/{max} 人",
   "list.online": "{count} 人在线",
   "list.connecting": "连接中…",
+  "list.disconnected": "连接不上",
   "list.addTeam": "＋ 再创建或加入团队",
   "list.full": "最多可以加入 {max} 个团队。",
 
@@ -108,7 +109,7 @@
   "error.NICKNAME_TAKEN": "该团队里已经有人用这个昵称了。",
   "error.NICKNAME_REQUIRED": "请输入昵称。",
   "error.TEAM_NAME_REQUIRED": "请输入团队名称。",
-  "error.DEVICE_ID_REQUIRED": "无法读取本机信息，请重新启动应用。",
+  "error.NOT_SIGNED_IN": "连接尚未就绪，请稍后再试。",
   "error.NOT_A_MEMBER": "你还不在这个团队里。",
   "error.TEAM_LIMIT_REACHED": "最多只能加入 {maxTeams} 个团队。请先退出一个再试。",
   "error.TEAM_FULL": "该团队人数已满（{maxMembers} 人）。",

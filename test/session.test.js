@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { createSession } from '../src/main/session.js'
-import { createFakeServer, createFakeNet, MAX_TEAMS_PER_DEVICE } from '../src/services/fake-net.js'
+import { createFakeServer, createFakeNet, MAX_TEAMS_PER_USER } from '../src/services/fake-net.js'
 
 /** Electron 없이 돌아가는 저장소 흉내 */
-function memoryStore(deviceId = 'device-me') {
-  let state = { deviceId, nickname: '', memberships: [], pets: {}, petVisible: true }
+function memoryStore(userId = 'user-me') {
+  let state = { userId, nickname: '', memberships: [], pets: {}, petVisible: true }
   return {
     get: (key) => state[key],
     set(patch) {
@@ -25,9 +25,9 @@ function memoryStore(deviceId = 'device-me') {
   }
 }
 
-function makeSession({ server = createFakeServer(), deviceId = 'device-me' } = {}) {
-  const store = memoryStore(deviceId)
-  const net = createFakeNet({ server, deviceId })
+function makeSession({ server = createFakeServer(), userId = 'user-me' } = {}) {
+  const store = memoryStore(userId)
+  const net = createFakeNet({ server, userId })
   const session = createSession({ url: 'x', anonKey: 'y', store, net })
   return { server, store, net, session }
 }
@@ -55,8 +55,8 @@ describe('세션 — 팀 만들고 들어가기', () => {
     expect(ctx.store.peek().memberships).toHaveLength(1)
   })
 
-  it(`팀 ${MAX_TEAMS_PER_DEVICE}개를 넘기면 거절한다`, async () => {
-    for (let i = 0; i < MAX_TEAMS_PER_DEVICE; i += 1) {
+  it(`팀 ${MAX_TEAMS_PER_USER}개를 넘기면 거절한다`, async () => {
+    for (let i = 0; i < MAX_TEAMS_PER_USER; i += 1) {
       await ctx.session.createTeam({ name: `팀${i}`, nickname: '나영' })
     }
     await expect(ctx.session.createTeam({ name: '넘침', nickname: '나영' })).rejects.toThrow(
@@ -67,12 +67,12 @@ describe('세션 — 팀 만들고 들어가기', () => {
   it('정원이 찼어도 이미 속한 팀에는 다시 참여할 수 있다 (닉네임 변경 경로)', async () => {
     const first = await ctx.session.createTeam({ name: '팀0', nickname: '나영' })
     const code = first.memberships[0].team.inviteCode
-    for (let i = 1; i < MAX_TEAMS_PER_DEVICE; i += 1) {
+    for (let i = 1; i < MAX_TEAMS_PER_USER; i += 1) {
       await ctx.session.createTeam({ name: `팀${i}`, nickname: '나영' })
     }
 
     const after = await ctx.session.joinTeam({ inviteCode: code, nickname: '나영2' })
-    expect(after.memberships).toHaveLength(MAX_TEAMS_PER_DEVICE)
+    expect(after.memberships).toHaveLength(MAX_TEAMS_PER_USER)
     expect(after.memberships.find((m) => m.team.inviteCode === code).member.nickname).toBe('나영2')
   })
 })
@@ -116,8 +116,8 @@ describe('세션 — 팀마다 따로 관리되는 것들', () => {
 describe('세션 — 콕 찌르기', () => {
   it('같은 팀에 있는 다른 기기에게만 전달된다', async () => {
     const server = createFakeServer()
-    const me = makeSession({ server, deviceId: 'device-me' })
-    const mate = makeSession({ server, deviceId: 'device-mate' })
+    const me = makeSession({ server, userId: 'user-me' })
+    const mate = makeSession({ server, userId: 'user-mate' })
 
     const created = await me.session.createTeam({ name: '디자인팀', nickname: '나영' })
     const teamId = created.memberships[0].team.id

@@ -16,9 +16,17 @@ const { createEmitter, toFriendlyError } = require('./net')
 const TAP_EVENT = 'tap'
 const ROSTER_EVENT = 'roster'
 
-function createSupabaseNet({ url, anonKey, deviceId }) {
+function createSupabaseNet({ url, anonKey, storage = null }) {
   const client = createClient(url, anonKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
+    auth: {
+      // 세션이 곧 신원이다. 잃어버리면 팀에서 남남이 되므로 반드시 남겨야 한다.
+      persistSession: true,
+      autoRefreshToken: true,
+      // Node 에는 주소창이 없다. 켜 두면 없는 URL 을 뒤지다 경고를 남긴다.
+      detectSessionInUrl: false,
+      // 안 주면 메모리에만 남는다 — 앱은 반드시 주고, 일회성 스크립트는 안 줘도 된다
+      ...(storage ? { storage } : {}),
+    },
     realtime: {
       // Electron 메인 프로세스의 Node 에는 전역 WebSocket 이 없을 수 있어 직접 넘긴다
       transport: WebSocket,
@@ -29,8 +37,37 @@ function createSupabaseNet({ url, anonKey, deviceId }) {
   const emitter = createEmitter()
   /** teamId → { channel, member } */
   const rooms = new Map()
+  /** 로그인이 진행 중일 때의 약속. 계정이 여러 개 생기는 것을 막는다. */
+  let signingIn = null
+
+  /**
+   * 로그인 화면이 없는 앱이라, 기기마다 익명 계정을 하나 만들어 그것으로 자신을 증명한다.
+   *
+   * 예전에는 클라이언트가 지어낸 device_id 문자열을 서버가 그냥 믿었다. 지금은 서버가
+   * 발급하고 서버가 검증하는 auth.uid() 를 쓴다 — 실시간 채널을 잠글 수 있는 것도
+   * 심사할 신원이 생겼기 때문이다.
+   *
+   * 인터넷이 없으면 여기서 실패한다. 부르는 쪽(session.js)이 이미 재시도를 갖고 있으므로
+   * 따로 붙잡지 않고 그대로 올려보낸다.
+   */
+  async function ensureSession() {
+    const { data } = await client.auth.getSession()
+    if (data.session) return data.session
+
+    if (!signingIn) {
+      signingIn = client.auth.signInAnonymously().finally(() => {
+        signingIn = null
+      })
+    }
+    // finally 가 signingIn 을 비우기 전에 붙잡아 둔다
+    const pending = signingIn
+    const { data: created, error } = await pending
+    if (error) throw toFriendlyError(error)
+    return created.session
+  }
 
   async function rpc(name, args) {
+    await ensureSession()
     const { data, error } = await client.rpc(name, args)
     if (error) throw toFriendlyError(error)
     return data
@@ -48,8 +85,14 @@ function createSupabaseNet({ url, anonKey, deviceId }) {
   async function connect(team, member) {
     await disconnect(team.id)
 
+    // 붙기 전에 세션이 있어야 한다. private 채널은 토큰을 보고 들여보낼지 정한다.
+    await ensureSession()
+
     const channel = client.channel(`team:${team.id}`, {
       config: {
+        // 이 한 줄이 "누구나 들을 수 있는 방"을 "팀원만 들어오는 방"으로 바꾼다.
+        // 실제 심사는 서버가 realtime.messages 정책으로 한다 (supabase/schema.sql).
+        private: true,
         broadcast: { self: false },
         presence: { key: member.id },
       },
@@ -125,7 +168,6 @@ function createSupabaseNet({ url, anonKey, deviceId }) {
       return rpc('create_team', {
         p_name: name,
         p_nickname: nickname,
-        p_device_id: deviceId,
         p_character_key: characterKey,
       })
     },
@@ -134,19 +176,17 @@ function createSupabaseNet({ url, anonKey, deviceId }) {
       return rpc('join_team', {
         p_invite_code: inviteCode,
         p_nickname: nickname,
-        p_device_id: deviceId,
         p_character_key: characterKey,
       })
     },
 
     /** @returns {Promise<Array<{team, member, members}>>} */
     async getMyTeams() {
-      return (await rpc('get_my_teams', { p_device_id: deviceId })) ?? []
+      return (await rpc('get_my_teams', {})) ?? []
     },
 
     async setCharacter(teamId, characterKey) {
       const member = await rpc('set_character', {
-        p_device_id: deviceId,
         p_team_id: teamId,
         p_character_key: characterKey,
       })
@@ -165,7 +205,6 @@ function createSupabaseNet({ url, anonKey, deviceId }) {
     /** 이 팀에서 쓰는 내 닉네임을 바꾼다 */
     async setNickname(teamId, nickname) {
       const member = await rpc('set_nickname', {
-        p_device_id: deviceId,
         p_team_id: teamId,
         p_nickname: nickname,
       })
@@ -185,7 +224,6 @@ function createSupabaseNet({ url, anonKey, deviceId }) {
     /** 팀 이름을 바꾼다 */
     async renameTeam(teamId, name) {
       const team = await rpc('rename_team', {
-        p_device_id: deviceId,
         p_team_id: teamId,
         p_name: name,
       })
@@ -195,7 +233,7 @@ function createSupabaseNet({ url, anonKey, deviceId }) {
 
     /** 초대코드를 새로 발급한다. 예전 코드는 그 즉시 못 쓰게 된다. */
     async refreshInvite(teamId) {
-      const team = await rpc('refresh_invite', { p_device_id: deviceId, p_team_id: teamId })
+      const team = await rpc('refresh_invite', { p_team_id: teamId })
       await this.announceRosterChange(teamId)
       return team
     },
@@ -203,7 +241,7 @@ function createSupabaseNet({ url, anonKey, deviceId }) {
     async leaveTeam(teamId) {
       // 순서가 중요하다: 먼저 지우고, 그다음 알려야 남은 사람들이 다시 불러올 때
       // 이미 빠진 상태를 본다. 알린 뒤에 채널을 닫는다.
-      await rpc('leave_team', { p_device_id: deviceId, p_team_id: teamId })
+      await rpc('leave_team', { p_team_id: teamId })
       const room = rooms.get(teamId)
       if (room) {
         await room.channel.send({ type: 'broadcast', event: ROSTER_EVENT, payload: {} })

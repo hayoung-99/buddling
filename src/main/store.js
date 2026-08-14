@@ -2,7 +2,7 @@
  * 아주 작은 영속 저장소. userData 폴더의 JSON 파일 하나에 전부 담는다.
  *
  * 저장하는 것
- *   deviceId    이 기기를 나타내는 값. 계정 대신 "이 멤버가 나"임을 증명하므로 절대 바꾸지 않는다.
+ *   auth        Supabase 익명 로그인 세션. 계정 대신 "이 멤버가 나"임을 증명한다.
  *   nickname    새 팀에 들어갈 때 기본으로 채워 넣을 이름
  *   memberships 마지막으로 확인한 소속 팀들. 서버가 진짜지만, 앱을 켜자마자
  *               캐릭터를 띄우려면 캐시가 필요하다 (네트워크가 늦거나 끊겨도 뜬다).
@@ -18,12 +18,11 @@
 
 const fs = require('node:fs')
 const path = require('node:path')
-const crypto = require('node:crypto')
 const { app } = require('electron')
 const { writeJsonAtomically } = require('./write-json')
 
 const DEFAULTS = {
-  deviceId: null,
+  auth: {}, // Supabase 세션. 이 값이 곧 신원이다 (아래 authStorage)
   nickname: '',
   memberships: [], // [{ team: {id,name,inviteCode}, member: {id,nickname,characterKey} }]
   pets: {}, // teamId → { position: {x,y}|null, scale: number }
@@ -55,12 +54,6 @@ function load() {
     state = { ...DEFAULTS }
   }
 
-  if (!state.deviceId) {
-    state.deviceId = crypto.randomUUID()
-    // 이 값은 계정 대신 "이 멤버가 나"임을 증명한다. 잃어버리면 팀에서 남남이 되므로
-    // 모아 뒀다 쓰지 않고 그 자리에서 확실히 남긴다.
-    flush()
-  }
   return state
 }
 
@@ -99,9 +92,34 @@ function flush() {
   write()
 }
 
+/**
+ * Supabase 가 세션을 넣어 두는 자리 (createSupabaseNet 의 auth.storage 로 넘긴다).
+ *
+ * 이 값이 곧 신원이다. 예전 deviceId 처럼 한 번 정하고 마는 값이 아니라 토큰이
+ * 갱신될 때마다 새로 쓰인다. 새것을 받아 놓고 적기 전에 앱이 죽으면 다음 실행 때
+ * 이미 무효가 된 옛 토큰을 들고 가 로그인이 깨지고, 그러면 속한 팀을 전부 잃는다.
+ * 그래서 여기만은 모아 뒀다 쓰지 않고 그 자리에서 끝낸다.
+ */
+const authStorage = {
+  getItem: (key) => state.auth?.[key] ?? null,
+
+  setItem(key, value) {
+    state = { ...state, auth: { ...state.auth, [key]: value } }
+    flush()
+  },
+
+  removeItem(key) {
+    const auth = { ...state.auth }
+    delete auth[key]
+    state = { ...state, auth }
+    flush()
+  },
+}
+
 module.exports = {
   load,
   flush,
+  authStorage,
   get: (key) => state[key],
 
   set(patch) {

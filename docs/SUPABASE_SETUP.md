@@ -109,10 +109,35 @@ Supabase 대시보드의 **Table Editor → teams** 에서도 방금 만든 팀�
 
 ## 보안 참고
 
-이 앱은 계정 로그인이 없습니다. 대신:
+이 앱에는 로그인 화면이 없습니다. 대신 **Supabase 익명 로그인**으로 기기마다 계정을 하나
+만들어 두고 그것으로 자신을 증명합니다. **대시보드에서 익명 로그인을 켜 두어야 합니다**
+(Authentication → Providers → Anonymous sign-ins).
 
 - 테이블은 RLS로 완전히 잠겨 있어 `anon` 키로 직접 조회·수정할 수 없습니다.
-- 모든 접근은 `security definer` 함수(`create_team`, `join_team` 등)를 통해서만 이뤄집니다.
-- 설치할 때 기기마다 한 번 생성되는 `deviceId`(UUID)가 그 멤버의 소유 증명 역할을 합니다.
+- 모든 접근은 `security definer` 함수(`create_team`, `join_team` 등)를 통해서만 이뤄지고,
+  그 함수들은 클라이언트가 넘긴 값이 아니라 `auth.uid()` 로 호출자를 가립니다.
+- 실시간 채널은 **private 채널**입니다. `realtime.messages` 에 걸린 정책이 "그 팀 멤버인가"를
+  확인하므로, 팀 ID를 알아도 팀원이 아니면 붙을 수 없고 팀을 나가면 그 즉시 끊깁니다.
 
-실시간 채널은 인증이 없어 public 채널을 씁니다. 팀 ID를 아는 사람은 이론상 "누가 콕 찔렀다"는 이벤트를 엿들을 수 있습니다. 전달되는 내용은 그것이 전부지만, 사내 정식 배포 단계에서는 Supabase Auth + private channel로 전환하는 것을 권장합니다. 이 전환 지점은 `src/services/net.js` 인터페이스 뒤에 격리되어 있습니다.
+세션이 곧 신원이라, 그것을 잃으면(프로필 폴더 삭제·오래된 백업 복원 등) 속한 팀과 남남이
+됩니다. 되찾는 길은 초대코드로 다시 들어오는 것뿐입니다.
+
+### 안 쓰는 익명 계정은 알아서 정리됩니다
+
+익명 계정은 설치할 때마다, 세션을 잃을 때마다 하나씩 늘어납니다. 그래서 `pg_cron` 으로
+**하루 한 번(한국 시간 새벽 3시)** `cleanup_anonymous_users()` 를 돌립니다.
+`pg_cron` 은 대시보드 Database → Extensions 에서 켤 수 있고, 안 켜져 있으면 스키마를
+실행할 때 안내만 남기고 넘어갑니다.
+
+지우는 대상은 **어느 팀에도 속하지 않고, 만든 지 7일이 지난** 익명 계정뿐입니다.
+`members.user_id` 가 `on delete cascade` 라서 쓰는 사람을 잘못 지우면 팀 소속까지 함께
+사라지기 때문에, 팀이 있는 계정은 손대지 않습니다. 7일이라는 유예는 지금 막 로그인하고
+팀을 만드는 중인 사람이 쓸려가지 않게 하는 장치입니다.
+
+직접 돌려 보거나 기준을 바꿔 보고 싶으면 SQL Editor 에서 이렇게 합니다.
+
+```sql
+select public.cleanup_anonymous_users();                 -- 기본 7일, 지운 개수를 돌려준다
+select public.cleanup_anonymous_users(interval '30 days');
+select * from cron.job where jobname = 'tap-tap-cleanup-anonymous';
+```

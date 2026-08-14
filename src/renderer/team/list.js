@@ -169,9 +169,13 @@ function teamRow(entry) {
           class: 'row-sub',
           text: [
             t('list.members', { count: members.length, max: state.maxMembers }),
+            // 실패를 "연결하는 중"으로 뭉뚱그리면 영원히 로딩하는 것처럼 보인다.
+            // 상세 창은 이미 둘을 나눠 보여주고 있었다 (detail.js 참고).
             connection === 'connected'
               ? t('list.online', { count: Math.max(1, online) })
-              : t('list.connecting'),
+              : connection === 'error'
+                ? t('list.disconnected')
+                : t('list.connecting'),
           ].join(' · '),
         }),
       ]),

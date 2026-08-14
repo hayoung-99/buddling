@@ -13,8 +13,8 @@ const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 /** 초대코드 길이 (schema.sql 의 gen_invite_code 와 맞춘다) */
 const CODE_LENGTH = 8
 
-/** 한 기기가 동시에 속할 수 있는 팀 수 (schema.sql 의 max_teams_per_device 와 맞춘다) */
-const MAX_TEAMS_PER_DEVICE = 3
+/** 한 사람이 동시에 속할 수 있는 팀 수 (schema.sql 의 max_teams_per_user 와 맞춘다) */
+const MAX_TEAMS_PER_USER = 3
 
 /** 팀 하나에 들어갈 수 있는 사람 수 (schema.sql 의 max_members_per_team 과 맞춘다) */
 const MAX_MEMBERS_PER_TEAM = 5
@@ -29,12 +29,12 @@ const INVITE_TTL_MS = 24 * 60 * 60 * 1000
 function createFakeServer({ random = Math.random, now = () => Date.now() } = {}) {
   const teams = new Map() // teamId → { id, name, inviteCode }
   const codes = new Map() // inviteCode → teamId
-  const members = new Map() // `${teamId}:${deviceId}` → { id, teamId, deviceId, nickname, characterKey }
+  const members = new Map() // `${teamId}:${userId}` → { id, teamId, userId, nickname, characterKey }
   const connections = new Map() // teamId → Set<connection>
   let sequence = 0
 
   const nextId = () => `id-${(sequence += 1)}`
-  const key = (teamId, deviceId) => `${teamId}:${deviceId}`
+  const key = (teamId, userId) => `${teamId}:${userId}`
 
   function generateInviteCode() {
     for (let attempt = 0; attempt < 50; attempt += 1) {
@@ -62,7 +62,7 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
   const membersOf = (teamId) =>
     [...members.values()].filter((m) => m.teamId === teamId).map(publicMember)
 
-  const teamsOf = (deviceId) => [...members.values()].filter((m) => m.deviceId === deviceId)
+  const teamsOf = (userId) => [...members.values()].filter((m) => m.userId === userId)
 
   const membership = (member) => ({
     team: publicTeam(teams.get(member.teamId)),
@@ -85,13 +85,13 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
   return {
     teams,
     members,
-    MAX_TEAMS_PER_DEVICE,
+    MAX_TEAMS_PER_USER,
     MAX_MEMBERS_PER_TEAM,
 
-    createTeam({ deviceId, name, nickname, characterKey }) {
+    createTeam({ userId, name, nickname, characterKey }) {
       if (!nickname?.trim()) throw new Error('NICKNAME_REQUIRED')
-      if (!deviceId?.trim()) throw new Error('DEVICE_ID_REQUIRED')
-      if (teamsOf(deviceId).length >= MAX_TEAMS_PER_DEVICE) throw new Error('TEAM_LIMIT_REACHED')
+      if (!userId?.trim()) throw new Error('NOT_SIGNED_IN')
+      if (teamsOf(userId).length >= MAX_TEAMS_PER_USER) throw new Error('TEAM_LIMIT_REACHED')
 
       const team = {
         id: nextId(),
@@ -105,26 +105,26 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
       const member = {
         id: nextId(),
         teamId: team.id,
-        deviceId,
+        userId,
         nickname: nickname.trim(),
         characterKey: characterKey ?? 'cat',
       }
-      members.set(key(team.id, deviceId), member)
+      members.set(key(team.id, userId), member)
       return membership(member)
     },
 
-    joinTeam({ deviceId, inviteCode, nickname, characterKey }) {
+    joinTeam({ userId, inviteCode, nickname, characterKey }) {
       if (!nickname?.trim()) throw new Error('NICKNAME_REQUIRED')
       const teamId = codes.get(String(inviteCode ?? '').trim().toUpperCase())
       if (!teamId) throw new Error('INVALID_INVITE_CODE')
       if (teams.get(teamId).inviteExpiresAt <= now()) throw new Error('INVITE_EXPIRED')
 
       const taken = [...members.values()].some(
-        (m) => m.teamId === teamId && m.nickname === nickname.trim() && m.deviceId !== deviceId,
+        (m) => m.teamId === teamId && m.nickname === nickname.trim() && m.userId !== userId,
       )
       if (taken) throw new Error('NICKNAME_TAKEN')
 
-      const existing = members.get(key(teamId, deviceId))
+      const existing = members.get(key(teamId, userId))
       if (existing) {
         // 이미 들어와 있는 팀이면 닉네임·캐릭터만 새로 맞춘다
         existing.nickname = nickname.trim()
@@ -132,46 +132,46 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
         return membership(existing)
       }
 
-      if (teamsOf(deviceId).length >= MAX_TEAMS_PER_DEVICE) throw new Error('TEAM_LIMIT_REACHED')
+      if (teamsOf(userId).length >= MAX_TEAMS_PER_USER) throw new Error('TEAM_LIMIT_REACHED')
       if (membersOf(teamId).length >= MAX_MEMBERS_PER_TEAM) throw new Error('TEAM_FULL')
 
       const member = {
         id: nextId(),
         teamId,
-        deviceId,
+        userId,
         nickname: nickname.trim(),
         characterKey: characterKey ?? 'cat',
       }
-      members.set(key(teamId, deviceId), member)
+      members.set(key(teamId, userId), member)
       return membership(member)
     },
 
-    getMyTeams({ deviceId }) {
-      return teamsOf(deviceId).map(membership)
+    getMyTeams({ userId }) {
+      return teamsOf(userId).map(membership)
     },
 
-    setCharacter({ deviceId, teamId, characterKey }) {
-      const member = members.get(key(teamId, deviceId))
+    setCharacter({ userId, teamId, characterKey }) {
+      const member = members.get(key(teamId, userId))
       if (!member) throw new Error('NOT_A_MEMBER')
       member.characterKey = characterKey
       return publicMember(member)
     },
 
-    setNickname({ deviceId, teamId, nickname }) {
+    setNickname({ userId, teamId, nickname }) {
       const name = String(nickname ?? '').trim()
       if (!name) throw new Error('NICKNAME_REQUIRED')
-      const member = members.get(key(teamId, deviceId))
+      const member = members.get(key(teamId, userId))
       if (!member) throw new Error('NOT_A_MEMBER')
       const taken = [...members.values()].some(
-        (m) => m.teamId === teamId && m.nickname === name && m.deviceId !== deviceId,
+        (m) => m.teamId === teamId && m.nickname === name && m.userId !== userId,
       )
       if (taken) throw new Error('NICKNAME_TAKEN')
       member.nickname = name
       return publicMember(member)
     },
 
-    renameTeam({ deviceId, teamId, name }) {
-      if (!members.has(key(teamId, deviceId))) throw new Error('NOT_A_MEMBER')
+    renameTeam({ userId, teamId, name }) {
+      if (!members.has(key(teamId, userId))) throw new Error('NOT_A_MEMBER')
       const clean = String(name ?? '').trim()
       if (!clean) throw new Error('TEAM_NAME_REQUIRED')
       const team = teams.get(teamId)
@@ -179,8 +179,8 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
       return publicTeam(team)
     },
 
-    refreshInvite({ deviceId, teamId }) {
-      if (!members.has(key(teamId, deviceId))) throw new Error('NOT_A_MEMBER')
+    refreshInvite({ userId, teamId }) {
+      if (!members.has(key(teamId, userId))) throw new Error('NOT_A_MEMBER')
       const team = teams.get(teamId)
       codes.delete(team.inviteCode) // 예전 코드는 그 즉시 못 쓰게 된다
       team.inviteCode = generateInviteCode()
@@ -189,8 +189,8 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
       return publicTeam(team)
     },
 
-    leaveTeam({ deviceId, teamId }) {
-      members.delete(key(teamId, deviceId))
+    leaveTeam({ userId, teamId }) {
+      members.delete(key(teamId, userId))
 
       // 마지막 사람이 나갔으면 빈 팀과 초대코드를 함께 지운다 (schema.sql 과 같은 규칙)
       const empty = ![...members.values()].some((m) => m.teamId === teamId)
@@ -203,6 +203,11 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
     },
 
     attach(connection) {
+      // 진짜 서버에서는 realtime.messages 정책이 이 판단을 한다. 여기서 흉내 내지 않으면
+      // "남의 팀 채널에 못 붙는다"를 테스트가 증명하지 못한다.
+      if (!members.has(key(connection.teamId, connection.userId))) {
+        throw new Error('NOT_A_MEMBER')
+      }
       if (!connections.has(connection.teamId)) connections.set(connection.teamId, new Set())
       connections.get(connection.teamId).add(connection)
       syncPresence(connection.teamId)
@@ -218,7 +223,7 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
 }
 
 /** 가짜 서버에 붙는 클라이언트 하나. Net 인터페이스를 만족한다. */
-function createFakeNet({ server, deviceId }) {
+function createFakeNet({ server, userId }) {
   const emitter = createEmitter()
   /** teamId → { connection, member } */
   const rooms = new Map()
@@ -236,22 +241,22 @@ function createFakeNet({ server, deviceId }) {
     on: emitter.on,
 
     async createTeam(payload) {
-      return server.createTeam({ deviceId, ...payload })
+      return server.createTeam({ userId, ...payload })
     },
     async joinTeam(payload) {
-      return server.joinTeam({ deviceId, ...payload })
+      return server.joinTeam({ userId, ...payload })
     },
     async getMyTeams() {
-      return server.getMyTeams({ deviceId })
+      return server.getMyTeams({ userId })
     },
     async setCharacter(teamId, characterKey) {
-      const member = server.setCharacter({ deviceId, teamId, characterKey })
+      const member = server.setCharacter({ userId, teamId, characterKey })
       const room = rooms.get(teamId)
       if (room) room.member = member
       return member
     },
     async setNickname(teamId, nickname) {
-      const member = server.setNickname({ deviceId, teamId, nickname })
+      const member = server.setNickname({ userId, teamId, nickname })
       const room = rooms.get(teamId)
       if (room) room.member = member
       await this.announceRosterChange(teamId)
@@ -259,20 +264,20 @@ function createFakeNet({ server, deviceId }) {
     },
 
     async renameTeam(teamId, name) {
-      const team = server.renameTeam({ deviceId, teamId, name })
+      const team = server.renameTeam({ userId, teamId, name })
       await this.announceRosterChange(teamId)
       return team
     },
 
     async refreshInvite(teamId) {
-      const team = server.refreshInvite({ deviceId, teamId })
+      const team = server.refreshInvite({ userId, teamId })
       await this.announceRosterChange(teamId)
       return team
     },
 
     async leaveTeam(teamId) {
       // 지우고 → 알리고 → 끊는다 (supabase-net 과 같은 순서)
-      server.leaveTeam({ deviceId, teamId })
+      server.leaveTeam({ userId, teamId })
       await this.announceRosterChange(teamId)
       await disconnect(teamId)
     },
@@ -282,6 +287,7 @@ function createFakeNet({ server, deviceId }) {
       const connection = {
         teamId: team.id,
         memberId: member.id,
+        userId,
         deliver: (event, payload) => {
           // 한 사람만 콕 찌른 경우 나머지는 무시한다 (supabase-net 과 같은 규칙)
           if (event === 'tap' && payload.toMemberId && payload.toMemberId !== member.id) return
@@ -289,8 +295,10 @@ function createFakeNet({ server, deviceId }) {
         },
         presence: (onlineIds) => emitter.emit('presence', { teamId: team.id, onlineIds }),
       }
-      rooms.set(team.id, { connection, member })
+      // 붙는 데 실패하면 방을 남기지 않는다 — 반쯤 열린 방이 남으면 다음 연결이
+      // 이미 붙어 있는 줄 알고 건너뛴다 (supabase-net 도 같은 이유로 되돌린다)
       server.attach(connection)
+      rooms.set(team.id, { connection, member })
       emitter.emit('status', { teamId: team.id, status: 'SUBSCRIBED' })
     },
 
@@ -330,7 +338,7 @@ function createFakeNet({ server, deviceId }) {
 module.exports = {
   createFakeServer,
   createFakeNet,
-  MAX_TEAMS_PER_DEVICE,
+  MAX_TEAMS_PER_USER,
   MAX_MEMBERS_PER_TEAM,
   INVITE_TTL_MS,
 }
