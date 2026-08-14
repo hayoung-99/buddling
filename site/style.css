@@ -306,12 +306,27 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
  * 크기를 키울 때는 width 와 left/right 를 같은 비율로 키운다. 그래야 얼굴이
  * 잘리지 않는 이 비율이 유지된다.
  *
+ * **물리는 깊이는 눈이 정한다.** 아래 값은 다섯 마리 모두 바깥쪽 눈이 화면
+ * 안으로 20px 들어오는 자리다. 얼굴이 반쯤 잘린 캐릭터는 빼꼼한 게 아니라
+ * 그냥 표정을 잃은 것이라, 더 깊이 물릴 수 있어도 여기서 멈춘다. 결과가
+ * 몸의 4분의 3쯤 보이는 상태이고, 그 정도만 되어도 세로선에 물려 있는
+ * 것은 충분히 읽힌다.
+ *
+ * 눈은 그림마다 다른 자리에 있다 (판다 x126, 강아지 x138, 고양이 x142,
+ * 340px 그림 기준). 그래서 **px 을 똑같이 주면 안 되고** 그림마다 따로
+ * 역산해야 한다. 화면 폭이 아니라 걸어 둔 width 에서 나오는 값이므로,
+ * width 가 같은 구간끼리는 값도 같다.
+ *
+ * **그림을 다시 뜨면 이 값도 다시 재야 한다.** 눈 위치가 조금만 움직여도
+ * 곧바로 눈을 밟는다. 한번은 그림만 새로 뜨고 이 값을 그대로 뒀다가
+ * 다섯 마리가 모두 한쪽 눈을 잃은 채로 나간 적이 있다.
+ *
  * 1440px 아래에서는 나오지 않는다. 본문 칸 바깥 여백이 그보다 좁으면 글과
  * 부딪힌다. 있으면 좋은 것이지 없으면 안 되는 것이 아니다.
  *
- * 좁은 화면이라고 캐릭터를 줄이지는 않는다. 크기는 그대로 두고 더 깊이 물려서
- * 얼굴만 내밀게 한다. 줄이면 그냥 작아 보이지만, 물리면 더 빼꼼해 보인다.
- * 맥북 14"(1512px)·13"(1470px)가 이 구간이라 여기서 사라지면 안 된다.
+ * 좁은 화면이라고 캐릭터를 줄이지는 않는다. 크기는 그대로 두고, 어느 폭에서나
+ * 같은 만큼 물린다. 맥북 14"(1512px)·13"(1470px)가 이 구간이라 여기서
+ * 사라지면 안 된다.
  */
 
 .peekers { display: none; }
@@ -348,28 +363,25 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
    * 부리 때문에 그림 안에서 차지하는 폭이 좁다. 화면에서 다섯 얼굴이 같은
    * 크기로 보이는 쪽을 택했다.
    */
-  .peek-panda { top: 120px; left: -135px; width: 240px; background-image: url('/assets/peek-panda.png'); }
-  .peek-bunny { top: 560px; right: -195px; width: 300px; background-image: url('/assets/peek-bunny.png'); }
-  .peek-dog { top: 1020px; left: -132px; width: 240px; background-image: url('/assets/peek-dog.png'); }
-  .peek-duck { top: 1600px; right: -175px; width: 270px; background-image: url('/assets/peek-duck.png'); }
-  .peek-cat { top: 2160px; left: -128px; width: 240px; background-image: url('/assets/peek-cat.png'); }
+  .peek-panda { top: 120px; left: -68px; width: 240px; background-image: url('/assets/peek-panda.png'); }
+  .peek-bunny { top: 560px; right: -136px; width: 300px; background-image: url('/assets/peek-bunny.png'); }
+  .peek-dog { top: 1020px; left: -77px; width: 240px; background-image: url('/assets/peek-dog.png'); }
+  .peek-duck { top: 1600px; right: -131px; width: 270px; background-image: url('/assets/peek-duck.png'); }
+  .peek-cat { top: 2160px; left: -80px; width: 240px; background-image: url('/assets/peek-cat.png'); }
 }
 
-/* 창이 940px 뿐이라 여백이 넓다. 여기서부터는 더 많이 내민다. */
-@media (min-width: 1600px) {
-  .peek-panda { left: -40px; }
-  .peek-bunny { right: -150px; }
-  .peek-dog { left: -36px; }
-  .peek-duck { right: -132px; }
-  .peek-cat { left: -34px; }
-}
-
+/*
+ * 창이 940px 뿐이라 넓은 화면에서는 여백이 남는다. 그렇다고 더 내밀지는
+ * 않는다 — 깊이는 눈이 정하는 것이라 화면이 넓어졌다고 달라질 것이 없다.
+ * 남는 여백은 캐릭터를 키우는 데에 쓴다. width 가 커진 만큼 물리는 값도
+ * 같은 비율로 커진다.
+ */
 @media (min-width: 1900px) {
-  .peek-panda { top: 116px; left: -50px; width: 300px; }
-  .peek-bunny { top: 560px; right: -190px; width: 370px; }
-  .peek-dog { top: 1030px; left: -46px; width: 300px; }
-  .peek-duck { top: 1610px; right: -166px; width: 335px; }
-  .peek-cat { top: 2175px; left: -44px; width: 300px; }
+  .peek-panda { top: 116px; left: -91px; width: 300px; }
+  .peek-bunny { top: 560px; right: -172px; width: 370px; }
+  .peek-dog { top: 1030px; left: -101px; width: 300px; }
+  .peek-duck { top: 1610px; right: -168px; width: 335px; }
+  .peek-cat { top: 2175px; left: -105px; width: 300px; }
 }
 
 /*
