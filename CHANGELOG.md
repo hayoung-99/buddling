@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.0](https://github.com/hayoung-99/tap-tap/compare/v0.1.1...v0.2.0) (2026-08-14)
+
+
+### 새로운 것
+
+* **settings:** split the settings window into a list and a detail ([#13](https://github.com/hayoung-99/tap-tap/issues/13)) ([6a60134](https://github.com/hayoung-99/tap-tap/commit/6a601344461e9f3bad0bf6b6fb00d096dd1d6aee))
+* **site:** rebuild the landing page as a window on a wallpaper ([#9](https://github.com/hayoung-99/tap-tap/issues/9)) ([730e91f](https://github.com/hayoung-99/tap-tap/commit/730e91f8973ddb10e9d182bcc50f0c7fd98ff3c0))
+
+
+### 고친 것
+
+* **build:** ad-hoc sign the macOS app so it can be opened at all ([#15](https://github.com/hayoung-99/tap-tap/issues/15)) ([2bd8dd9](https://github.com/hayoung-99/tap-tap/commit/2bd8dd99db684c44969387321f177f92fa2d7706))
+
 ## [0.1.1](https://github.com/hayoung-99/tap-tap/compare/v0.1.0...v0.1.1) (2026-08-14)
 
 
