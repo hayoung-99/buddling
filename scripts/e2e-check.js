@@ -74,7 +74,7 @@ async function main() {
     })
     team = created.team
     aliceMember = created.member
-    if (!/^[A-HJ-NP-Z2-9]{6}$/.test(team.inviteCode)) {
+    if (!/^[A-HJ-NP-Z2-9]{8}$/.test(team.inviteCode)) {
       throw new Error(`초대코드 형식이 이상합니다: ${team.inviteCode}`)
     }
     return `초대코드 ${team.inviteCode}`

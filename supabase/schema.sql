@@ -61,17 +61,35 @@ returns int language sql immutable as $$ select 5 $$;
 create or replace function public.invite_ttl()
 returns interval language sql immutable as $$ select interval '24 hours' $$;
 
--- 초대코드: 혼동하기 쉬운 0/O/1/I 를 뺀 32자에서 6자리
+-- 초대코드: 혼동하기 쉬운 0/O/1/I 를 뺀 32자에서 8자리
+--
+-- random() 을 쓰지 않는다. 세션마다 시드되는 예측 가능한 PRNG 라서, 남이 맞히면 안 되는
+-- 값을 만드는 데 쓸 것이 아니다. pgcrypto 는 맨 위에서 이미 켜 뒀다.
+--
+-- 8자리인 이유는 이 코드가 팀에 들어오는 유일한 문이고 시도 횟수를 세는 곳이 없기
+-- 때문이다. 6자리(30비트)는 초당 1000번 두드리면 몇 시간이면 뚫린다. 24시간 만료는
+-- 두드릴 수 있는 창을 줄일 뿐 속도를 줄이지 못한다. 8자리면 40비트가 되어 같은 속도로
+-- 수십 년이 걸린다.
+--
+-- 알파벳이 32자, 즉 2의 거듭제곱이라 바이트를 5비트로 잘라 써도 특정 글자가 더 자주
+-- 나오지 않는다. (32가 아니었다면 나머지 연산에서 편향이 생긴다)
+--
+-- search_path 에 extensions 를 함께 적는 이유: gen_random_bytes 는 pgcrypto 함수인데
+-- Supabase 는 확장을 public 이 아니라 extensions 스키마에 두는 구성이 많다. 이 함수를
+-- 부르는 create_team·refresh_invite 는 `set search_path = public` 이라, 여기서 다시
+-- 잡아 주지 않으면 "함수가 없다"로 넘어진다. 없는 스키마를 적어 두는 것은 무해하다.
 create or replace function public.gen_invite_code()
 returns text
 language plpgsql
+set search_path = public, extensions
 as $$
 declare
   alphabet constant text := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  bytes    constant bytea := gen_random_bytes(8);
   code text := '';
 begin
-  for i in 1..6 loop
-    code := code || substr(alphabet, 1 + floor(random() * length(alphabet))::int, 1);
+  for i in 0..7 loop
+    code := code || substr(alphabet, 1 + (get_byte(bytes, i) & 31), 1);
   end loop;
   return code;
 end;
