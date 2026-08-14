@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/hayoung-99/tap-tap/compare/v0.2.2...v0.3.0) (2026-08-14)
+
+
+### 새로운 것
+
+* **auth:** identify members by anonymous sign-in, lock the channel ([#25](https://github.com/hayoung-99/tap-tap/issues/25)) ([bbb8ef3](https://github.com/hayoung-99/tap-tap/commit/bbb8ef3ac5cd72d2e330452c33852260a7db4ba0))
+
+
+### 고친 것
+
+* **invite:** make invite codes unguessable ([#24](https://github.com/hayoung-99/tap-tap/issues/24)) ([8f27981](https://github.com/hayoung-99/tap-tap/commit/8f279814ecb99d18b5d0b071a85170872a4cc59e))
+
 ## [0.2.2](https://github.com/hayoung-99/tap-tap/compare/v0.2.1...v0.2.2) (2026-08-14)
 
 
