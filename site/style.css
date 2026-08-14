@@ -306,6 +306,14 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
  * 크기를 키울 때는 width 와 left/right 를 같은 비율로 키운다. 그래야 얼굴이
  * 잘리지 않는 이 비율이 유지된다.
  *
+ * **깊이는 px 이 아니라 "캐릭터가 보이는 몫"으로 맞춘다.** 아래 값은 다섯 마리
+ * 모두 몸의 3분의 2쯤만 화면에 남도록 알파 여백에서 역산한 것이다. 그림마다
+ * 캐릭터가 프레임 안에서 차지하는 자리와 폭이 달라서(고양이는 좌우 여백이
+ * 50px 넘고 판다는 12px 밖에 안 된다) 같은 px 을 줘도 노출이 제각각이 된다.
+ * 한번은 그림만 다시 뜨고 이 값을 그대로 뒀다가, 넓은 화면에서 왼쪽 셋이
+ * 화면 가장자리에 닿지도 않고 통째로 드러나 빼꼼이 아니게 된 적이 있다.
+ * **그림을 다시 뜨면 이 값도 다시 재야 한다.**
+ *
  * 1440px 아래에서는 나오지 않는다. 본문 칸 바깥 여백이 그보다 좁으면 글과
  * 부딪힌다. 있으면 좋은 것이지 없으면 안 되는 것이 아니다.
  *
@@ -360,21 +368,21 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
   .peek-cat { top: 2160px; left: -122px; width: 240px; background-image: url('/assets/peek-cat.png'); }
 }
 
-/* 창이 940px 뿐이라 여백이 넓다. 여기서부터는 더 많이 내민다. */
+/* 창이 940px 뿐이라 여백이 넓다. 여기서부터는 더 많이 내민다 (절반 → 3분의 2). */
 @media (min-width: 1600px) {
-  .peek-panda { left: -40px; }
+  .peek-panda { left: -88px; }
   .peek-bunny { right: -150px; }
-  .peek-dog { left: -36px; }
+  .peek-dog { left: -93px; }
   .peek-duck { right: -132px; }
-  .peek-cat { left: -34px; }
+  .peek-cat { left: -97px; }
 }
 
 @media (min-width: 1900px) {
-  .peek-panda { top: 116px; left: -50px; width: 300px; }
+  .peek-panda { top: 116px; left: -110px; width: 300px; }
   .peek-bunny { top: 560px; right: -190px; width: 370px; }
-  .peek-dog { top: 1030px; left: -46px; width: 300px; }
+  .peek-dog { top: 1030px; left: -116px; width: 300px; }
   .peek-duck { top: 1610px; right: -166px; width: 335px; }
-  .peek-cat { top: 2175px; left: -44px; width: 300px; }
+  .peek-cat { top: 2175px; left: -121px; width: 300px; }
 }
 
 /*
