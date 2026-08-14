@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { CHECK_HOUR, dayKey, isDue, startMorningSchedule } from '../src/main/update-schedule.js'
+import { CHECK_HOUR, dayKey, isDue, startMorningSchedule } from '../src/main/update-schedule'
 
 /** 그날 그 시각의 로컬 시간 */
 const at = (day, hour, minute = 0) => new Date(2026, 7, day, hour, minute)

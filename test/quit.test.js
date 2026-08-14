@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { releaseUnclosableWindows } from '../src/main/quit.js'
+import { releaseUnclosableWindows } from '../src/main/quit'
 
 /**
  * 캐릭터 창 흉내.

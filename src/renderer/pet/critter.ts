@@ -12,24 +12,44 @@
  */
 
 import * as THREE from 'three'
-import { EAR, TAIL, SNOUT, ARM } from '../../shared/characters.js'
+import { EAR, TAIL, SNOUT, ARM } from '../../shared/characters'
+import type { CharacterBuild, CharacterSpec, PaletteKey } from '../../shared/characters'
 
 const TOY_SURFACE = { roughness: 0.62, metalness: 0.0 }
 
-function toyMaterial(color, extra = {}) {
+/** 부위 이름 → 그 부위를 움직이는 피벗. 애니메이션이 이 이름으로 찾아 쓴다. */
+export type CritterParts = Record<string, THREE.Object3D>
+
+/** 팔레트 칸마다 하나씩. 캐릭터를 버릴 때 전부 되돌려준다. */
+export type CritterMaterials = Record<string, THREE.MeshStandardMaterial>
+
+export interface Critter {
+  root: THREE.Group
+  parts: CritterParts
+  spec: CharacterSpec
+  materials: CritterMaterials
+  /** 실제로 차지하는 높이(월드 단위). 종마다 다르다. */
+  height: number
+}
+
+/** `traverse` 는 Object3D 를 주는데 형상은 Mesh 에만 있다 */
+const isMesh = (object: THREE.Object3D): object is THREE.Mesh =>
+  (object as THREE.Mesh).isMesh === true
+
+function toyMaterial(color: number, extra: THREE.MeshStandardMaterialParameters = {}) {
   return new THREE.MeshStandardMaterial({ color, ...TOY_SURFACE, ...extra })
 }
 
-function ball(radius, material, segments = 30) {
+function ball(radius: number, material: THREE.Material, segments = 30) {
   const geometry = new THREE.SphereGeometry(radius, segments, Math.round(segments * 0.7))
   return new THREE.Mesh(geometry, material)
 }
 
-function capsule(radius, length, material) {
+function capsule(radius: number, length: number, material: THREE.Material) {
   return new THREE.Mesh(new THREE.CapsuleGeometry(radius, length, 8, 22), material)
 }
 
-function cone(radius, height, material, segments = 22) {
+function cone(radius: number, height: number, material: THREE.Material, segments = 22) {
   return new THREE.Mesh(new THREE.ConeGeometry(radius, height, segments), material)
 }
 
@@ -39,16 +59,13 @@ function pivot(x = 0, y = 0, z = 0) {
   return g
 }
 
-/**
- * 스펙으로부터 캐릭터를 만든다.
- * @returns {{ root: THREE.Group, parts: Record<string, THREE.Object3D>, spec: object }}
- */
-export function createCritter(spec) {
+/** 스펙으로부터 캐릭터를 만든다. */
+export function createCritter(spec: CharacterSpec): Critter {
   const { palette, build } = spec
-  const parts = {}
+  const parts: CritterParts = {}
 
-  const color = (name) => palette[name] ?? palette.body
-  const materials = {
+  const color = (name: PaletteKey) => palette[name] ?? palette.body
+  const materials: CritterMaterials = {
     body: toyMaterial(color('body')),
     belly: toyMaterial(color('belly')),
     accent: toyMaterial(color('accent')),
@@ -98,7 +115,7 @@ export function createCritter(spec) {
   if (build.patches.includes('pandaEyes')) buildPandaEyePatches(head, materials, headR)
   buildEyes(head, parts, materials, headR)
   buildCheeks(head, parts, materials, headR)
-  buildEars(head, parts, materials, headR, build.ears, palette)
+  buildEars(head, parts, materials, headR, build.ears)
 
   // ── 팔 (실루엣 밖으로 확실히 나오게 어깨를 몸통 옆면에 붙인다) ──
   const armMaterial = build.arms.color ? materials[build.arms.color] : materials.body
@@ -149,7 +166,7 @@ export function createCritter(spec) {
   }
 
   root.traverse((object) => {
-    if (object.isMesh) {
+    if (isMesh(object)) {
       object.castShadow = true
       object.receiveShadow = false
     }
@@ -174,7 +191,7 @@ export const STANDARD_HEIGHT = 2.0
  * 캐릭터를 담은 그룹에 적용할 배율.
  * root.scale 은 점프의 squash & stretch 가 쓰므로 부모에 걸어야 한다.
  */
-export function scaleToStandardHeight(critter) {
+export function scaleToStandardHeight(critter: { height: number }): number {
   return STANDARD_HEIGHT / critter.height
 }
 
@@ -182,7 +199,13 @@ export function scaleToStandardHeight(critter) {
 // 부위별 빌더
 // ────────────────────────────────────────────────────────────
 
-function buildSnout(head, parts, materials, headR, snout) {
+function buildSnout(
+  head: THREE.Object3D,
+  parts: CritterParts,
+  materials: CritterMaterials,
+  headR: number,
+  snout: CharacterBuild['snout'],
+) {
   if (snout.type === SNOUT.BEAK) {
     const beak = ball(headR * snout.size, materials.snout)
     beak.scale.set(1.3, 0.44, 1.55)
@@ -209,7 +232,12 @@ function buildSnout(head, parts, materials, headR, snout) {
   head.add(nose)
 }
 
-function buildEyes(head, parts, materials, headR) {
+function buildEyes(
+  head: THREE.Object3D,
+  parts: CritterParts,
+  materials: CritterMaterials,
+  headR: number,
+) {
   const eyeR = headR * 0.15
   for (const side of [-1, 1]) {
     const eye = pivot(side * headR * 0.41, headR * 0.08, headR * 0.8)
@@ -224,7 +252,11 @@ function buildEyes(head, parts, materials, headR) {
   }
 }
 
-function buildPandaEyePatches(head, materials, headR) {
+function buildPandaEyePatches(
+  head: THREE.Object3D,
+  materials: CritterMaterials,
+  headR: number,
+) {
   for (const side of [-1, 1]) {
     const patch = ball(headR * 0.29, materials.accent, 24)
     patch.scale.set(0.92, 1.2, 0.42)
@@ -240,7 +272,12 @@ function buildPandaEyePatches(head, materials, headR) {
  * 얼굴이 구면이라 그냥 평평하게 붙이면 가장자리가 얼굴 속으로 파묻힌다.
  * 볼 위치를 구 표면에서 잡고, 그 지점의 법선 방향으로 세운 뒤 그 위에 빗금을 얹는다.
  */
-function buildCheeks(head, parts, materials, headR) {
+function buildCheeks(
+  head: THREE.Object3D,
+  parts: CritterParts,
+  materials: CritterMaterials,
+  headR: number,
+) {
   const STROKES = 3
   const middleIndex = (STROKES - 1) / 2
 
@@ -270,7 +307,13 @@ function buildCheeks(head, parts, materials, headR) {
   }
 }
 
-function buildEars(head, parts, materials, headR, ears, palette) {
+function buildEars(
+  head: THREE.Object3D,
+  parts: CritterParts,
+  materials: CritterMaterials,
+  headR: number,
+  ears: CharacterBuild['ears'],
+) {
   if (ears.type === EAR.NONE) return
 
   const outerMaterial = ears.color ? materials[ears.color] : materials.body
@@ -329,7 +372,11 @@ function buildEars(head, parts, materials, headR, ears, palette) {
   }
 }
 
-function buildTail(materials, tail, R) {
+function buildTail(
+  materials: CritterMaterials,
+  tail: CharacterBuild['tail'],
+  R: number,
+): THREE.Group | null {
   const group = new THREE.Group()
 
   switch (tail.type) {
@@ -381,9 +428,9 @@ function buildTail(materials, tail, R) {
 }
 
 /** 캐릭터를 교체할 때 GPU 자원을 되돌려준다. */
-export function disposeCritter(critter) {
+export function disposeCritter(critter: Critter) {
   critter.root.traverse((object) => {
-    if (object.isMesh) object.geometry.dispose()
+    if (isMesh(object)) object.geometry.dispose()
   })
   for (const material of Object.values(critter.materials)) material.dispose()
   critter.root.removeFromParent()

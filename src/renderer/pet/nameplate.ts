@@ -16,16 +16,27 @@ const LIFE_MS = 2000
 /** 동시에 보여줄 이름 수. 넘치면 오래된 것부터 걷어낸다. */
 const MAX_VISIBLE = 3
 
-export function createNameplate(container) {
+/** 캐릭터 발밑 좌표 */
+export interface NameplateAnchor {
+  centerX: number
+  bottom: number
+}
+
+export interface Nameplate {
+  show: (nickname: string, anchor: NameplateAnchor) => void
+  setScale: (next: number) => void
+}
+
+export function createNameplate(container: HTMLElement): Nameplate {
   let scale = 1
   /** 이름표 → 지울 시각을 재는 타이머. 이름표가 사라지면 항목도 함께 사라진다. */
-  const timers = new WeakMap()
+  const timers = new WeakMap<Element, ReturnType<typeof setTimeout>>()
 
   /**
-   * @param {string} nickname 찌른 사람
-   * @param {{centerX: number, bottom: number}} anchor 캐릭터 발밑 좌표
+   * @param nickname 찌른 사람
+   * @param anchor 캐릭터 발밑 좌표
    */
-  function show(nickname, anchor) {
+  function show(nickname: string, anchor: NameplateAnchor) {
     const name = String(nickname ?? '').trim()
     if (!name) return
 
@@ -37,13 +48,15 @@ export function createNameplate(container) {
 
     // CSS 애니메이션이 끝나면 알아서 사라지지만, 창이 가려져 있으면 그 신호가 안 온다.
     // 그래서 시간이 다 되면 지우는 보조 타이머를 하나씩 달아 둔다.
-    const arm = (chip) => {
+    const arm = (chip: HTMLElement) => {
       clearTimeout(timers.get(chip))
       timers.set(chip, setTimeout(() => chip.remove(), LIFE_MS + 400))
     }
 
     // 같은 사람이 연달아 찌르면 새로 띄우지 않고 시간만 늘려준다
-    const existing = [...container.children].find((chip) => chip.textContent === name)
+    const existing = [...container.children].find(
+      (chip): chip is HTMLElement => chip.textContent === name,
+    )
     if (existing) {
       existing.classList.remove('chip')
       void existing.offsetWidth
@@ -52,7 +65,7 @@ export function createNameplate(container) {
       return
     }
 
-    while (container.childElementCount >= MAX_VISIBLE) container.firstElementChild.remove()
+    while (container.childElementCount >= MAX_VISIBLE) container.firstElementChild?.remove()
 
     const chip = document.createElement('span')
     chip.className = 'chip'
@@ -63,7 +76,7 @@ export function createNameplate(container) {
   }
 
   /** 캐릭터 크기에 맞춰 이름표도 같이 조절한다 */
-  function setScale(next) {
+  function setScale(next: number) {
     scale = next
     container.style.setProperty('--nscale', String(next))
   }

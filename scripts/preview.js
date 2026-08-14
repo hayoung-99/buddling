@@ -27,7 +27,7 @@ app.whenReady().then(async () => {
     title: 'tap-tap 캐릭터 미리보기',
   })
 
-  await window.loadFile(path.join(__dirname, '..', 'src', 'renderer', 'preview', 'index.html'))
+  await window.loadFile(path.join(__dirname, '..', 'dist-renderer', 'preview', 'index.html'))
 
   if (!CAPTURE) return
 

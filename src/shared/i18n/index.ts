@@ -12,24 +12,35 @@ import en from './en.json' with { type: 'json' }
 import ja from './ja.json' with { type: 'json' }
 import zh from './zh.json' with { type: 'json' }
 
-export const DICTIONARIES = { ko, en, ja, zh }
+/** 사전 한 벌. 열쇠는 네 언어가 같아야 하고, 어긋나면 `test/i18n.test.js` 가 잡는다. */
+export type Dictionary = Record<string, string>
+
+export const DICTIONARIES: Record<string, Dictionary> = { ko, en, ja, zh }
+
+export type LanguageCode = 'ko' | 'en' | 'ja' | 'zh'
 
 /** 고를 수 있는 언어. 이름은 그 언어로 적는다 — 못 읽는 말로 적혀 있으면 고를 수 없다. */
-export const LANGUAGES = [
+export const LANGUAGES: ReadonlyArray<{ code: LanguageCode; name: string }> = [
   { code: 'ko', name: '한국어' },
   { code: 'en', name: 'English' },
   { code: 'ja', name: '日本語' },
   { code: 'zh', name: '中文' },
 ]
 
-export const DEFAULT_LANGUAGE = 'en'
+export const DEFAULT_LANGUAGE: LanguageCode = 'en'
+
+/** 열쇠와 `{빈칸}` 을 받아 지금 언어의 문장을 만든다 */
+export type Translate = (key: string, params?: Record<string, string | number>) => string
 
 /**
  * 쓸 언어를 정한다.
  * 이미 고른 값이 있으면 그대로, 없으면 운영체제 로캘(ko-KR, zh-Hans-CN …)을 보고,
  * 그마저 지원하지 않는 말이면 영어로 간다.
  */
-export function resolveLanguage(preference, osLocale = '') {
+export function resolveLanguage(
+  preference: string | null | undefined,
+  osLocale: string = '',
+): string {
   if (preference && DICTIONARIES[preference]) return preference
 
   const head = String(osLocale).toLowerCase().split(/[-_]/)[0]
@@ -40,8 +51,8 @@ export function resolveLanguage(preference, osLocale = '') {
  * 번역기를 만든다.
  * 없는 열쇠는 열쇠 그대로 돌려준다 — 화면에서 바로 눈에 띄어 빠뜨린 걸 찾기 쉽다.
  */
-export function createTranslator(language) {
-  const dictionary = DICTIONARIES[language] ?? DICTIONARIES[DEFAULT_LANGUAGE]
+export function createTranslator(language: string | null | undefined): Translate {
+  const dictionary = DICTIONARIES[language ?? ''] ?? DICTIONARIES[DEFAULT_LANGUAGE]
 
   return function t(key, params) {
     const template = dictionary[key] ?? DICTIONARIES[DEFAULT_LANGUAGE][key] ?? key

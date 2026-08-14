@@ -24,7 +24,7 @@ const { execFileSync } = require('node:child_process')
 const { app, BrowserWindow, nativeImage } = require('electron')
 
 const ROOT = path.join(__dirname, '..')
-const PAGE = path.join(ROOT, 'src', 'renderer', 'icon', 'index.html')
+const PAGE = path.join(ROOT, 'dist-renderer', 'icon', 'index.html')
 const BUILD_DIR = path.join(ROOT, 'build')
 const SITE_ASSETS = path.join(ROOT, 'site', 'assets')
 

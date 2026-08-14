@@ -8,10 +8,10 @@ import {
   createAnimator,
   TWITCH_DURATION,
   DANCE_CYCLE,
-} from '../src/renderer/pet/animations.js'
-import { sampleTrack, createSpring, easing, clamp } from '../src/renderer/pet/tween.js'
-import { createCritter, scaleToStandardHeight } from '../src/renderer/pet/critter.js'
-import { CHARACTERS, getCharacter } from '../src/shared/characters.js'
+} from '../src/renderer/pet/animations'
+import { sampleTrack, createSpring, easing, clamp } from '../src/renderer/pet/tween'
+import { createCritter, scaleToStandardHeight } from '../src/renderer/pet/critter'
+import { CHARACTERS, getCharacter } from '../src/shared/characters'
 
 describe('sampleTrack', () => {
   const keys = [

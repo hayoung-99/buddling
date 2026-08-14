@@ -4,12 +4,12 @@
  */
 
 import * as THREE from 'three'
-import { CHARACTERS } from '../../shared/characters.js'
-import { createCritter, scaleToStandardHeight } from '../pet/critter.js'
-import { addLighting, createShadowCatcher } from '../pet/scene.js'
-import { createAnimator } from '../pet/animations.js'
+import { CHARACTERS } from '../../shared/characters'
+import { createCritter, scaleToStandardHeight } from '../pet/critter'
+import { addLighting, createShadowCatcher } from '../pet/scene'
+import { createAnimator } from '../pet/animations'
 
-const canvas = document.getElementById('stage')
+const canvas = document.getElementById('stage') as HTMLCanvasElement
 const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
 renderer.setClearColor(0x000000, 0)
 renderer.shadowMap.enabled = true
@@ -22,8 +22,8 @@ scene.add(createShadowCatcher(30))
 const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 60)
 
 const SPACING = 2.35
-const animators = []
-const stands = []
+const animators: ReturnType<typeof createAnimator>[] = []
+const stands: THREE.Group[] = []
 
 CHARACTERS.forEach((spec, index) => {
   const critter = createCritter(spec)
@@ -37,22 +37,34 @@ CHARACTERS.forEach((spec, index) => {
   animators.push(createAnimator(critter))
 })
 
-document.getElementById('labels').innerHTML = CHARACTERS.map(
-  (c) => `<div><div class="name">${c.name}</div><div class="cry">${c.label} · ${c.cry}</div></div>`,
+// `c.label` 이라고 적혀 있었는데 그런 속성이 없어서 늘 `undefined` 로 찍히고 있었다.
+// 스펙에서 그 자리에 해당하는 것은 캐릭터 키다.
+const labels = document.getElementById('labels') as HTMLElement
+labels.innerHTML = CHARACTERS.map(
+  (c) => `<div><div class="name">${c.name}</div><div class="cry">${c.key} · ${c.cry}</div></div>`,
 ).join('')
 
 let spinning = false
 /** 5마리를 시간차로 움직이게 한다. 한 장에 동작의 여러 단계를 담아 볼 수 있다. */
-function playAll(motion, stagger = 90) {
+function playAll(motion: 'hop' | 'dance', stagger = 90) {
   animators.forEach((animator, index) => {
     setTimeout(() => animator[motion](), index * stagger)
   })
 }
+// 캡처 스크립트가 밖에서 불러 쓴다 (scripts/preview.js)
+declare global {
+  interface Window {
+    __hopAll: (stagger?: number) => void
+    __danceAll: (stagger?: number) => void
+  }
+}
 window.__hopAll = (stagger) => playAll('hop', stagger)
 window.__danceAll = (stagger) => playAll('dance', stagger)
-document.getElementById('hop').addEventListener('click', () => playAll('hop'))
-document.getElementById('dance').addEventListener('click', () => playAll('dance'))
-document.getElementById('spin').addEventListener('click', () => {
+
+const button = (id: string) => document.getElementById(id) as HTMLElement
+button('hop').addEventListener('click', () => playAll('hop'))
+button('dance').addEventListener('click', () => playAll('dance'))
+button('spin').addEventListener('click', () => {
   spinning = !spinning
 })
 

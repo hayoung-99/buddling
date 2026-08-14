@@ -13,9 +13,22 @@
  */
 
 import * as THREE from 'three'
-import { CHARACTERS, getCharacter } from '../../shared/characters.js'
-import { createCritter, scaleToStandardHeight } from '../pet/critter.js'
-import { addLighting, createShadowCatcher } from '../pet/scene.js'
+import { CHARACTERS, getCharacter } from '../../shared/characters'
+import { createCritter, scaleToStandardHeight } from '../pet/critter'
+import { addLighting, createShadowCatcher } from '../pet/scene'
+import type { CharacterSpec } from '../../shared/characters'
+
+/** 한 장면을 어떻게 세우고 어디서 볼지 (아래 주석에 항목별 뜻이 있다) */
+interface ShotLayout {
+  specs: CharacterSpec[]
+  spacing: number
+  headroom: number
+  lift: number
+  yaw: number
+  roll?: number
+  panX?: number
+  spanX?: number
+}
 
 const shot = new URLSearchParams(location.search).get('shot') ?? 'hero'
 document.body.dataset.shot = shot
@@ -31,7 +44,7 @@ document.body.dataset.shot = shot
  *             그만큼 따라가서 얼굴을 화면 가운데로 되돌린다
  *   spanX     가로로 담을 폭. 없으면 캐릭터 수에서 알아서 정한다
  */
-const LAYOUT = {
+const LAYOUTS: Record<string, ShotLayout> = {
   hero: { specs: [getCharacter('cat')], spacing: 0, headroom: 1.35, lift: 0.0, yaw: -0.24 },
   characters: { specs: CHARACTERS, spacing: 2.3, headroom: 1.28, lift: 0.0, yaw: -0.2 },
   // 공유 카드는 캔버스 자체가 오른쪽 아래로 밀려 있다 (index.html 참고)
@@ -112,9 +125,12 @@ const LAYOUT = {
     panX: 0.287,
     spanX: 1.6,
   },
-}[shot]
+}
 
-const canvas = document.getElementById('stage')
+const LAYOUT = LAYOUTS[shot]
+if (!LAYOUT) throw new Error(`[site-assets] 모르는 샷 이름입니다: ${shot}`)
+
+const canvas = document.getElementById('stage') as HTMLCanvasElement
 const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
 renderer.setClearColor(0x000000, 0)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))

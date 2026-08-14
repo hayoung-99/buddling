@@ -24,7 +24,7 @@ const path = require('node:path')
 const { app, BrowserWindow } = require('electron')
 
 const ROOT = path.join(__dirname, '..')
-const PAGE = path.join(ROOT, 'src', 'renderer', 'site-assets', 'index.html')
+const PAGE = path.join(ROOT, 'dist-renderer', 'site-assets', 'index.html')
 const OUT_DIR = path.join(ROOT, 'site', 'assets')
 
 const READY_TIMEOUT_MS = 15000

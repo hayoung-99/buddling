@@ -1,4 +1,6 @@
-const { contextBridge, ipcRenderer } = require('electron')
+import { contextBridge, ipcRenderer } from 'electron'
+import type { PetApi } from '../shared/ipc'
+import type { AppState, TapPayload } from '../shared/state'
 
 /**
  * 캐릭터 창은 팀마다 하나씩 뜬다.
@@ -6,7 +8,7 @@ const { contextBridge, ipcRenderer } = require('electron')
  */
 
 /** 메인 프로세스가 `{ ok, value, error }` 로 답한다. 실패는 여기서 다시 던진다. */
-async function call(channel, payload) {
+async function call<T>(channel: string, payload?: unknown): Promise<T> {
   const result = await ipcRenderer.invoke(channel, payload)
   if (result && result.ok === false) throw new Error(result.error)
   return result?.value
@@ -15,17 +17,25 @@ async function call(channel, payload) {
 const teamId = process.argv.find((arg) => arg.startsWith('--team-id='))?.slice('--team-id='.length)
 
 /** 캐릭터 창이 쓸 수 있는 것 전부. 이 목록 밖으로는 아무것도 새어나가지 않는다. */
-contextBridge.exposeInMainWorld('petApi', {
+const api: PetApi = {
   teamId,
 
-  getState: () => call('app:state'),
+  getState: () => call<AppState>('app:state'),
 
-  onState: (handler) => ipcRenderer.on('state', (_event, state) => handler(state)),
-  onCharacter: (handler) => ipcRenderer.on('character', (_event, key) => handler(key)),
-  onTap: (handler) => ipcRenderer.on('tap', (_event, payload) => handler(payload)),
+  onState: (handler) => {
+    ipcRenderer.on('state', (_event, state: AppState) => handler(state))
+  },
+  onCharacter: (handler) => {
+    ipcRenderer.on('character', (_event, key: string) => handler(key))
+  },
+  onTap: (handler) => {
+    ipcRenderer.on('tap', (_event, payload: TapPayload) => handler(payload))
+  },
 
   /** 컴퓨터가 잠들거나 화면이 잠기면 false, 깨어나면 true */
-  onRenderState: (handler) => ipcRenderer.on('render', (_event, active) => handler(active)),
+  onRenderState: (handler) => {
+    ipcRenderer.on('render', (_event, active: boolean) => handler(active))
+  },
 
   /** 커서가 캐릭터 위에 있는 동안만 true. false면 클릭이 바탕화면으로 통과된다. */
   setInteractive: (interactive) => ipcRenderer.send('pet:interactive', { teamId, interactive }),
@@ -35,4 +45,6 @@ contextBridge.exposeInMainWorld('petApi', {
   dragEnd: () => ipcRenderer.send('pet:drag-end', { teamId }),
   openMenu: () => ipcRenderer.send('pet:menu', { teamId }),
   openTeamWindow: () => ipcRenderer.send('window:team'),
-})
+}
+
+contextBridge.exposeInMainWorld('petApi', api)

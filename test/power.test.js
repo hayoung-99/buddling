@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { POWER_LEVELS, DEFAULT_POWER, resolvePower, powerProfile } from '../src/shared/power.js'
+import { POWER_LEVELS, DEFAULT_POWER, resolvePower, powerProfile } from '../src/shared/power'
 
 describe('절전 단계 목록', () => {
   it('부드러운 것부터 아끼는 것까지 세 단계다', () => {

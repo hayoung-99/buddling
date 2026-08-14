@@ -6,7 +6,7 @@ import {
   clampScale,
   petSizeFor,
   nextPetBounds,
-} from '../src/main/pet-size.js'
+} from '../src/main/pet-size'
 
 /** 넉넉한 가상 모니터 하나 */
 const WIDE = { x: 0, y: 0, width: 2560, height: 1440 }

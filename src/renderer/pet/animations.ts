@@ -16,11 +16,19 @@
  *   3) 반대 방향 — 몸이 기울면 머리는 덜 기울어 중심을 잡는다
  */
 
-import { sampleTrack, createSpring, clamp } from './tween.js'
-import { TAIL } from '../../shared/characters.js'
+import { sampleTrack, createSpring, clamp } from './tween'
+import type { Keyframe, Sampled } from './tween'
+import { TAIL } from '../../shared/characters'
+import type { Critter } from './critter'
+
+/** 이어 붙인 키프레임 한 벌과 그 전체 길이(초) */
+export interface Timeline {
+  keys: Keyframe[]
+  duration: number
+}
 
 /** 폴짝 한 번(0.64초)의 키프레임. y는 최고점 기준 0~1 비율. */
-const HOP_UNIT = [
+const HOP_UNIT: Keyframe[] = [
   { t: 0.0, y: 0.0, sx: 1.0, sy: 1.0, ease: 'linear' },
   { t: 0.09, y: 0.0, sx: 1.13, sy: 0.81, ease: 'easeOutQuad' }, // 웅크림(예비동작)
   { t: 0.19, y: 0.26, sx: 0.92, sy: 1.16, ease: 'easeOutCubic' }, // 차고 오르며 늘어남
@@ -42,7 +50,7 @@ const HOP_UNIT = [
  *
  * 시작과 끝이 모두 중립이라 몇 바퀴든 이어 붙여도 이음매가 튀지 않는다.
  */
-const DANCE_UNIT = [
+const DANCE_UNIT: Keyframe[] = [
   { t: 0.0, x: 0.0, y: 0.0, tilt: 0.0, arm: 0.0, spread: 0.0, step: 0.0, sx: 1.0, sy: 1.0, ease: 'linear' },
   // ── 왼쪽으로 ──
   { t: 0.06, x: -0.15, y: 0.0, tilt: 0.07, arm: 0.28, spread: 0.18, step: 0.0, sx: 1.07, sy: 0.93, ease: 'easeOutQuad' },
@@ -62,7 +70,7 @@ const DANCE_UNIT = [
  * 움찔 한 번(0.46초). 제자리에서 몸을 좌우로 떨며 눌린 느낌을 낸다.
  * 뛰지 않으므로 y는 없고, 몸통을 기울이는 tilt 가 흔들림을 만든다.
  */
-const TWITCH_UNIT = [
+const TWITCH_UNIT: Keyframe[] = [
   { t: 0.0, sx: 1.0, sy: 1.0, tilt: 0.0, ease: 'linear' },
   { t: 0.06, sx: 1.09, sy: 0.91, tilt: 0.07, ease: 'easeOutQuad' }, // 화들짝
   { t: 0.14, sx: 0.95, sy: 1.06, tilt: -0.08, ease: 'easeInOutQuad' },
@@ -93,9 +101,9 @@ const DANCE_BOB = 0.12 // 춤추며 통통 튀는 높이
 const STEP_LIFT = 0.035 // 발을 드는 높이
 
 /** 폴짝 n번을 하나의 키프레임 트랙으로 이어붙인다. */
-export function buildHopTimeline(hops = 3) {
+export function buildHopTimeline(hops = 3): Timeline {
   const unitEnd = HOP_UNIT[HOP_UNIT.length - 1].t
-  const keys = []
+  const keys: Keyframe[] = []
   let offset = 0
 
   for (let index = 0; index < hops; index += 1) {
@@ -105,7 +113,7 @@ export function buildHopTimeline(hops = 3) {
     HOP_UNIT.forEach((key, keyIndex) => {
       // 두 번째 폴짝부터는 첫 키가 직전 폴짝의 마지막 키와 같으므로 건너뛴다
       if (index > 0 && keyIndex === 0) return
-      keys.push({ ...key, t: offset + key.t / speed, y: key.y * height })
+      keys.push({ ...key, t: offset + key.t / speed, y: (key.y as number) * height })
     })
 
     offset += unitEnd / speed
@@ -118,8 +126,8 @@ export function buildHopTimeline(hops = 3) {
  * 춤 n바퀴를 이어붙인다.
  * 점프와 달리 힘이 빠지지 않는다 — 끝까지 같은 세기로 추다가 중립에서 멈춘다.
  */
-export function buildDanceTimeline(cycles = DANCE_CYCLES) {
-  const keys = []
+export function buildDanceTimeline(cycles = DANCE_CYCLES): Timeline {
+  const keys: Keyframe[] = []
 
   for (let index = 0; index < cycles; index += 1) {
     DANCE_UNIT.forEach((key, keyIndex) => {
@@ -132,46 +140,53 @@ export function buildDanceTimeline(cycles = DANCE_CYCLES) {
 }
 
 /** 폴짝 타임라인을 시각 t에서 샘플링한다. → { y, sx, sy } */
-export function sampleHop(timeline, t) {
+export function sampleHop(timeline: Timeline, t: number): Sampled {
   return sampleTrack(timeline.keys, HOP_FIELDS, t)
 }
 
 /** 춤 타임라인을 시각 t에서 샘플링한다. → { x, y, tilt, arm, spread, step, sx, sy } */
-export function sampleDance(timeline, t) {
+export function sampleDance(timeline: Timeline, t: number): Sampled {
   return sampleTrack(timeline.keys, DANCE_FIELDS, t)
 }
 
 /** 움찔 동작을 시각 t에서 샘플링한다. → { sx, sy, tilt } */
-export function sampleTwitch(t) {
+export function sampleTwitch(t: number): Sampled {
   return sampleTrack(TWITCH_UNIT, TWITCH_FIELDS, t)
 }
 
 export { TWITCH_DURATION, DANCE_CYCLE }
 
-const randomBetween = (min, max) => min + Math.random() * (max - min)
+const randomBetween = (min: number, max: number) => min + Math.random() * (max - min)
 
 /** 아무 동작도 없을 때의 기본값 */
-const REST_HOP = { y: 0, sx: 1, sy: 1 }
-const REST_DANCE = { x: 0, y: 0, tilt: 0, arm: 0, spread: 0, step: 0, sx: 1, sy: 1 }
-const REST_TWITCH = { sx: 1, sy: 1, tilt: 0 }
+const REST_HOP: Sampled = { y: 0, sx: 1, sy: 1 }
+const REST_DANCE: Sampled = { x: 0, y: 0, tilt: 0, arm: 0, spread: 0, step: 0, sx: 1, sy: 1 }
+const REST_TWITCH: Sampled = { sx: 1, sy: 1, tilt: 0 }
 
 /**
  * 타이머를 delta 만큼 진행시키고 이번 프레임의 값을 돌려준다.
  * 끝났으면 타이머를 끄고(null) 기본 자세를 돌려준다.
- * @returns {[number|null, object]} [다음 타이머, 이번 프레임 값]
+ *
+ * @returns [다음 타이머, 이번 프레임 값]
  */
-function advance(time, delta, duration, sample, rest) {
+function advance(
+  time: number | null,
+  delta: number,
+  duration: number,
+  sample: (t: number) => Sampled,
+  rest: Sampled,
+): [number | null, Sampled] {
   if (time === null) return [null, rest]
   const next = time + delta
   if (next >= duration) return [null, rest]
   return [next, sample(next)]
 }
 
-/**
- * 캐릭터에 애니메이션을 입힌다.
- * @param {{ root: object, parts: Record<string, object>, spec: object, height: number }} critter
- */
-export function createAnimator(critter, { hops = 3, cycles = DANCE_CYCLES } = {}) {
+/** 캐릭터에 애니메이션을 입힌다. */
+export function createAnimator(
+  critter: Critter,
+  { hops = 3, cycles = DANCE_CYCLES }: { hops?: number; cycles?: number } = {},
+) {
   const { root, parts, spec, height } = critter
   const hopTimeline = buildHopTimeline(hops)
   const danceTimeline = buildDanceTimeline(cycles)
@@ -190,17 +205,17 @@ export function createAnimator(critter, { hops = 3, cycles = DANCE_CYCLES } = {}
   const earSway = createSpring({ stiffness: 130, damping: 13 })
 
   let elapsed = 0
-  let hopTime = null
-  let danceTime = null
-  let twitchTime = null
+  let hopTime: number | null = null
+  let danceTime: number | null = null
+  let twitchTime: number | null = null
   let previousY = 0
   let previousX = 0
 
   let untilBlink = randomBetween(1.5, 4)
-  let blinkTime = null
+  let blinkTime: number | null = null
   // 아래 셋은 가만히 있을 때 이따금 한쪽 귀만 쫑긋하는 연출용이다 (몸 움찔과 별개)
   let untilEarTwitch = randomBetween(3, 8)
-  let earTwitchTime = null
+  let earTwitchTime: number | null = null
   let earTwitchSide = 1
 
   function hop() {
@@ -220,12 +235,12 @@ export function createAnimator(critter, { hops = 3, cycles = DANCE_CYCLES } = {}
     twitchTime = 0
   }
 
-  function update(delta) {
+  function update(delta: number) {
     elapsed += delta
 
-    let frameHop
-    let frameDance
-    let frameTwitch
+    let frameHop: Sampled
+    let frameDance: Sampled
+    let frameTwitch: Sampled
     ;[hopTime, frameHop] = advance(
       hopTime,
       delta,
@@ -307,7 +322,7 @@ export function createAnimator(critter, { hops = 3, cycles = DANCE_CYCLES } = {}
     for (const [key, side] of [
       ['earL', 1],
       ['earR', -1],
-    ]) {
+    ] as const) {
       const ear = parts[key]
       if (!ear) continue
       let flick = 0

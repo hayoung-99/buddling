@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { Box3, Group } from 'three'
-import { CHARACTERS, getCharacter } from '../src/shared/characters.js'
+import { CHARACTERS, getCharacter } from '../src/shared/characters'
 import {
   createCritter,
   disposeCritter,
   scaleToStandardHeight,
   STANDARD_HEIGHT,
-} from '../src/renderer/pet/critter.js'
+} from '../src/renderer/pet/critter'
 
 const build = (key) => createCritter(getCharacter(key))
 

@@ -10,9 +10,9 @@
  */
 
 import * as THREE from 'three'
-import { getCharacter } from '../../shared/characters.js'
-import { createCritter, scaleToStandardHeight } from '../pet/critter.js'
-import { addLighting } from '../pet/scene.js'
+import { getCharacter } from '../../shared/characters'
+import { createCritter, scaleToStandardHeight } from '../pet/critter'
+import { addLighting } from '../pet/scene'
 
 const CANVAS = 1024
 
@@ -39,10 +39,10 @@ const plateFraction = PLATE.size / CANVAS
  * 초타원(superellipse) 경로. |x|^n + |y|^n = 1.
  * n=4 는 모서리가 둥근 사각형, n 이 커질수록 사각형에 가까워진다.
  */
-function squirclePath(size, exponent, offset) {
+function squirclePath(size: number, exponent: number, offset: number) {
   const radius = size / 2
   const STEPS = 360
-  const points = []
+  const points: string[] = []
 
   for (let index = 0; index <= STEPS; index += 1) {
     const theta = (index / STEPS) * Math.PI * 2
@@ -64,7 +64,7 @@ const path = squirclePath(PLATE.size, PLATE.exponent, offset)
  * 판 색은 진하게 간다. 캐릭터가 거의 흰색이라, 배경이 옅으면 16px 파비콘에서
  * 형태가 뭉개진다. 따뜻한 살구 → 코럴 → 분홍으로 떨어뜨려 대비를 만든다.
  */
-plate.innerHTML = `
+;(plate as HTMLElement).innerHTML = `
   <defs>
     <linearGradient id="warm" x1="0.12" y1="0" x2="0.88" y2="1">
       <stop offset="0%" stop-color="#ffcf8f" />
@@ -109,7 +109,7 @@ plate.innerHTML = `
 
 // ── 캐릭터 ────────────────────────────────────────────────
 
-const canvas = document.getElementById('stage')
+const canvas = document.getElementById('stage') as HTMLCanvasElement
 
 // 판이 곧 아이콘의 실루엣이다. 캐릭터가 판 밖으로 삐져나오면 안 되므로
 // 3D 를 그리는 캔버스를 판과 똑같은 모양으로 잘라낸다.

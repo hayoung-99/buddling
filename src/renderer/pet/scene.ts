@@ -8,7 +8,7 @@
 import * as THREE from 'three'
 
 /** 따뜻한 키 라이트 + 시원한 필 라이트 = 장난감 같은 입체감 */
-export function addLighting(scene) {
+export function addLighting(scene: THREE.Scene) {
   const ambient = new THREE.HemisphereLight(0xffffff, 0xcbb9a4, 1.15)
   scene.add(ambient)
 
@@ -20,7 +20,7 @@ export function addLighting(scene) {
   key.shadow.mapSize.set(512, 512)
   key.shadow.radius = 4
   key.shadow.bias = -0.0015
-  const cam = key.shadow.camera
+  const cam = key.shadow.camera as THREE.OrthographicCamera
   cam.near = 1
   cam.far = 16
   cam.left = -3
@@ -51,11 +51,14 @@ export function createShadowCatcher(size = 12) {
   return plane
 }
 
-/**
- * 캐릭터 한 마리를 보여주는 무대를 만든다.
- * @param {{ canvas: HTMLCanvasElement, yaw?: number }} options
- */
-export function createStage({ canvas, yaw = -0.2 }) {
+/** 캐릭터 한 마리를 보여주는 무대를 만든다. */
+export function createStage({
+  canvas,
+  yaw = -0.2,
+}: {
+  canvas: HTMLCanvasElement
+  yaw?: number
+}) {
   const renderer = new THREE.WebGLRenderer({
     canvas,
     alpha: true,
@@ -101,7 +104,7 @@ export function createStage({ canvas, yaw = -0.2 }) {
    * 매 프레임 그림자 패스를 한 번 더 도는 것은 순전한 낭비다. 끌 때는 마지막
    * 한 장을 최신으로 갱신해 두고 멈춘다.
    */
-  function setShadowsLive(live) {
+  function setShadowsLive(live: boolean) {
     if (lights.key.shadow.autoUpdate === live) return
     lights.key.shadow.autoUpdate = live
     if (!live) lights.key.shadow.needsUpdate = true

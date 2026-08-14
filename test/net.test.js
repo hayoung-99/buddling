@@ -5,8 +5,8 @@ import {
   MAX_TEAMS_PER_USER,
   MAX_MEMBERS_PER_TEAM,
   INVITE_TTL_MS,
-} from '../src/services/fake-net.js'
-import { toFriendlyError } from '../src/services/net.js'
+} from '../src/services/fake-net'
+import { toFriendlyError } from '../src/services/net'
 
 /** 서로 다른 사람 둘을 흉내 낸다 */
 function twoDevices() {
