@@ -8,9 +8,9 @@
 #   2. 내보낼 때가 되면 **그 PR 을 머지한다.** 그 순간 태그와 릴리스가 만들어지고,
 #      이어서 빌드가 돌고, 다 올라가면 공개된다.
 #
-# 급할 때는 태그를 직접 밀어도 된다. 그 길도 그대로 열려 있다.
-#
-#   npm version patch && git push --follow-tags
+# 태그를 직접 미는 길(`on: push: tags`)도 열려 있지만 평소에는 쓰지 않는다.
+# release-please 를 건너뛰므로 `.release-please-manifest.json` 과 `CHANGELOG.md` 가
+# 실제 릴리스와 어긋나고, 그다음 릴리스 PR 이 엉뚱한 버전을 제안하게 된다.
 #
 # release-please 와 빌드가 **한 워크플로 안에** 있는 이유가 있다. GITHUB_TOKEN 이
 # 만든 태그는 다른 워크플로를 깨우지 못한다(무한 반복을 막으려는 GitHub 의 규칙이다).
@@ -19,10 +19,11 @@
 # Supabase 접속 정보는 저장소에 두지 않는다. Settings → Secrets and variables
 # → Actions 에 SUPABASE_URL / SUPABASE_ANON_KEY 를 등록해 두면 여기서 굽는다.
 #
-# 흐름은 세 단계다.
+# 흐름은 네 단계다.
 #   prepare  릴리스 PR 을 만들거나 갱신한다. 그 PR 이 머지된 순간에만 다음으로 간다
 #   build    mac(arm64·x64) / win 을 각각 빌드해 **초안(draft) 릴리스**에 올린다
 #   publish  두 빌드가 다 끝나면 설치 안내를 앞에 붙이고 초안을 공개로 바꾼다
+#   refresh  태그가 실제로 생긴 뒤에 릴리스 PR 을 다시 계산한다 (아래 설명)
 #
 # 초안을 거치는 이유: 설치 파일이 하나도 없는 릴리스가 최신 버전으로 잡히면
 # 랜딩페이지의 받기 버튼도, 앱의 자동 업데이트도 헛걸음한다. 둘 다 /releases/latest
@@ -144,3 +145,28 @@ jobs:
             --notes-file "${RUNNER_TEMP}/notes.md" \
             --draft=false \
             --latest
+
+  # ── 태그가 실제로 생긴 뒤에 릴리스 PR 을 다시 계산한다 ──
+  #
+  # 초안 릴리스에는 git 태그가 없다. 태그는 위 publish 가 초안을 공개로 바꾸는
+  # 순간에야 생긴다. 그런데 prepare 는 초안을 만든 **직후 같은 잡 안에서** 곧바로
+  # 다음 릴리스 PR 을 계산하므로, 어디까지 릴리스됐는지 기준점을 찾지 못하고 역사를
+  # 처음부터 다시 훑는다. 그렇게 나온 PR 은 늘 엉뚱한 버전을 제안한다 — 실제로 릴리스
+  # 네 번 내내 그랬고 그중 셋은 버전을 되돌리는 제안이었다(#12·#16·#18). 여기서 한 번
+  # 더 돌려 그 자리에서 바로잡는다. 이 잡이 없으면 다음에 아무 PR 이나 머지될 때까지
+  # 틀린 릴리스 PR 이 머지를 기다리며 떠 있게 된다.
+  #
+  # 태그가 이미 있으므로 release-please 는 릴리스를 다시 만들지 않고 PR 만 고친다.
+  refresh:
+    needs: publish
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: googleapis/release-please-action@v5
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
