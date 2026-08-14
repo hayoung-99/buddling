@@ -55,11 +55,28 @@ jobs:
       tag: ${{ steps.release.outputs.tag_name }}
 
     steps:
+      # 릴리스 PR 이 머지된 실행이라면 여기서 (초안) 릴리스를 만든다.
       - uses: googleapis/release-please-action@v5
         id: release
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+          skip-github-pull-request: true
+
+      # 다음 릴리스 PR 은 **릴리스를 만들지 않은** 실행에서만 계산한다.
+      #
+      # 방금 초안 릴리스를 만든 참이라면 아직 git 태그가 없다 — 태그는 저 아래
+      # publish 가 초안을 공개로 바꿀 때 비로소 생긴다. 그 상태로 계산하면
+      # release-please 는 어디까지 릴리스됐는지 기준점을 찾지 못해 역사를 처음부터
+      # 다시 훑고, 그렇게 나온 PR 은 늘 엉뚱한 버전을 제안한다. 릴리스 네 번 내내
+      # 그랬고 그중 셋은 버전을 되돌리는 제안이었다(#12·#16·#18).
+      # 그 경우는 태그가 생긴 뒤에 맨 아래 refresh 잡이 맡는다.
+      - if: steps.release.outputs.release_created != 'true'
+        uses: googleapis/release-please-action@v5
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          skip-github-release: true
 
   build:
     needs: prepare
@@ -146,17 +163,17 @@ jobs:
             --draft=false \
             --latest
 
-  # ── 태그가 실제로 생긴 뒤에 릴리스 PR 을 다시 계산한다 ──
+  # ── 태그가 생긴 뒤에 다음 릴리스 PR 을 계산한다 ──
   #
-  # 초안 릴리스에는 git 태그가 없다. 태그는 위 publish 가 초안을 공개로 바꾸는
-  # 순간에야 생긴다. 그런데 prepare 는 초안을 만든 **직후 같은 잡 안에서** 곧바로
-  # 다음 릴리스 PR 을 계산하므로, 어디까지 릴리스됐는지 기준점을 찾지 못하고 역사를
-  # 처음부터 다시 훑는다. 그렇게 나온 PR 은 늘 엉뚱한 버전을 제안한다 — 실제로 릴리스
-  # 네 번 내내 그랬고 그중 셋은 버전을 되돌리는 제안이었다(#12·#16·#18). 여기서 한 번
-  # 더 돌려 그 자리에서 바로잡는다. 이 잡이 없으면 다음에 아무 PR 이나 머지될 때까지
-  # 틀린 릴리스 PR 이 머지를 기다리며 떠 있게 된다.
+  # prepare 는 릴리스를 만든 실행에서 PR 계산을 건너뛴다(위 설명). publish 가 초안을
+  # 공개로 바꾸면서 태그가 실재하게 되므로, 여기서 비로소 제대로 계산된다.
   #
-  # 태그가 이미 있으므로 release-please 는 릴리스를 다시 만들지 않고 PR 만 고친다.
+  # 릴리스 직후라 올릴 것이 없으면 release-please 는 "No user facing commits found"
+  # 로 아무 PR 도 만들지 않는다 — 그게 맞는 결과다. 빌드가 도는 동안 fix 가 머지됐다면
+  # 그것만 담은 PR 이 생긴다.
+  #
+  # 여기서도 릴리스는 건드리지 않는다. 이미 만들어 공개까지 마친 것을 다시 손댈 이유가
+  # 없고, 실수로 초안을 하나 더 만드는 길을 아예 막아 둔다.
   refresh:
     needs: publish
     runs-on: ubuntu-latest
@@ -170,3 +187,4 @@ jobs:
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+          skip-github-release: true
