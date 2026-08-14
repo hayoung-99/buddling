@@ -22,6 +22,29 @@ npm run preview       # 캐릭터 5종을 나란히 놓고 눈으로 확인
 CI(`.github/workflows/ci.yml`)가 미는 것마다 돌리는 것은 `npm test` 와
 `npm run check:site` 둘뿐입니다. **이 둘이 통과하지 않으면 끝난 게 아닙니다.**
 
+### 일을 시작하기 전에 의존성부터 맞춘다
+
+**dependabot 이 올린 의존성 갱신 PR 은 사람이 머지하고, 그 일은 세션과 세션 사이에
+일어납니다.** 그래서 마지막으로 본 `main` 과 지금의 `package.json`·`package-lock.json`
+이 어긋나 있을 수 있습니다. 고치기 시작하기 전에 **지나쳐 온 dependabot 커밋이 있는지
+보고, 있으면 설치부터 맞추고 들어갑니다.**
+
+```bash
+git log --oneline -20 | grep -iE "deps|dependabot"
+npm ci
+```
+
+이 어긋남은 조용해서 더 나쁩니다. CI 는 미는 것마다 새로 설치하므로 언제나 초록이고,
+로컬 테스트도 그냥 통과합니다. 그래서 한참 뒤에 **"CI 는 되는데 로컬만 깨진다"** (또는
+그 반대)로 나타나는데, 그때는 원인이 의존성이라는 것부터가 떠오르지 않습니다. 실제로
+`package.json` 은 vitest `^4.1.10` 인데 `node_modules` 에는 2.1.9 가 들어 있던 적이
+있습니다.
+
+**`npm install` 이 아니라 `npm ci` 입니다.** `npm install` 은 lockfile 을 지금 쓰는 npm
+버전에 맞게 **다시 쓰기 때문에**, 손대지도 않은 `package-lock.json` 이 고쳐진 채로
+커밋에 딸려 들어갑니다 (optional 패키지의 `libc` 항목이 통째로 지워지는 식으로).
+`npm ci` 는 lockfile 이 적어 둔 그대로만 설치하고 그 파일을 건드리지 않습니다.
+
 린터도 포매터도 없습니다. 주변 코드의 모양을 눈으로 보고 맞추세요
 (세미콜론 없음, 작은따옴표, 들여쓰기 2칸).
 
