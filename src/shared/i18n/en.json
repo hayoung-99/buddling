@@ -108,7 +108,7 @@
   "error.NICKNAME_TAKEN": "Someone in that team already uses this nickname.",
   "error.NICKNAME_REQUIRED": "Please enter a nickname.",
   "error.TEAM_NAME_REQUIRED": "Please enter a team name.",
-  "error.DEVICE_ID_REQUIRED": "Could not read this device. Please restart the app.",
+  "error.NOT_SIGNED_IN": "The connection is not ready yet. Please try again in a moment.",
   "error.NOT_A_MEMBER": "You are not in that team.",
   "error.TEAM_LIMIT_REACHED": "You can only be in {maxTeams} teams. Leave one and try again.",
   "error.TEAM_FULL": "That team is full ({maxMembers} members).",

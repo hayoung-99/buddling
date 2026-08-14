@@ -2,19 +2,19 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import {
   createFakeServer,
   createFakeNet,
-  MAX_TEAMS_PER_DEVICE,
+  MAX_TEAMS_PER_USER,
   MAX_MEMBERS_PER_TEAM,
   INVITE_TTL_MS,
 } from '../src/services/fake-net.js'
 import { toFriendlyError } from '../src/services/net.js'
 
-/** 서로 다른 기기 두 대를 흉내 낸다 */
+/** 서로 다른 사람 둘을 흉내 낸다 */
 function twoDevices() {
   const server = createFakeServer()
   return {
     server,
-    alice: createFakeNet({ server, deviceId: 'device-alice' }),
-    bob: createFakeNet({ server, deviceId: 'device-bob' }),
+    alice: createFakeNet({ server, userId: 'user-alice' }),
+    bob: createFakeNet({ server, userId: 'user-bob' }),
   }
 }
 
@@ -86,9 +86,9 @@ describe('여러 팀에 속하기', () => {
     expect(mine[0].member.id).not.toBe(mine[1].member.id)
   })
 
-  it(`최대 ${MAX_TEAMS_PER_DEVICE}개까지만 만들 수 있다`, async () => {
+  it(`최대 ${MAX_TEAMS_PER_USER}개까지만 만들 수 있다`, async () => {
     const { alice } = twoDevices()
-    for (let i = 0; i < MAX_TEAMS_PER_DEVICE; i += 1) {
+    for (let i = 0; i < MAX_TEAMS_PER_USER; i += 1) {
       await alice.createTeam({ name: `팀${i}`, nickname: '나영' })
     }
     await expect(alice.createTeam({ name: '하나 더', nickname: '나영' })).rejects.toThrow(
@@ -99,7 +99,7 @@ describe('여러 팀에 속하기', () => {
   it('정원이 찼으면 초대코드로도 더 못 들어간다', async () => {
     const { alice, bob } = twoDevices()
     const extra = await bob.createTeam({ name: '남의 팀', nickname: '민수' })
-    for (let i = 0; i < MAX_TEAMS_PER_DEVICE; i += 1) {
+    for (let i = 0; i < MAX_TEAMS_PER_USER; i += 1) {
       await alice.createTeam({ name: `팀${i}`, nickname: '나영' })
     }
     await expect(
@@ -110,13 +110,13 @@ describe('여러 팀에 속하기', () => {
   it('하나를 나가면 다시 들어갈 자리가 생긴다', async () => {
     const { alice } = twoDevices()
     const first = await alice.createTeam({ name: '팀0', nickname: '나영' })
-    for (let i = 1; i < MAX_TEAMS_PER_DEVICE; i += 1) {
+    for (let i = 1; i < MAX_TEAMS_PER_USER; i += 1) {
       await alice.createTeam({ name: `팀${i}`, nickname: '나영' })
     }
     await alice.leaveTeam(first.team.id)
 
     await expect(alice.createTeam({ name: '새 팀', nickname: '나영' })).resolves.toBeTruthy()
-    expect(await alice.getMyTeams()).toHaveLength(MAX_TEAMS_PER_DEVICE)
+    expect(await alice.getMyTeams()).toHaveLength(MAX_TEAMS_PER_USER)
   })
 
   it('팀마다 다른 캐릭터를 고를 수 있다', async () => {
@@ -212,7 +212,7 @@ describe('콕 찌르기 (실시간)', () => {
 
   it('한 명을 지목하면 그 사람만 반응한다', async () => {
     const { server, alice, bob, a, b, teamId } = await connectedTeam()
-    const carol = createFakeNet({ server, deviceId: 'device-carol' })
+    const carol = createFakeNet({ server, userId: 'user-carol' })
     const c = await carol.joinTeam({ inviteCode: a.team.inviteCode, nickname: '수진' })
     await carol.connect(c.team, c.member)
 
@@ -227,9 +227,34 @@ describe('콕 찌르기 (실시간)', () => {
     expect(carolGot).toHaveLength(0)
   })
 
+  it('팀원이 아니면 채널에 붙을 수조차 없다', async () => {
+    const { server, a } = await connectedTeam()
+    const outsider = createFakeNet({ server, userId: 'user-outsider' })
+
+    // 팀 id 와 멤버 정보를 알아도 소용없어야 한다. 그 값들은 비밀이 아니다 —
+    // 창 인자(--team-id=)와 팀원들의 로컬 파일에 그대로 돌아다닌다.
+    await expect(outsider.connect(a.team, a.member)).rejects.toThrow('NOT_A_MEMBER')
+  })
+
+  it('팀을 나가면 그 채널에 다시 붙을 수 없다', async () => {
+    const { bob, b, teamId } = await connectedTeam()
+    await bob.leaveTeam(teamId)
+
+    await expect(bob.connect(b.team, b.member)).rejects.toThrow('NOT_A_MEMBER')
+  })
+
+  it('로그인하지 않으면 팀을 만들 수 없다', async () => {
+    const { server } = twoDevices()
+    const nobody = createFakeNet({ server, userId: '' })
+
+    await expect(nobody.createTeam({ name: '팀', nickname: '나영' })).rejects.toThrow(
+      'NOT_SIGNED_IN',
+    )
+  })
+
   it('다른 팀에는 새어나가지 않는다', async () => {
     const { server, alice, teamId } = await connectedTeam()
-    const outsider = createFakeNet({ server, deviceId: 'device-outsider' })
+    const outsider = createFakeNet({ server, userId: 'user-outsider' })
     const other = await outsider.createTeam({ name: '남의 팀', nickname: '철수' })
     await outsider.connect(other.team, other.member)
 
@@ -242,8 +267,8 @@ describe('콕 찌르기 (실시간)', () => {
 
   it('내가 두 팀에 있어도 신호는 보낸 팀에만 간다', async () => {
     const { server } = twoDevices()
-    const me = createFakeNet({ server, deviceId: 'device-me' })
-    const mate = createFakeNet({ server, deviceId: 'device-mate' })
+    const me = createFakeNet({ server, userId: 'user-me' })
+    const mate = createFakeNet({ server, userId: 'user-mate' })
 
     const design = await me.createTeam({ name: '디자인팀', nickname: '나영' })
     const dev = await me.createTeam({ name: '개발팀', nickname: '나영' })
@@ -306,7 +331,7 @@ describe('캐릭터 바꾸기 / 팀 나가기', () => {
 
   it('팀에 속하지 않은 기기는 캐릭터를 바꿀 수 없다', async () => {
     const { alice, teamId } = await connectedTeam()
-    const stranger = createFakeNet({ server: twoDevices().server, deviceId: 'nobody' })
+    const stranger = createFakeNet({ server: twoDevices().server, userId: 'nobody' })
     await expect(stranger.setCharacter(teamId, 'duck')).rejects.toThrow('NOT_A_MEMBER')
     expect(alice).toBeTruthy()
   })
@@ -397,8 +422,8 @@ describe('초대코드 유효시간', () => {
       advance: (ms) => {
         clock += ms
       },
-      alice: createFakeNet({ server, deviceId: 'device-alice' }),
-      bob: createFakeNet({ server, deviceId: 'device-bob' }),
+      alice: createFakeNet({ server, userId: 'user-alice' }),
+      bob: createFakeNet({ server, userId: 'user-bob' }),
     }
   }
 
@@ -479,7 +504,7 @@ describe('팀 정원', () => {
   /** 한 팀에 사람을 원하는 만큼 채워 넣는다 */
   async function fillTeam(server, inviteCode, count) {
     for (let i = 0; i < count; i += 1) {
-      const net = createFakeNet({ server, deviceId: `filler-${i}` })
+      const net = createFakeNet({ server, userId: `filler-${i}` })
       await net.joinTeam({ inviteCode, nickname: `사람${i}` })
     }
   }
@@ -517,7 +542,7 @@ describe('팀 정원', () => {
     const { team } = await alice.createTeam({ name: '디자인팀', nickname: '나영' })
     await fillTeam(server, team.inviteCode, MAX_MEMBERS_PER_TEAM - 1)
 
-    const leaver = createFakeNet({ server, deviceId: 'filler-0' })
+    const leaver = createFakeNet({ server, userId: 'filler-0' })
     await leaver.leaveTeam(team.id)
 
     await expect(

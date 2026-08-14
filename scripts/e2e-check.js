@@ -58,8 +58,8 @@ async function main() {
   console.log(`Supabase: ${URL}\n`)
 
   const suffix = crypto.randomBytes(3).toString('hex')
-  const alice = createSupabaseNet({ url: URL, anonKey: KEY, deviceId: `e2e-a-${suffix}` })
-  const bob = createSupabaseNet({ url: URL, anonKey: KEY, deviceId: `e2e-b-${suffix}` })
+  const alice = createSupabaseNet({ url: URL, anonKey: KEY })
+  const bob = createSupabaseNet({ url: URL, anonKey: KEY })
 
   let team = null
   let secondTeam = null
@@ -231,7 +231,7 @@ async function main() {
   // ── 초대코드 만료·재발급, 팀 정원 (각각 새 기기로 깨끗하게) ──
   const extras = []
   const device = (label) => {
-    const net = createSupabaseNet({ url: URL, anonKey: KEY, deviceId: `e2e-${label}-${suffix}` })
+    const net = createSupabaseNet({ url: URL, anonKey: KEY })
     extras.push(net)
     return net
   }

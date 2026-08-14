@@ -33,7 +33,6 @@ const MAX_MEMBERS = 5
 
 function createSession({ url, anonKey, store = defaultStore, net: injectedNet = null }) {
   const emitter = createEmitter()
-  const deviceId = store.get('deviceId')
 
   let net = null
   let netError = null
@@ -53,7 +52,9 @@ function createSession({ url, anonKey, store = defaultStore, net: injectedNet = 
   let disposed = false
 
   try {
-    net = injectedNet ?? createNet({ url, anonKey, deviceId })
+    // 세션 저장소를 넘긴다 — 이게 없으면 로그인이 메모리에만 남아, 앱을 껐다 켤 때마다
+    // 새 익명 계정이 생기고 그때마다 속한 팀을 잃는다.
+    net = injectedNet ?? createNet({ url, anonKey, storage: store.authStorage })
   } catch (error) {
     // 키가 없어도 앱은 뜬다. 캐릭터는 혼자 놀고, 팀 창이 설정 방법을 안내한다.
     netError = error.message
@@ -91,7 +92,6 @@ function createSession({ url, anonKey, store = defaultStore, net: injectedNet = 
     return {
       configured: net !== null,
       configError: netError,
-      deviceId,
       nickname: store.get('nickname'),
       language: getLanguage(),
       power: store.get('power'),

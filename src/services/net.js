@@ -30,6 +30,8 @@
  * @property {(event: string, handler: Function) => () => void} on
  */
 
+const { randomUUID } = require('node:crypto')
+
 /** 아주 작은 이벤트 방출기. Net 구현들이 공유한다. */
 function createEmitter() {
   const handlers = new Map()
@@ -57,13 +59,14 @@ function createEmitter() {
 
 /**
  * 설정에 맞는 Net 구현을 만든다.
- * @param {{ url?: string, anonKey?: string, deviceId: string }} config
+ * @param {{ url?: string, anonKey?: string, storage?: object }} config
  */
 function createNet(config) {
   // 개발용: Supabase 없이 UI 전체를 눌러보고 싶을 때 (같은 프로세스 안에서만 통한다)
   if (process.env.TAPTAP_FAKE_NET) {
     const { createFakeServer, createFakeNet } = require('./fake-net')
-    return createFakeNet({ server: createFakeServer(), deviceId: config.deviceId })
+    // 진짜 쪽은 익명 로그인이 신원을 만들어 준다. 여기서는 흉내만 내면 된다.
+    return createFakeNet({ server: createFakeServer(), userId: randomUUID() })
   }
 
   if (!config.url || !config.anonKey) {
@@ -85,7 +88,7 @@ const ERROR_KEYS = [
   'NICKNAME_TAKEN',
   'NICKNAME_REQUIRED',
   'TEAM_NAME_REQUIRED',
-  'DEVICE_ID_REQUIRED',
+  'NOT_SIGNED_IN',
   'NOT_A_MEMBER',
   'TEAM_LIMIT_REACHED',
   'TEAM_FULL',

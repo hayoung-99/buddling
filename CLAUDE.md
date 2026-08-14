@@ -175,9 +175,9 @@ preload 의 `call()` 이 봉투를 풀어 다시 던집니다 — 새 창을 만
 
 | 곳 | 무엇 |
 |---|---|
-| `supabase/schema.sql` | `max_teams_per_device()` · `max_members_per_team()` · `invite_ttl()` |
+| `supabase/schema.sql` | `max_teams_per_user()` · `max_members_per_team()` · `invite_ttl()` |
 | `src/main/session.js` | `MAX_TEAMS` · `MAX_MEMBERS` |
-| `src/services/fake-net.js` | `MAX_TEAMS_PER_DEVICE` · `MAX_MEMBERS_PER_TEAM` · `INVITE_TTL_MS` |
+| `src/services/fake-net.js` | `MAX_TEAMS_PER_USER` · `MAX_MEMBERS_PER_TEAM` · `INVITE_TTL_MS` |
 
 DB 는 `security definer` RPC 로만 접근합니다. 테이블은 RLS 로 잠겨 있어서
 클라이언트에서 직접 select/insert 하면 아무것도 안 됩니다. 새 기능이 DB 를 건드린다면

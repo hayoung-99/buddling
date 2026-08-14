@@ -41,8 +41,8 @@ async function main() {
   console.log(`Supabase: ${URL}\n`)
 
   const suffix = crypto.randomBytes(3).toString('hex')
-  const owner = createSupabaseNet({ url: URL, anonKey: KEY, deviceId: `exp-a-${suffix}` })
-  const guest = createSupabaseNet({ url: URL, anonKey: KEY, deviceId: `exp-b-${suffix}` })
+  const owner = createSupabaseNet({ url: URL, anonKey: KEY })
+  const guest = createSupabaseNet({ url: URL, anonKey: KEY })
 
   let team = null
   let ttlSeconds = 0
