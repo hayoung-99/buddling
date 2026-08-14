@@ -230,7 +230,7 @@ async function main() {
 
   // ── 초대코드 만료·재발급, 팀 정원 (각각 새 기기로 깨끗하게) ──
   const extras = []
-  const device = (label) => {
+  const device = () => {
     const net = createSupabaseNet({ url: URL, anonKey: KEY })
     extras.push(net)
     return net
@@ -239,7 +239,7 @@ async function main() {
   let refreshTeam = null
 
   await step('초대코드에 24시간 만료가 붙는다', async () => {
-    const owner = device('own')
+    const owner = device()
     const created = await owner.createTeam({ name: `만료 점검 ${suffix}`, nickname: '주인' })
     refreshTeam = { net: owner, ...created }
 
@@ -250,7 +250,7 @@ async function main() {
 
   await step('팀 밖의 사람은 코드를 새로 발급할 수 없다', async () => {
     try {
-      await device('stranger').refreshInvite(refreshTeam.team.id)
+      await device().refreshInvite(refreshTeam.team.id)
     } catch (error) {
       if (error.message === 'error.NOT_A_MEMBER') return '거절됨'
       throw error
@@ -264,11 +264,11 @@ async function main() {
     if (fresh.inviteCode === oldCode) throw new Error('코드가 그대로입니다')
 
     try {
-      await device('late').joinTeam({ inviteCode: oldCode, nickname: '지각생' })
+      await device().joinTeam({ inviteCode: oldCode, nickname: '지각생' })
     } catch (error) {
       if (error.message !== 'error.INVALID_INVITE_CODE') throw error
       // 새 코드로는 들어가진다
-      await device('ontime').joinTeam({ inviteCode: fresh.inviteCode, nickname: '제때' })
+      await device().joinTeam({ inviteCode: fresh.inviteCode, nickname: '제때' })
       return `${oldCode} → ${fresh.inviteCode}`
     }
     throw new Error('예전 코드로 들어가졌습니다')
@@ -284,7 +284,7 @@ async function main() {
   })
 
   await step('같은 팀에 있는 이름으로는 바꿀 수 없다', async () => {
-    const mate = device('mate')
+    const mate = device()
     const fresh = await refreshTeam.net.refreshInvite(refreshTeam.team.id)
     await mate.joinTeam({ inviteCode: fresh.inviteCode, nickname: `동료-${suffix}` })
 
@@ -299,7 +299,7 @@ async function main() {
 
   await step('팀 밖의 사람은 팀 이름을 못 바꾼다', async () => {
     try {
-      await device('outsider').renameTeam(refreshTeam.team.id, '남의 팀')
+      await device().renameTeam(refreshTeam.team.id, '남의 팀')
     } catch (error) {
       if (error.message === 'error.NOT_A_MEMBER') return '거절됨'
       throw error
@@ -308,19 +308,59 @@ async function main() {
   })
 
   await step('팀 정원은 5명이다', async () => {
-    const host = device('host')
+    const host = device()
     const { team } = await host.createTeam({ name: `정원 점검 ${suffix}`, nickname: '방장' })
 
     for (let i = 1; i < 5; i += 1) {
-      await device(`guest${i}`).joinTeam({ inviteCode: team.inviteCode, nickname: `손님${i}` })
+      await device().joinTeam({ inviteCode: team.inviteCode, nickname: `손님${i}` })
     }
     try {
-      await device('overflow').joinTeam({ inviteCode: team.inviteCode, nickname: '초과' })
+      await device().joinTeam({ inviteCode: team.inviteCode, nickname: '초과' })
     } catch (error) {
       if (error.message === 'error.TEAM_FULL') return '5명까지, 6번째 거절'
       throw error
     }
     throw new Error('6번째가 들어갔습니다')
+  })
+
+  // ── 실시간 채널이 팀원에게만 열리는지 (supabase/schema.sql 의 realtime.messages 정책) ──
+  //
+  // 앱으로는 만들 수 없는 상황이라 여기서만 확인할 수 있다. 팀에서 나가면 앱이 스스로
+  // 연결을 끊기 때문에, 그것만 봐서는 서버가 막은 건지 앱이 끊은 건지 구별되지 않는다.
+
+  await step('팀원이 아니면 채널에 못 붙는다 (Realtime 정책)', async () => {
+    const owner = device()
+    const created = await owner.createTeam({ name: `채널 점검 ${suffix}`, nickname: '주인' })
+
+    // 팀과 멤버 정보를 통째로 넘겨도 소용없어야 한다. 이 값들은 비밀이 아니다 —
+    // 창 인자(--team-id=)와 팀원들의 로컬 파일에 그대로 돌아다닌다.
+    const outsider = device()
+    try {
+      await outsider.connect(created.team, created.member)
+    } catch {
+      return '거절됨'
+    }
+    throw new Error('팀원이 아닌데도 채널에 붙었습니다')
+  })
+
+  await step('팀을 나가면 채널에 다시 못 붙는다', async () => {
+    const owner = device()
+    const created = await owner.createTeam({ name: `퇴장 점검 ${suffix}`, nickname: '주인' })
+
+    const guest = device()
+    const joined = await guest.joinTeam({
+      inviteCode: created.team.inviteCode,
+      nickname: '손님',
+    })
+    await guest.connect(joined.team, joined.member)
+    await guest.leaveTeam(joined.team.id)
+
+    try {
+      await guest.connect(joined.team, joined.member)
+    } catch {
+      return '다시 붙지 못함'
+    }
+    throw new Error('나갔는데도 채널에 다시 붙었습니다')
   })
 
   // 뒷정리
