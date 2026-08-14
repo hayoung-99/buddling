@@ -62,6 +62,7 @@
   "list.members": "成员 {count}/{max} 人",
   "list.online": "{count} 人在线",
   "list.connecting": "连接中…",
+  "list.disconnected": "连接不上",
   "list.addTeam": "＋ 再创建或加入团队",
   "list.full": "最多可以加入 {max} 个团队。",
 

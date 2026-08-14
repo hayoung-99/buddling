@@ -62,6 +62,7 @@
   "list.members": "メンバー {count}/{max}人",
   "list.online": "{count}人 オンライン",
   "list.connecting": "接続中…",
+  "list.disconnected": "接続できません",
   "list.addTeam": "＋ チームをもっと作る・参加する",
   "list.full": "チームは最大 {max} 個まで参加できます。",
 

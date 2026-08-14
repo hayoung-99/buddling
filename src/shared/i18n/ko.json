@@ -62,6 +62,7 @@
   "list.members": "팀원 {count}/{max}명",
   "list.online": "{count}명 접속 중",
   "list.connecting": "연결하는 중…",
+  "list.disconnected": "연결이 안 돼요",
   "list.addTeam": "＋ 팀 더 만들거나 참여하기",
   "list.full": "팀은 최대 {max}개까지 참여할 수 있어요.",
 

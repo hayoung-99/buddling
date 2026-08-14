@@ -504,26 +504,9 @@ $$;
 -- 이 앱 규모에서는 쌓이는 속도가 느려 더 자주 돌 이유가 없고, 반대로 주 단위로 미루면
 -- 그만큼 안 쓰는 계정이 MAU 에 잡힌 채 남는다. 지우는 일 자체는 인덱스를 탄 삭제
 -- 한 번이라 사람이 쓰는 시간에 돌아도 상관없지만, 굳이 한가한 때로 잡았다.
-create extension if not exists pg_cron;
-
-do $$
-begin
-  if not exists (select 1 from pg_extension where extname = 'pg_cron') then
-    raise notice 'pg_cron 이 없어 자동 정리를 걸지 않았습니다. 대시보드에서 켠 뒤 이 파일을 다시 실행하세요.';
-    return;
-  end if;
-
-  if exists (select 1 from cron.job where jobname = 'tap-tap-cleanup-anonymous') then
-    perform cron.unschedule('tap-tap-cleanup-anonymous');
-  end if;
-
-  perform cron.schedule(
-    'tap-tap-cleanup-anonymous',
-    '0 18 * * *',
-    $cron$select public.cleanup_anonymous_users()$cron$
-  );
-end;
-$$;
+-- 예약을 거는 일은 이 파일 맨 끝에 있다. pg_cron 은 프로젝트마다 켜져 있기도 없기도
+-- 한데, 그걸 여기서 건드리다 넘어지면 뒤에 오는 실시간 정책과 권한이 통째로 안 만들어진다.
+-- 잠그는 일이 먼저고, 청소는 나중이다.
 
 -- ────────────────────────────────────────────────────────────
 -- 실시간 채널: 팀원만 자기 팀 채널에 붙는다
@@ -535,29 +518,38 @@ $$;
 --
 -- 이 정책이 그 문을 닫는다. 심사는 JWT 를 보고 하므로, 익명 로그인으로 auth.uid()
 -- 가 생긴 지금에서야 쓸 수 있게 됐다.
+--
+-- 판단을 security definer 함수에 맡기는 이유가 중요하다. 정책은 **접속하는 사람의
+-- 권한으로** 평가된다. 그런데 members 는 RLS 가 켜져 있고 정책이 하나도 없어서(맨 위
+-- 참고), 정책 안에서 members 를 직접 조회하면 언제나 0행이 나온다. 그러면 팀원까지
+-- 포함해 아무도 못 붙는다. security definer 로 한 겹 감싸야 그 벽을 넘어 읽는다.
+--
+-- 토픽을 uuid 로 캐스팅하지 않고 문자열로 맞춰 보는 것도 일부러다. 이 정책은 team:
+-- 으로 시작하지 않는 토픽에도 걸리는데, 거기서 캐스팅하면 판단 대신 오류가 난다.
+create or replace function public.can_join_topic(p_topic text)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.members m
+    where m.user_id = auth.uid()
+      and p_topic = 'team:' || m.team_id::text
+  );
+$$;
 
 drop policy if exists "team members read own channel"  on realtime.messages;
 drop policy if exists "team members write own channel" on realtime.messages;
 
 create policy "team members read own channel"
 on realtime.messages for select to authenticated
-using (
-  exists (
-    select 1 from public.members m
-    where m.user_id = auth.uid()
-      and realtime.topic() = 'team:' || m.team_id::text
-  )
-);
+using (public.can_join_topic(realtime.topic()));
 
 create policy "team members write own channel"
 on realtime.messages for insert to authenticated
-with check (
-  exists (
-    select 1 from public.members m
-    where m.user_id = auth.uid()
-      and realtime.topic() = 'team:' || m.team_id::text
-  )
-);
+with check (public.can_join_topic(realtime.topic()));
 
 -- ────────────────────────────────────────────────────────────
 -- 로그인한 사람이 호출할 수 있는 함수 목록
@@ -583,6 +575,44 @@ grant execute on function public.invite_ttl()                   to authenticated
 grant execute on function public.max_teams_per_user()           to authenticated;
 grant execute on function public.max_members_per_team()         to authenticated;
 
+-- 실시간 정책이 접속자 권한으로 부르는 함수라 여기 있어야 한다. 빠뜨리면 정책이
+-- 함수를 실행하지 못해 팀원까지 전부 채널에서 막힌다.
+-- (알려 주는 것은 "내가 그 팀 멤버인가" 하나뿐이고, 그건 본인이 이미 아는 사실이다)
+grant execute on function public.can_join_topic(text)           to authenticated;
+
 -- cleanup_anonymous_users 는 일부러 이 목록에 없다. 계정을 지우는 함수라 앱이 부를 일이
 -- 없고, 위 일괄 회수에 걸려 아무 역할도 실행할 수 없다. 예약된 작업은 이 함수의 주인
 -- 권한으로 돌기 때문에 그것만으로 충분하다. (빠진 줄이 아니다 — 넣지 마세요)
+
+-- ────────────────────────────────────────────────────────────
+-- 안 쓰는 익명 계정 정리 예약 (맨 마지막)
+-- ────────────────────────────────────────────────────────────
+--
+-- 여기가 파일의 끝인 것은 일부러다. pg_cron 은 프로젝트마다 켜져 있기도 없기도 하고,
+-- 켜는 데 실패하면 그 자리에서 스크립트가 멈춘다. 앞쪽에 뒀다가는 잠금 정책과 권한이
+-- 통째로 안 걸린 채 "실행됨"으로 끝나 버린다 — 조용히 열려 있는 상태가 제일 나쁘다.
+--
+-- 그래서 실패해도 나머지를 이미 다 끝낸 뒤이고, 예외를 삼켜 안내만 남긴다.
+do $$
+begin
+  begin
+    execute 'create extension if not exists pg_cron';
+  exception when others then
+    raise notice '[tap-tap] pg_cron 을 켜지 못해 자동 정리를 걸지 않았습니다 (%). 대시보드 Database → Extensions 에서 켠 뒤 이 파일을 다시 실행하세요. 나머지 설정은 모두 적용됐습니다.', sqlerrm;
+    return;
+  end;
+
+  if exists (select 1 from cron.job where jobname = 'tap-tap-cleanup-anonymous') then
+    perform cron.unschedule('tap-tap-cleanup-anonymous');
+  end if;
+
+  -- 하루 한 번, 한국 시간 새벽 3시 (UTC 18시)
+  perform cron.schedule(
+    'tap-tap-cleanup-anonymous',
+    '0 18 * * *',
+    $cron$select public.cleanup_anonymous_users()$cron$
+  );
+
+  raise notice '[tap-tap] 익명 계정 자동 정리를 매일 UTC 18시에 걸었습니다.';
+end;
+$$;

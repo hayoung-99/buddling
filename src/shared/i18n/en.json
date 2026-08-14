@@ -62,6 +62,7 @@
   "list.members": "{count}/{max} members",
   "list.online": "{count} online",
   "list.connecting": "Connecting…",
+  "list.disconnected": "Can't connect",
   "list.addTeam": "＋ Create or join another team",
   "list.full": "You can be in up to {max} teams.",
 
