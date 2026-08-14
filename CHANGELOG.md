@@ -41,5 +41,3 @@
 * **site:** use English screenshots on the English page ([ba36c81](https://github.com/hayoung-99/tap-tap/commit/ba36c811b26d0e10b59470c61a6fb33c30a8d044))
 * **store:** never let a failed save take the app down ([e057a8a](https://github.com/hayoung-99/tap-tap/commit/e057a8adf51b7622dcf20c30f131a2d55c8eddfa))
 * **test:** measure the cheek strokes instead of reading a parameter name ([5d7dc43](https://github.com/hayoung-99/tap-tap/commit/5d7dc4307a25c5018500b87649b09e7fcf2cb10b))
-
-## Changelog
