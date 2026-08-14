@@ -17,7 +17,8 @@
  *   TAPTAP_POKE_TEAM="2"          그 순서의 팀만 찌른다 (없으면 전부)
  *   TAPTAP_POKE_DELAY="175"       찌른 뒤 몇 ms 지난 순간을 찍을지
  *   TAPTAP_DETAIL="1"             그 순서의 팀 상세 창을 열어 함께 찍는다
- *   TAPTAP_SETTINGS=1             설정 창을 열어 함께 찍는다
+ *   TAPTAP_SETTINGS=1             설정 창을 열어 함께 찍는다 (목록 화면)
+ *   TAPTAP_SETTINGS="power"       그 항목의 상세 화면까지 들어가서 찍는다 ("language" 도)
  *   TAPTAP_POWER="saver"          절전 강도를 바꿔 놓고 찍는다
  *   TAPTAP_FAIL="create"|"join"   실패했을 때 사용자에게 보이는 문구를 확인한다
  *   TAPTAP_LANG="ja"              그 언어로 바꿔 놓고 찍는다
@@ -108,6 +109,15 @@ async function captureIfRequested(app, electronApp) {
   if (process.env.TAPTAP_SETTINGS) {
     app.openSettings()
     await wait(1200)
+
+    // 설정 창은 목록에서 시작하므로, 상세 화면은 그 줄을 눌러 봐야 찍을 수 있다
+    const item = process.env.TAPTAP_SETTINGS
+    if (item !== '1' && app.settingsWindow && !app.settingsWindow.isDestroyed()) {
+      await app.settingsWindow.webContents.executeJavaScript(
+        `document.querySelector('[data-item="${item}"]')?.click()`,
+      )
+      await wait(400)
+    }
   }
 
   if (process.env.TAPTAP_SCALE && firstTeamId()) {

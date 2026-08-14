@@ -61,23 +61,6 @@ export function inviteStatus(expiresAt, t) {
   return { expired: false, text: t('invite.minutesLeft', { minutes }) }
 }
 
-/** 언어 고르는 칸. 목록 창 아래에 둔다. */
-export function languagePicker({ languages, current, label, onPick }) {
-  const select = el('select', {
-    onchange: (event) => onPick(event.target.value),
-  })
-  for (const option of languages) {
-    select.append(
-      el('option', {
-        value: option.code,
-        text: option.name,
-        selected: option.code === current ? '' : null,
-      }),
-    )
-  }
-  return el('div', { class: 'language' }, [el('span', { text: label }), select])
-}
-
 /** 비동기 동작 중에는 버튼을 잠그고, 실패하면 메시지를 남기는 실행기 */
 export function createRunner({ onChange }) {
   const status = { busy: false, error: '' }

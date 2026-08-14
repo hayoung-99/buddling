@@ -4,6 +4,7 @@
   "settings.title": "Settings",
   "settings.power": "Power use",
   "settings.powerHint": "tap-tap stays on screen until you shut down. Choose how much it should hold back while your character is idle.",
+  "settings.languageHint": "The language tap-tap speaks. Your teammates each see their own choice.",
   "power.smooth": "Smooth",
   "power.smoothHint": "Moves as smoothly as possible. Uses the most battery.",
   "power.balanced": "Balanced",
