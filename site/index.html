@@ -1,7 +1,8 @@
 <!doctype html>
 <!--
   주소를 바꿀 때 (예: 도메인을 붙일 때) 고칠 곳은 이 파일 안의
-  https://tap-tap-desktop.vercel.app 뿐입니다. en/index.html 과 sitemap.xml 도 함께 고치세요.
+  https://tap-tap-desktop.vercel.app 뿐입니다. en/index.html · sitemap.xml ·
+  robots.txt · llms.txt 도 함께 고치세요.
 -->
 <html lang="ko">
   <head>
@@ -15,7 +16,7 @@
     <title>tap-tap · 팀원과 함께 쓰는 무료 바탕화면 캐릭터 앱</title>
     <meta
       name="description"
-      content="바탕화면에 3D 동물 친구를 띄우고, 내 캐릭터를 누르면 팀원들의 화면에서 캐릭터가 춤을 춥니다. macOS·Windows 무료 다운로드. 계정 없이 닉네임과 여섯 글자 초대코드로 시작합니다."
+      content="바탕화면에 3D 동물 친구를 띄우고, 내 캐릭터를 누르면 팀원들 화면에서 캐릭터가 춤을 춰요. macOS·Windows 무료. 가입 없이 닉네임과 여섯 글자 코드로 시작해요."
     />
     <link rel="canonical" href="https://tap-tap-desktop.vercel.app/" />
     <link rel="alternate" hreflang="ko" href="https://tap-tap-desktop.vercel.app/" />
@@ -30,7 +31,7 @@
     <meta property="og:title" content="tap-tap · 팀원과 함께 쓰는 무료 바탕화면 캐릭터 앱" />
     <meta
       property="og:description"
-      content="내 캐릭터를 누르면 팀원들의 화면에서 캐릭터가 춤을 춥니다. 말을 걸지 않고도 나 여기 있어를 전하는 가장 가벼운 방법."
+      content="내 캐릭터를 누르면 팀원들 화면에서 캐릭터가 춤을 춰요. 말을 걸지 않고도 나 여기 있어를 전하는 가장 가벼운 방법."
     />
     <meta property="og:image" content="https://tap-tap-desktop.vercel.app/assets/og.png" />
     <meta property="og:image:width" content="1200" />
@@ -43,7 +44,7 @@
     <meta name="twitter:title" content="tap-tap · 팀원과 함께 쓰는 무료 바탕화면 캐릭터 앱" />
     <meta
       name="twitter:description"
-      content="내 캐릭터를 누르면 팀원들의 화면에서 캐릭터가 춤을 춥니다. 말을 걸지 않고도 나 여기 있어를 전하는 가장 가벼운 방법."
+      content="내 캐릭터를 누르면 팀원들 화면에서 캐릭터가 춤을 춰요. 말을 걸지 않고도 나 여기 있어를 전하는 가장 가벼운 방법."
     />
     <meta name="twitter:image" content="https://tap-tap-desktop.vercel.app/assets/og.png" />
     <meta name="twitter:image:alt" content="크림색 배경 위에 선 고양이, 강아지, 판다, 오리, 토끼 캐릭터 다섯 마리" />
@@ -51,8 +52,9 @@
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" href="/assets/icon-32.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/assets/icon-180.png" />
-    <meta name="theme-color" content="#f5efe1" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#211c17" media="(prefers-color-scheme: dark)" />
+    <!-- 벽지 맨 위 색. 주소창이 페이지와 이어져 보이게 한다. -->
+    <meta name="theme-color" content="#a9a5bd" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#14121a" media="(prefers-color-scheme: dark)" />
 
     <link rel="stylesheet" href="/style.css" />
     <link rel="preload" as="image" href="/assets/hero-cat.png" />
@@ -62,7 +64,8 @@
     <!--
       구조화 데이터. 여기 적힌 문장은 전부 화면에 실제로 보이는 문장이어야 한다 —
       보이지 않는 말을 적으면 검색엔진과 답변형 AI 양쪽에서 점수를 잃는다.
-      날짜(datePublished·dateModified)를 고칠 때는 sitemap.xml 의 lastmod 도 함께 고치세요.
+      화면 문구를 고치면 이 블록도 같이 고쳐야 하고, 날짜를 고칠 때는
+      sitemap.xml 의 lastmod 도 함께 옮긴다.
     -->
     <script type="application/ld+json">
       {
@@ -107,7 +110,7 @@
             "@id": "https://tap-tap-desktop.vercel.app/#webpage",
             "url": "https://tap-tap-desktop.vercel.app/",
             "name": "tap-tap · 팀원과 함께 쓰는 무료 바탕화면 캐릭터 앱",
-            "description": "바탕화면에 3D 동물 친구를 띄우고, 내 캐릭터를 누르면 팀원들의 화면에서 캐릭터가 춤을 춥니다. macOS·Windows 무료 다운로드. 계정 없이 닉네임과 여섯 글자 초대코드로 시작합니다.",
+            "description": "바탕화면에 3D 동물 친구를 띄우고, 내 캐릭터를 누르면 팀원들 화면에서 캐릭터가 춤을 춰요. macOS·Windows 무료. 가입 없이 닉네임과 여섯 글자 코드로 시작해요.",
             "inLanguage": "ko",
             "isPartOf": {
               "@id": "https://tap-tap-desktop.vercel.app/#website"
@@ -122,9 +125,6 @@
             "dateModified": "2026-08-13",
             "hasPart": [
               {
-                "@id": "https://tap-tap-desktop.vercel.app/#howto-setup"
-              },
-              {
                 "@id": "https://tap-tap-desktop.vercel.app/#howto-macos"
               },
               {
@@ -138,25 +138,16 @@
                 "name": "tap-tap이 뭔가요?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "바탕화면에 3D 동물 캐릭터를 띄워 두는 macOS·Windows 앱입니다. 내 캐릭터를 누르면 같은 팀 사람들의 화면에서 캐릭터가 춤을 춥니다. 무료이고, 계정을 만들지 않습니다."
+                  "text": "바탕화면에 3D 동물 캐릭터를 띄워 두는 macOS·Windows 앱이에요. 내 캐릭터를 누르면 같은 팀 사람들 화면에서 캐릭터가 춤을 춰요. 무료이고 가입도 없어요."
                 }
               },
               {
                 "@type": "Question",
                 "@id": "https://tap-tap-desktop.vercel.app/#faq-teammates",
-                "name": "팀원도 앱을 깔아야 하나요?",
+                "name": "팀원도 받아야 하나요?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "네. 서로의 바탕화면에 캐릭터가 있어야 신호가 오갑니다. 한 사람이 팀을 만들어 초대코드를 받고, 나머지는 그 코드를 넣기만 하면 됩니다."
-                }
-              },
-              {
-                "@type": "Question",
-                "@id": "https://tap-tap-desktop.vercel.app/#faq-code",
-                "name": "초대코드는 어떻게 생겼나요?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "영문과 숫자를 섞은 여섯 글자입니다. 헷갈리기 쉬운 0·O·1·I 는 빼 두었습니다. 받은 지 24시간이 지나면 만료되고, 팀 창에서 언제든 새로 뽑을 수 있습니다."
+                  "text": "네. 서로의 바탕화면에 캐릭터가 있어야 신호가 오가요. 한 사람이 팀을 만들면 여섯 글자 초대코드가 나오고, 나머지는 그 코드만 넣으면 돼요."
                 }
               },
               {
@@ -165,7 +156,7 @@
                 "name": "정말 무료인가요?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "네. 광고도 유료 기능도 없습니다. 소스 코드가 전부 공개되어 있어서 직접 빌드해 써도 됩니다."
+                  "text": "네. 광고도 유료 기능도 없어요. 이메일도 비밀번호도 받지 않고요."
                 }
               },
               {
@@ -174,7 +165,7 @@
                 "name": "혼자 써도 되나요?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "캐릭터는 팀마다 한 마리씩 뜨니까 팀은 하나 있어야 합니다. 혼자 만든 팀도 팀이라, 캐릭터는 그대로 바탕화면에 삽니다. 콕 찌를 상대가 아직 없을 뿐입니다."
+                  "text": "캐릭터는 팀마다 한 마리씩 떠서 팀은 하나 있어야 해요. 혼자 만든 팀도 팀이라 캐릭터는 그대로 살아요. 콕 찌를 상대가 아직 없을 뿐이에요. 팀은 최대 3개, 한 팀에 5명까지예요."
                 }
               },
               {
@@ -183,25 +174,16 @@
                 "name": "회사 컴퓨터에 깔아도 될까요?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Windows 설치본은 관리자 권한을 묻지 않고 내 계정에만 설치됩니다. 다만 코드 서명이 없어서 회사 정책에 걸릴 수 있으니, 확인이 필요하면 GitHub 저장소를 그대로 보여 주세요."
+                  "text": "오가는 건 누가 눌렀다는 신호와 이름뿐이에요. 화면에 뭐가 떠 있는지도, 파일도 밖으로 나가지 않아요. 설치할 때 관리자 권한도 묻지 않고요."
                 }
               },
               {
                 "@type": "Question",
-                "@id": "https://tap-tap-desktop.vercel.app/#faq-quiet",
-                "name": "일하는 데 방해가 되지 않나요?",
+                "@id": "https://tap-tap-desktop.vercel.app/#faq-first-open",
+                "name": "처음 열 때 창이 떠요. 안 열리면요?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "캐릭터 옆 빈 자리는 클릭이 그대로 바탕화면으로 통과해서 아이콘을 가리지 않습니다. 소리는 나지 않고, 메뉴바 아이콘에서 캐릭터를 모두 숨길 수 있습니다."
-                }
-              },
-              {
-                "@type": "Question",
-                "@id": "https://tap-tap-desktop.vercel.app/#faq-unsigned",
-                "name": "왜 \"확인되지 않은 개발자\"라고 뜨나요?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "해마다 비용을 내는 코드 서명을 아직 하지 않았기 때문입니다. 앱이 위험하다는 뜻은 아니고, 확인해 줄 사람이 없다는 뜻입니다. macOS는 우클릭 다음 열기, Windows는 추가 정보 다음 실행으로 한 번만 넘기면 됩니다. 넘기는 순서는 위에 있습니다."
+                  "text": "처음 한 번만 그래요. 위의 순서대로 하면 다음부터는 그냥 열려요. 그래도 미덥지 않으면 만드는 코드를 전부 공개해 뒀으니 직접 읽어 보셔도 돼요."
                 }
               }
             ]
@@ -210,7 +192,7 @@
             "@type": "SoftwareApplication",
             "@id": "https://tap-tap-desktop.vercel.app/#app",
             "name": "tap-tap",
-            "description": "바탕화면에 3D 동물 친구를 띄우고, 내 캐릭터를 누르면 팀원들의 화면에서 캐릭터가 춤추는 데스크톱 앱입니다.",
+            "description": "바탕화면에 3D 동물 친구를 띄우고, 내 캐릭터를 누르면 팀원들 화면에서 캐릭터가 춤추는 데스크톱 앱이에요.",
             "url": "https://tap-tap-desktop.vercel.app/",
             "image": {
               "@id": "https://tap-tap-desktop.vercel.app/#og-image"
@@ -234,6 +216,7 @@
               "zh"
             ],
             "isAccessibleForFree": true,
+            "license": "https://github.com/hayoung-99/tap-tap/blob/main/LICENSE",
             "author": {
               "@id": "https://tap-tap-desktop.vercel.app/#author"
             },
@@ -255,13 +238,13 @@
               }
             ],
             "featureList": [
-              "바탕화면 위에 3D 동물 캐릭터가 떠 있습니다",
-              "내 캐릭터를 누르면 같은 팀 사람들의 캐릭터가 춤을 춥니다",
-              "계정 없이 닉네임과 여섯 글자 초대코드로 참여합니다",
-              "캐릭터 옆 빈 자리는 클릭이 그대로 바탕화면으로 통과합니다",
-              "끌어서 옮긴 자리와 25%에서 200% 사이의 크기를 기억합니다",
+              "바탕화면 위에 3D 동물 캐릭터가 떠 있어요",
+              "내 캐릭터를 누르면 같은 팀 사람들 화면에서 캐릭터가 춤을 춰요",
+              "가입 없이 닉네임과 여섯 글자 코드로 팀에 들어가요",
+              "캐릭터 옆 빈 자리는 클릭이 그대로 바탕화면으로 통과해요",
+              "끌어서 옮긴 자리와 키운 크기를 기억해요",
+              "소리가 나지 않고, 메뉴 막대에서 한 번에 숨길 수 있어요",
               "한 사람이 최대 3개 팀, 팀 하나에 최대 5명",
-              "한국어, English, 日本語, 中文",
               "macOS와 Windows에서 무료"
             ],
             "offers": {
@@ -273,57 +256,33 @@
           },
           {
             "@type": "HowTo",
-            "@id": "https://tap-tap-desktop.vercel.app/#howto-setup",
-            "name": "tap-tap 팀 만들고 팀원 부르기",
-            "description": "서버를 세우거나 계정을 만들 일이 없습니다. 한 사람이 팀을 만들고 코드를 나눠 주면 됩니다.",
-            "totalTime": "PT2M",
-            "step": [
-              {
-                "@type": "HowToStep",
-                "position": 1,
-                "name": "팀 만들기",
-                "text": "이름을 정하고 팀을 만들면 여섯 글자 초대코드가 나옵니다.",
-                "url": "https://tap-tap-desktop.vercel.app/#step-1"
-              },
-              {
-                "@type": "HowToStep",
-                "position": 2,
-                "name": "코드 나눠 주기",
-                "text": "팀원이 그 코드를 넣으면 참여됩니다. 코드는 24시간 뒤 만료되고 언제든 새로 뽑을 수 있습니다.",
-                "url": "https://tap-tap-desktop.vercel.app/#step-2"
-              },
-              {
-                "@type": "HowToStep",
-                "position": 3,
-                "name": "콕 찌르기",
-                "text": "내 캐릭터를 누르면 그 팀 사람들의 캐릭터가 춤을 추고, 발밑에 내 이름이 뜹니다.",
-                "url": "https://tap-tap-desktop.vercel.app/#step-3"
-              }
-            ]
-          },
-          {
-            "@type": "HowTo",
             "@id": "https://tap-tap-desktop.vercel.app/#howto-macos",
-            "name": "macOS에서 tap-tap 처음 열기 (확인되지 않은 개발자 경고 넘기기)",
-            "description": "코드 서명이 없어 macOS가 만든 사람을 확인할 수 없다고 알려 줍니다. 아래 순서대로 하면 한 번만 넘기면 됩니다.",
+            "name": "macOS에서 tap-tap 처음 열기",
+            "description": "처음 열 때 컴퓨터가 한 번 확인해요. 아래대로 하면 다음부터는 그냥 열려요.",
             "totalTime": "PT1M",
             "step": [
               {
                 "@type": "HowToStep",
                 "position": 1,
-                "text": "받은 앱을 응용 프로그램 폴더로 옮깁니다.",
+                "text": "받은 앱을 응용 프로그램 폴더로 옮겨요.",
                 "url": "https://tap-tap-desktop.vercel.app/#guide-macos"
               },
               {
                 "@type": "HowToStep",
                 "position": 2,
-                "text": "앱을 우클릭한 뒤 열기를 누릅니다. 더블클릭이 아니라 우클릭입니다.",
+                "text": "앱을 우클릭하고 열기를 눌러요. 더블클릭이 아니라 우클릭이에요.",
                 "url": "https://tap-tap-desktop.vercel.app/#guide-macos"
               },
               {
                 "@type": "HowToStep",
                 "position": 3,
-                "text": "뜨는 창에서 열기를 한 번 누릅니다. 다음부터는 그냥 열립니다.",
+                "text": "뜨는 창에서 열기를 한 번 더 눌러요.",
+                "url": "https://tap-tap-desktop.vercel.app/#guide-macos"
+              },
+              {
+                "@type": "HowToStep",
+                "position": 4,
+                "text": "그래도 막히면 시스템 설정 → 개인 정보 보호 및 보안에서 아래쪽 확인 없이 열기를 눌러요.",
                 "url": "https://tap-tap-desktop.vercel.app/#guide-macos"
               }
             ]
@@ -331,26 +290,26 @@
           {
             "@type": "HowTo",
             "@id": "https://tap-tap-desktop.vercel.app/#howto-windows",
-            "name": "Windows에서 tap-tap 설치하기 (SmartScreen 경고 넘기기)",
-            "description": "코드 서명이 없어 파란 SmartScreen 창이 뜹니다. 관리자 권한은 묻지 않습니다.",
+            "name": "Windows에서 tap-tap 설치하기",
+            "description": "처음 열 때 컴퓨터가 한 번 확인해요. 아래대로 하면 다음부터는 그냥 열려요.",
             "totalTime": "PT1M",
             "step": [
               {
                 "@type": "HowToStep",
                 "position": 1,
-                "text": "받은 설치 파일을 두 번 누릅니다.",
+                "text": "받은 파일을 두 번 눌러요.",
                 "url": "https://tap-tap-desktop.vercel.app/#guide-windows"
               },
               {
                 "@type": "HowToStep",
                 "position": 2,
-                "text": "파란 Windows의 PC 보호 창이 뜨면 추가 정보를 누릅니다.",
+                "text": "파란 창이 뜨면 추가 정보를 눌러요.",
                 "url": "https://tap-tap-desktop.vercel.app/#guide-windows"
               },
               {
                 "@type": "HowToStep",
                 "position": 3,
-                "text": "아래에 나타나는 실행을 누르면 설치가 이어집니다.",
+                "text": "아래에 나타나는 실행을 누르면 설치가 이어져요.",
                 "url": "https://tap-tap-desktop.vercel.app/#guide-windows"
               }
             ]
@@ -363,424 +322,191 @@
   <body>
     <a class="skip" href="#main">본문으로 건너뛰기</a>
 
-    <header class="masthead">
-      <div class="wrap">
-        <a class="brand" href="/">
-          <img
-            src="/assets/icon-32.png"
-            srcset="/assets/icon-32.png 1x, /assets/icon-180.png 2x"
-            alt=""
-            width="28"
-            height="28"
-          />
-          TAP TAP
-        </a>
-        <nav>
-          <a href="#download">받기</a>
-          <a href="#install">처음 열 때</a>
-          <a class="hide-narrow" href="https://github.com/hayoung-99/tap-tap">GitHub</a>
-          <a class="lang" href="/en/" hreflang="en" lang="en">EN</a>
-        </nav>
-      </div>
-    </header>
+    <!--
+      화면 양 끝에서 캐릭터가 빼꼼 내민다. 이 앱이 바탕화면에서 하는 짓을
+      글을 읽기 전에 먼저 보여주는 셈이다.
 
-    <main id="main">
-      <!-- ── 히어로 ── -->
-      <div class="wrap">
-        <section class="hero">
-          <div class="hero-copy">
-            <h1>바탕화면 위에<br />작은 친구 한 마리</h1>
-            <p class="lead">
-              내 캐릭터를 누르면 팀원들의 화면에서 캐릭터가 춤을 춥니다.
-            </p>
-            <div class="hero-actions">
-              <a
-                class="btn"
-                href="https://github.com/hayoung-99/tap-tap/releases/latest"
-                data-hero-download
-                >내려받기</a
-              >
-              <a class="btn ghost" href="#download">모든 버전 보기</a>
-              <span class="note">무료 · 계정 가입 없음 · macOS와 Windows</span>
+      읽어 줄 내용이 없으니 화면 낭독기에서는 숨기고, 그림도 <img> 가 아니라
+      style.css 의 배경으로 넣는다. 좁은 화면에서는 이 칸이 통째로 display:none
+      이라, 어차피 보이지 않을 그림 220KB 를 아예 받지 않게 된다.
+    -->
+    <div class="peekers" aria-hidden="true">
+      <span class="peek peek-panda from-left"></span>
+      <span class="peek peek-bunny from-right"></span>
+      <span class="peek peek-dog from-left"></span>
+      <span class="peek peek-duck from-right"></span>
+      <span class="peek peek-cat from-left"></span>
+    </div>
+
+    <div class="stage">
+      <div class="window">
+        <!-- 시그니처: 창 크롬. 이 앱이 어디 사는지를 한 글자도 읽기 전에 알려 준다. -->
+        <header class="titlebar">
+          <svg class="lights" viewBox="0 0 56 12" aria-hidden="true" focusable="false">
+            <circle cx="6" cy="6" r="6" fill="#ff5f57" />
+            <circle cx="26" cy="6" r="6" fill="#febc2e" />
+            <circle cx="46" cy="6" r="6" fill="#28c840" />
+          </svg>
+          <span class="title">tap-tap</span>
+          <nav>
+            <a href="#characters">캐릭터</a>
+            <a href="#download">받기</a>
+            <a href="#faq">궁금한 것</a>
+            <a class="lang" href="/en/" hreflang="en" lang="en">EN</a>
+          </nav>
+        </header>
+
+        <main id="main">
+          <!-- ── 히어로 ── -->
+          <section class="pane hero">
+            <div>
+              <h1>바탕화면 위에<br /><em>작은 친구</em> 한 마리</h1>
+              <p class="lead">내 캐릭터를 누르면 팀원들 화면에서 캐릭터가 춤을 춰요.</p>
+              <div class="actions">
+                <a class="btn" href="https://github.com/hayoung-99/tap-tap/releases/latest" data-hero-download>받기</a>
+                <a class="btn ghost" href="#download">모든 버전</a>
+              </div>
+              <p class="note">무료 · 가입 없음 · macOS와 Windows</p>
             </div>
-          </div>
+          </section>
 
-          <div class="hero-stage">
-            <img
-              class="pet"
-              src="/assets/hero-cat.png"
-              alt="바탕화면 위에 서 있는 흰 고양이 캐릭터"
-              width="760"
-              height="900"
-              fetchpriority="high"
-            />
-            <img
-              class="window"
-              src="/assets/team-window.png"
-              alt="내 팀 목록을 보여주는 tap-tap 창"
-              width="800"
-              height="1560"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        </section>
-      </div>
+          <!-- 창 모서리를 밟고 선다. 이 한 장이 컨셉을 다 설명한다. -->
+          <img class="escapee" src="/assets/hero-cat.png" alt="바탕화면 위에 서 있는 흰 고양이 캐릭터" width="760" height="900" fetchpriority="high" />
 
-      <!-- ── 캐릭터 소개 ── -->
-      <section class="cast" id="characters">
-        <div class="wrap">
-          <div class="section-head rise">
+          <!--
+            받고 나면 뭐가 열리는지 보여 주는 판. 이 안에서 유일하게 배경이 다르고
+            라벨 → 제목 → 본문 순서를 따르지 않는다. 판이 전부 같은 리듬이면
+            스크롤이 지루해지므로, 한 곳만 일부러 어긋나게 둔다.
+          -->
+          <section class="pane shot-pane">
+            <div class="app-frame">
+              <img class="app-shot" src="/assets/team-window.png" alt="팀 목록이 열려 있는 tap-tap 창. 디자인팀 한 개에 팀원 한 명이 접속해 있다." width="800" height="1560" loading="lazy" decoding="async" />
+            </div>
+            <div class="shot-copy">
+              <h2>받고 나면<br />이 창이 열려요</h2>
+              <p>팀을 만들면 여섯 글자 코드가 나와요. 팀원이 그 코드를 넣으면 시작이에요.</p>
+            </div>
+          </section>
+
+          <!-- ── 캐릭터 ── -->
+          <section class="pane" id="characters">
+            <p class="label">캐릭터</p>
             <h2>다섯 마리 중에 한 마리</h2>
-            <p>
-              팀마다 캐릭터를 하나씩 고릅니다. 서로 다른 동물을 골라 두면 어느 팀에서 온
-              신호인지 한눈에 보입니다.
-            </p>
-          </div>
+            <p class="sub">팀마다 한 마리씩 골라요. 다른 동물로 골라 두면 어느 팀에서 온 신호인지 한눈에 보여요.</p>
+            <img class="strip" src="/assets/characters.png" alt="해피 캣, 터비 독, 퍼지 판다, 덤 덕, 홉 버니 다섯 캐릭터가 나란히 서 있는 모습" width="1760" height="460" loading="lazy" decoding="async" />
+            <dl class="facts">
+              <div><dt>클릭이 통과해요</dt><dd>캐릭터 옆 빈 자리를 누르면 바탕화면이 눌려요. 아이콘을 가리지 않아요.</dd></div>
+              <div><dt>자리를 기억해요</dt><dd>끌어서 옮긴 자리도, 키운 크기도 다음에 그대로예요.</dd></div>
+              <div><dt>조용해요</dt><dd>소리는 나지 않고, 메뉴 막대에서 한 번에 숨길 수 있어요.</dd></div>
+            </dl>
+          </section>
 
-          <img
-            class="cast-strip rise"
-            src="/assets/characters.png"
-            alt="해피 캣, 터비 독, 퍼지 판다, 덤 덕, 홉 버니 다섯 캐릭터가 나란히 서 있는 모습"
-            width="1760"
-            height="460"
-            loading="lazy"
-            decoding="async"
-          />
-
-          <dl class="cast-facts">
-            <div>
-              <dt>클릭이 통과합니다</dt>
-              <dd>캐릭터 옆 빈 자리를 누르면 그대로 바탕화면이 눌립니다. 아이콘을 가리지 않습니다.</dd>
-            </div>
-            <div>
-              <dt>자리와 크기를 기억합니다</dt>
-              <dd>끌어서 옮긴 자리와 25%에서 200% 사이로 정한 크기가 다음 실행에도 그대로입니다.</dd>
-            </div>
-            <div>
-              <dt>네 나라 말</dt>
-              <dd>한국어, English, 日本語, 中文. 처음에는 컴퓨터 설정을 따라갑니다.</dd>
-            </div>
-          </dl>
-        </div>
-      </section>
-
-      <!-- ── 동작 방식 ── -->
-      <section id="how-it-works">
-        <div class="wrap flow">
-          <div class="flow-shot rise">
-            <img
-              src="/assets/team-window.png"
-              alt="팀 목록 화면. 디자인팀 한 개에 팀원 한 명이 접속해 있다."
-              width="800"
-              height="1560"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-
-          <div>
-            <div class="section-head">
-              <h2>세 걸음이면 끝납니다</h2>
-              <p>서버를 세우거나 계정을 만들 일이 없습니다. 한 사람이 팀을 만들고 코드를 나눠 주면 됩니다.</p>
-            </div>
-
-            <ol class="flow-steps">
-              <li id="step-1">
-                <span class="bead" aria-hidden="true">1</span>
-                <div>
-                  <h3>팀 만들기</h3>
-                  <p>이름을 정하고 팀을 만들면 여섯 글자 초대코드가 나옵니다.</p>
-                </div>
-              </li>
-              <li id="step-2">
-                <span class="bead" aria-hidden="true">2</span>
-                <div>
-                  <h3>코드 나눠 주기</h3>
-                  <p>팀원이 그 코드를 넣으면 참여됩니다. 코드는 24시간 뒤 만료되고 언제든 새로 뽑을 수 있습니다.</p>
-                </div>
-              </li>
-              <li id="step-3">
-                <span class="bead" aria-hidden="true">3</span>
-                <div>
-                  <h3>콕 찌르기</h3>
-                  <p>내 캐릭터를 누르면 그 팀 사람들의 캐릭터가 춤을 추고, 발밑에 내 이름이 뜹니다.</p>
-                </div>
-              </li>
-            </ol>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── 받기 ── -->
-      <section class="downloads" id="download">
-        <div class="wrap">
-          <div class="dl-head">
-            <div class="section-head">
-              <p class="eyebrow">받기</p>
-              <h2>내 컴퓨터에 맞는 파일</h2>
-            </div>
-            <span class="release-tag" data-release-tag>최신 버전</span>
-          </div>
-
-          <div class="dl-list">
-            <div class="dl-row" data-asset="mac-arm64" data-label="macOS">
+          <!-- ── 받기 ── -->
+          <section class="pane" id="download">
+            <div class="pane-head">
               <div>
-                <div class="name">
-                  macOS (Apple Silicon)<span class="flag">추천</span>
+                <p class="label">받기</p>
+                <h2>내 컴퓨터에 맞는 파일</h2>
+              </div>
+              <span class="tag" data-release-tag>최신</span>
+            </div>
+
+            <div class="dl-list">
+              <div class="dl-row" data-asset="mac-arm64" data-label="macOS">
+                <div>
+                  <div class="name">macOS — 요즘 맥</div>
+                  <div class="meta">2020년 후반 이후에 나온 맥이에요</div>
                 </div>
-                <div class="meta">M1 이후의 맥. .dmg 파일</div>
+                <a class="btn" href="https://github.com/hayoung-99/tap-tap/releases/latest">받기</a>
               </div>
-              <a
-                class="btn"
-                href="https://github.com/hayoung-99/tap-tap/releases/latest"
-                >내려받기</a
-              >
-            </div>
-
-            <div class="dl-row" data-asset="mac-x64" data-label="macOS">
-              <div>
-                <div class="name">macOS (Intel)<span class="flag">추천</span></div>
-                <div class="meta">2020년 이전의 맥. .dmg 파일</div>
-              </div>
-              <a
-                class="btn"
-                href="https://github.com/hayoung-99/tap-tap/releases/latest"
-                >내려받기</a
-              >
-            </div>
-
-            <div class="dl-row" data-asset="windows" data-label="Windows">
-              <div>
-                <div class="name">Windows<span class="flag">추천</span></div>
-                <div class="meta">64비트. 설치 프로그램(.exe)</div>
-              </div>
-              <a
-                class="btn"
-                href="https://github.com/hayoung-99/tap-tap/releases/latest"
-                >내려받기</a
-              >
-            </div>
-          </div>
-
-          <p class="dl-fallback">
-            내 맥이 어느 쪽인지 모르겠다면 화면 왼쪽 위 사과 메뉴에서
-            <strong>이 Mac에 관하여</strong>를 열어 보세요. "칩"이라고 적혀 있으면 Apple
-            Silicon, "프로세서"라고 적혀 있으면 Intel 입니다.
-          </p>
-
-          <p class="dl-fallback" data-pending-notice hidden>
-            아직 올라온 설치 파일이 없습니다. 준비되는 대로 여기에 나타납니다.
-            <a href="https://github.com/hayoung-99/tap-tap/releases">릴리스 페이지에서 확인하기</a>
-          </p>
-        </div>
-      </section>
-
-      <!-- ── 처음 열 때 (가장 중요한 안내) ── -->
-      <section id="install">
-        <div class="wrap">
-          <div class="section-head">
-            <h2>처음 열 때 경고가 뜹니다</h2>
-          </div>
-
-          <div class="warn-intro">
-            <p>
-              <strong>이 앱은 코드 서명을 하지 않았습니다.</strong> 서명은 애플과
-              마이크로소프트에 해마다 비용을 내고 받는 증명서인데, 아직 그 단계가 아닙니다.
-              그래서 운영체제가 "만든 사람을 확인할 수 없다"고 알려 줍니다.
-            </p>
-            <p>
-              앱이 위험하다는 뜻은 아니지만, 확인해 줄 사람이 없다는 뜻은 맞습니다. 그래서
-              소스 코드를 통째로 공개해 두었습니다. 아래 순서대로 하면 한 번만 넘기면 됩니다.
-            </p>
-          </div>
-
-          <div class="guides">
-            <article class="guide" id="guide-macos">
-              <h3>macOS <span>확인되지 않은 개발자</span></h3>
-              <ol>
-                <li>받은 앱을 <strong>응용 프로그램</strong> 폴더로 옮깁니다.</li>
-                <li>
-                  앱을 <strong>우클릭한 뒤 열기</strong>를 누릅니다. 더블클릭이 아니라
-                  우클릭입니다.
-                </li>
-                <li>뜨는 창에서 <strong>열기</strong>를 한 번 누릅니다. 다음부터는 그냥 열립니다.</li>
-              </ol>
-              <div class="aside">
-                그래도 "손상되었다"고 나오면 터미널에서 아래를 한 번 실행하세요.
-                <div class="copy-line">
-                  <code id="xattr-cmd">xattr -dr com.apple.quarantine /Applications/tap-tap.app</code>
-                  <button type="button" data-copy="xattr-cmd">복사</button>
+              <div class="dl-row" data-asset="mac-x64" data-label="macOS">
+                <div>
+                  <div class="name">macOS — 그 이전 맥</div>
+                  <div class="meta">2020년 중반 이전에 산 맥이에요</div>
                 </div>
+                <a class="btn" href="https://github.com/hayoung-99/tap-tap/releases/latest">받기</a>
               </div>
-            </article>
-
-            <article class="guide" id="guide-windows">
-              <h3>Windows <span>SmartScreen</span></h3>
-              <ol>
-                <li>받은 설치 파일을 두 번 누릅니다.</li>
-                <li>파란 <strong>Windows의 PC 보호</strong> 창이 뜨면 <strong>추가 정보</strong>를 누릅니다.</li>
-                <li>아래에 나타나는 <strong>실행</strong>을 누르면 설치가 이어집니다.</li>
-              </ol>
-              <div class="aside">
-                관리자 권한을 묻지 않습니다. 내 계정에만 설치되고, 제어판의 프로그램 목록에서
-                지울 수 있습니다.
+              <div class="dl-row" data-asset="windows" data-label="Windows">
+                <div>
+                  <div class="name">Windows</div>
+                  <div class="meta">두 번 눌러서 설치하는 파일이에요</div>
+                </div>
+                <a class="btn" href="https://github.com/hayoung-99/tap-tap/releases/latest">받기</a>
               </div>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── 알아두면 좋은 점 ── -->
-      <section id="good-to-know">
-        <div class="wrap">
-          <div class="section-head">
-            <p class="eyebrow">알아두면 좋은 점</p>
-            <h2>미리 밝혀 둡니다</h2>
-          </div>
-
-          <div class="notes-grid">
-            <div>
-              <h3>계정이 없습니다</h3>
-              <p>
-                이메일도 비밀번호도 받지 않습니다. 설치할 때 만들어지는 기기 식별자 하나로
-                내 팀을 알아봅니다.
-              </p>
             </div>
-            <div>
-              <h3>주고받는 것은 신호뿐입니다</h3>
-              <p>
-                누가 콕 찔렀다는 사실과 닉네임만 오갑니다. 화면 내용이나 파일은 어디로도
-                가지 않습니다.
-              </p>
+
+            <p class="hint">
+              어느 쪽인지 모르겠다면 왼쪽 위 사과 메뉴에서 <strong>이 Mac에 관하여</strong>를 열어
+              보세요. "칩"이라고 적혀 있으면 위쪽, "프로세서"라고 적혀 있으면 아래쪽이에요.
+            </p>
+            <p class="hint" data-pending-notice hidden>
+              아직 올라온 파일이 없어요. 준비되면 여기에 나타나요.
+              <a href="https://github.com/hayoung-99/tap-tap/releases">릴리스 보러 가기</a>
+            </p>
+          </section>
+
+          <!-- ── 처음 열 때 ── -->
+          <section class="pane" id="install">
+            <p class="label">처음 열 때</p>
+            <h2>처음 한 번만</h2>
+            <p class="sub">처음 열 때 컴퓨터가 한 번 확인해요. 아래대로 하면 다음부터는 그냥 열려요.</p>
+
+            <div class="guides">
+              <div id="guide-macos">
+                <h3>macOS</h3>
+                <ol>
+                  <li>받은 앱을 <strong>응용 프로그램</strong> 폴더로 옮겨요.</li>
+                  <li>앱을 <strong>우클릭하고 열기</strong>를 눌러요. 더블클릭이 아니라 우클릭이에요.</li>
+                  <li>뜨는 창에서 <strong>열기</strong>를 한 번 더 눌러요.</li>
+                  <li>그래도 막히면 <strong>시스템 설정 → 개인 정보 보호 및 보안</strong>에서 아래쪽 <strong>확인 없이 열기</strong>를 눌러요.</li>
+                </ol>
+              </div>
+              <div id="guide-windows">
+                <h3>Windows</h3>
+                <ol>
+                  <li>받은 파일을 두 번 눌러요.</li>
+                  <li>파란 창이 뜨면 <strong>추가 정보</strong>를 눌러요.</li>
+                  <li>아래에 나타나는 <strong>실행</strong>을 누르면 설치가 이어져요.</li>
+                </ol>
+                <p class="hint">관리자 권한은 묻지 않아요.</p>
+              </div>
             </div>
-            <div>
-              <h3>팀은 3개, 한 팀에 5명</h3>
-              <p>
-                한 사람이 최대 3개 팀까지, 팀 하나에 최대 5명입니다. 팀마다 캐릭터가 한
-                마리씩 뜹니다.
-              </p>
+          </section>
+
+          <!-- ── 궁금한 것 ── -->
+          <section class="pane" id="faq">
+            <p class="label">궁금한 것</p>
+            <h2>궁금할 만한 것</h2>
+            <div class="qa-list">
+              <div class="qa" id="faq-what"><h3>tap-tap이 뭔가요?</h3><p>바탕화면에 3D 동물 캐릭터를 띄워 두는 macOS·Windows 앱이에요. 내 캐릭터를 누르면 같은 팀 사람들 화면에서 캐릭터가 춤을 춰요. 무료이고 가입도 없어요.</p></div>
+              <div class="qa" id="faq-teammates"><h3>팀원도 받아야 하나요?</h3><p>네. 서로의 바탕화면에 캐릭터가 있어야 신호가 오가요. 한 사람이 팀을 만들면 여섯 글자 초대코드가 나오고, 나머지는 그 코드만 넣으면 돼요.</p></div>
+              <div class="qa" id="faq-free"><h3>정말 무료인가요?</h3><p>네. 광고도 유료 기능도 없어요. 이메일도 비밀번호도 받지 않고요.</p></div>
+              <div class="qa" id="faq-alone"><h3>혼자 써도 되나요?</h3><p>캐릭터는 팀마다 한 마리씩 떠서 팀은 하나 있어야 해요. 혼자 만든 팀도 팀이라 캐릭터는 그대로 살아요. 콕 찌를 상대가 아직 없을 뿐이에요. 팀은 최대 3개, 한 팀에 5명까지예요.</p></div>
+              <div class="qa" id="faq-work"><h3>회사 컴퓨터에 깔아도 될까요?</h3><p>오가는 건 누가 눌렀다는 신호와 이름뿐이에요. 화면에 뭐가 떠 있는지도, 파일도 밖으로 나가지 않아요. 설치할 때 관리자 권한도 묻지 않고요.</p></div>
+              <div class="qa" id="faq-first-open"><h3>처음 열 때 창이 떠요. 안 열리면요?</h3><p>처음 한 번만 그래요. 위의 순서대로 하면 다음부터는 그냥 열려요. 그래도 미덥지 않으면 만드는 코드를 전부 공개해 뒀으니 직접 읽어 보셔도 돼요.</p></div>
             </div>
-            <div>
-              <h3>Windows는 알아서 최신이 됩니다</h3>
-              <p>
-                새 버전이 나오면 조용히 받아 두었다가, 눌러 주시면 그 자리에서
-                갈아끼웁니다. macOS는 서명이 없어 안내만 뜨고 직접 받으셔야 합니다.
-              </p>
-            </div>
-            <div>
-              <h3>소스를 볼 수 있습니다</h3>
-              <p>
-                서명이 없는 앱을 믿기 어렵다면 코드를 직접 읽고 빌드해 보세요.
-                <a href="https://github.com/hayoung-99/tap-tap">GitHub 저장소</a>에 전부 있습니다.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        </main>
 
-      <!-- ── 자주 묻는 것 ── -->
-      <section class="faq" id="faq">
-        <div class="wrap">
-          <div class="section-head">
-            <p class="eyebrow">자주 묻는 것</p>
-            <h2>궁금할 만한 것들</h2>
-          </div>
-
-          <div class="qa-list">
-            <article class="qa" id="faq-what">
-              <h3>tap-tap이 뭔가요?</h3>
-              <p>
-                바탕화면에 3D 동물 캐릭터를 띄워 두는 macOS·Windows 앱입니다. 내 캐릭터를
-                누르면 같은 팀 사람들의 화면에서 캐릭터가 춤을 춥니다. 무료이고, 계정을
-                만들지 않습니다.
-              </p>
-            </article>
-
-            <article class="qa" id="faq-teammates">
-              <h3>팀원도 앱을 깔아야 하나요?</h3>
-              <p>
-                네. 서로의 바탕화면에 캐릭터가 있어야 신호가 오갑니다. 한 사람이 팀을 만들어
-                초대코드를 받고, 나머지는 그 코드를 넣기만 하면 됩니다.
-              </p>
-            </article>
-
-            <article class="qa" id="faq-code">
-              <h3>초대코드는 어떻게 생겼나요?</h3>
-              <p>
-                영문과 숫자를 섞은 여섯 글자입니다. 헷갈리기 쉬운 0·O·1·I 는 빼 두었습니다.
-                받은 지 24시간이 지나면 만료되고, 팀 창에서 언제든 새로 뽑을 수 있습니다.
-              </p>
-            </article>
-
-            <article class="qa" id="faq-free">
-              <h3>정말 무료인가요?</h3>
-              <p>
-                네. 광고도 유료 기능도 없습니다. 소스 코드가 전부 공개되어 있어서 직접
-                빌드해 써도 됩니다.
-              </p>
-            </article>
-
-            <article class="qa" id="faq-alone">
-              <h3>혼자 써도 되나요?</h3>
-              <p>
-                캐릭터는 팀마다 한 마리씩 뜨니까 팀은 하나 있어야 합니다. 혼자 만든 팀도
-                팀이라, 캐릭터는 그대로 바탕화면에 삽니다. 콕 찌를 상대가 아직 없을
-                뿐입니다.
-              </p>
-            </article>
-
-            <article class="qa" id="faq-work">
-              <h3>회사 컴퓨터에 깔아도 될까요?</h3>
-              <p>
-                Windows 설치본은 관리자 권한을 묻지 않고 내 계정에만 설치됩니다. 다만 코드
-                서명이 없어서 회사 정책에 걸릴 수 있으니, 확인이 필요하면
-                <a href="https://github.com/hayoung-99/tap-tap">GitHub 저장소</a>를 그대로
-                보여 주세요.
-              </p>
-            </article>
-
-            <article class="qa" id="faq-quiet">
-              <h3>일하는 데 방해가 되지 않나요?</h3>
-              <p>
-                캐릭터 옆 빈 자리는 클릭이 그대로 바탕화면으로 통과해서 아이콘을 가리지
-                않습니다. 소리는 나지 않고, 메뉴바 아이콘에서 캐릭터를 모두 숨길 수
-                있습니다.
-              </p>
-            </article>
-
-            <article class="qa" id="faq-unsigned">
-              <h3>왜 "확인되지 않은 개발자"라고 뜨나요?</h3>
-              <p>
-                해마다 비용을 내는 코드 서명을 아직 하지 않았기 때문입니다. 앱이 위험하다는
-                뜻은 아니고, 확인해 줄 사람이 없다는 뜻입니다. macOS는 우클릭 다음 열기,
-                Windows는 추가 정보 다음 실행으로 한 번만 넘기면 됩니다.
-                <a href="#install">넘기는 순서는 위에 있습니다.</a>
-              </p>
-            </article>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer>
-      <div class="wrap">
-        <span>tap-tap · 무료로 쓰고 고칠 수 있습니다</span>
-        <nav>
-          <a href="https://github.com/hayoung-99/tap-tap">GitHub</a>
-          <a href="https://github.com/hayoung-99/tap-tap/releases">릴리스</a>
-          <a href="/en/" hreflang="en" lang="en">English</a>
-        </nav>
+        <footer>
+          <span>tap-tap · 무료로 쓰고 고칠 수 있어요</span>
+          <nav>
+            <a href="https://github.com/hayoung-99/tap-tap">GitHub</a>
+            <a href="https://github.com/hayoung-99/tap-tap/releases">릴리스</a>
+            <a href="/en/" hreflang="en" lang="en">English</a>
+          </nav>
+        </footer>
       </div>
-    </footer>
+    </div>
 
     <script type="application/json" id="dl-strings">
       {
-        "pending": "곧 올라옵니다",
-        "heroFor": "{target}용 내려받기",
+        "pending": "곧 올라와요",
+        "heroFor": "{target}용 받기",
         "copied": "복사됨"
       }
     </script>
     <script src="/download.js" type="module"></script>
+    <script src="/peekers.js" type="module"></script>
   </body>
 </html>

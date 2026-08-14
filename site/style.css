@@ -1,557 +1,419 @@
 /*
- * tap-tap 랜딩 페이지.
+ * tap-tap 랜딩 페이지 — 창(The Window).
  *
- * 색과 모서리는 앱(src/renderer/team/team.css)에서 그대로 가져왔다.
- * 받기 전에 보는 화면과 받은 뒤에 보는 화면이 같은 물건처럼 보여야 하기 때문이다.
+ * 앱이 창 안에 사니, 랜딩페이지가 그 창이면 된다. 페이지 전체가 벽지 위에
+ * 떠 있는 창 한 장이고, 캐릭터는 벽지 위에 서서 창틀을 넘어온다.
  *
- * 모서리 규칙 (전부 여기에 맞춘다)
- *   버튼      999px  (알약)
- *   판 · 카드  18px
- *   작은 조각  10px  (코드, 배지)
+ * 벽지가 페리윙클인 이유는 취향이 아니라 계산이다. 캐릭터는 따뜻한 색이라
+ * 따뜻한 바닥에서는 묻힌다. 예전 크림색 배경에서 히어로 고양이의 ΔE 는 1.1 —
+ * 사람 눈이 같은 색으로 보는 구간이었다. 이 벽지에서는 30.8 이고 명도비도
+ * 1.89 다. 바닥색을 따뜻한 쪽으로 되돌릴 생각이라면 이 숫자부터 다시 재야 한다.
+ *
+ * 창틀이 한 번 쓰고 마는 장치가 되지 않게 두 가지를 지킨다 — 캐릭터가 창을
+ * 넘어오게 해서 갇힌 상자로 안 보이게 하고, 900px 아래에서는 창틀을 아예 없앤다.
+ *
+ * 모서리 규칙
+ *   창        14px
+ *   판 · 카드  10~12px
+ *   버튼       8px
  *
  * 바깥에서 받아오는 글꼴이나 스크립트가 하나도 없다. 첫 화면이 빨리 뜨는 것이
- * 이 페이지에서 가장 중요한 일이다.
+ * 이 페이지에서 가장 중요한 일이고, CSP 가 애초에 막아 두기도 했다.
  */
 
 :root {
-  --cream: #f5efe1;
-  --surface: #fffaf0;
-  --sunk: #efe7d6;
-  --ink: #4a3f33;
-  --ink-soft: rgba(74, 63, 51, 0.62);
-  --ink-faint: rgba(74, 63, 51, 0.4);
-  --line: rgba(74, 63, 51, 0.14);
-  --accent: #b1552a;
-  --accent-soft: rgba(224, 138, 92, 0.16);
-  --shadow: 0 22px 60px -28px rgba(74, 63, 51, 0.42);
+  --wall-a: #a9a5bd;
+  --wall-b: #cbbfc0;
+  --panel: #f7f5f1;
+  --sunk: #eae6de; /* 리듬을 끊는 판 하나에만 쓴다 */
+  --ink: #2b2733;
+  --ink-soft: #615c6e; /* 창 안에서만 쓴다 — 5.9:1 */
+  --accent: #9a5d18;
+  --line: rgba(43, 39, 51, 0.1);
+  --window-edge: 1px solid rgba(43, 39, 51, 0.06);
+  --peek-shadow: rgba(43, 39, 51, 0.22);
 
-  --radius-panel: 18px;
-  --radius-chip: 10px;
-
-  --page: min(1180px, 100% - 2.5rem);
+  --r-window: 14px;
+  --pane: min(940px, 100% - 2.5rem);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --cream: #211c17;
-    --surface: #2b241d;
-    --sunk: #1a1511;
-    --ink: #f3ead9;
-    --ink-soft: rgba(243, 234, 217, 0.62);
-    --ink-faint: rgba(243, 234, 217, 0.4);
-    --line: rgba(243, 234, 217, 0.16);
-    --accent: #f0a173;
-    --accent-soft: rgba(240, 161, 115, 0.16);
-    --shadow: 0 22px 60px -28px rgba(0, 0, 0, 0.7);
+    --wall-a: #14121a;
+    --wall-b: #241d24;
+    --panel: #221f2b;
+    --sunk: #1b1825;
+    --ink: #ece9f2;
+    --ink-soft: #a49eb4;
+    --accent: #e8b06a;
+    --line: rgba(236, 233, 242, 0.12);
+    /* 어두우면 창과 벽지의 밝기 차가 1.15:1 뿐이다. 테두리가 없으면 창이 사라진다. */
+    --window-edge: 1px solid rgba(236, 233, 242, 0.12);
+    --peek-shadow: rgba(0, 0, 0, 0.5);
   }
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 5.5rem;
-  -webkit-text-size-adjust: 100%;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-}
+html { scroll-behavior: smooth; scroll-padding-top: 5rem; -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
 body {
-  background: var(--cream);
+  background: linear-gradient(170deg, var(--wall-a), var(--wall-b)) fixed;
   color: var(--ink);
   font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard',
     'Segoe UI', 'Malgun Gothic', sans-serif;
-  font-size: 17px;
-  line-height: 1.65;
+  font-size: 16.5px;
+  line-height: 1.66;
   -webkit-font-smoothing: antialiased;
-  /* 한국어는 기본적으로 아무 데서나 줄이 바뀐다. 낱말 단위로 끊는다. */
   word-break: keep-all;
   overflow-wrap: break-word;
+  min-height: 100vh;
 }
 
 img { max-width: 100%; height: auto; display: block; }
 a { color: inherit; }
 
-h1, h2, h3 {
-  line-height: 1.16;
-  letter-spacing: -0.03em;
-  text-wrap: balance;
-  font-weight: 800;
-}
+/*
+ * 가는 제목에 한 구절만 굵게. 글꼴을 못 바꾸는 대신 굵기 대비로 성격을 낸다.
+ * Windows 한국어(Malgun Gothic)에는 300 이 없어 400 으로 떨어진다 — 알고 쓰는 것.
+ */
+h1 { font-size: clamp(2.2rem, 4.6vw, 3.3rem); font-weight: 300; letter-spacing: -0.025em; line-height: 1.14; text-wrap: balance; }
+h1 em { font-style: normal; font-weight: 800; letter-spacing: -0.03em; }
+h2 { font-size: clamp(1.5rem, 2.8vw, 2rem); font-weight: 300; letter-spacing: -0.02em; line-height: 1.25; }
+h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height: 1.35; }
 
-h1 { font-size: clamp(2.35rem, 5.2vw, 3.9rem); letter-spacing: -0.04em; line-height: 1.12; }
-h2 { font-size: clamp(1.7rem, 3.4vw, 2.45rem); }
-h3 { font-size: 1.1rem; letter-spacing: -0.02em; }
+.label { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
 
-p { max-width: 62ch; }
-
-code {
-  font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
-  font-size: 0.86em;
-  background: var(--accent-soft);
-  padding: 0.15em 0.45em;
-  border-radius: 6px;
-}
-
-.wrap { width: var(--page); margin-inline: auto; }
-
-.skip {
-  position: absolute;
-  left: -9999px;
-  top: 0;
-  background: var(--ink);
-  color: var(--cream);
-  padding: 0.75rem 1.25rem;
-  border-radius: 0 0 var(--radius-chip) 0;
-  z-index: 20;
-}
+.skip { position: absolute; left: -9999px; top: 0; background: var(--ink); color: var(--panel); padding: 0.75rem 1.25rem; z-index: 30; }
 .skip:focus { left: 0; }
 
-:where(a, button):focus-visible {
-  outline: 2.5px solid var(--accent);
-  outline-offset: 3px;
-  border-radius: 4px;
-}
+:where(a, button):focus-visible { outline: 2.5px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
 
-/* ── 머리말 ─────────────────────────────────────────── */
+/* ── 창 ───────────────────────────────────────────────── */
 
-.masthead {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  height: 68px;
-  display: flex;
-  align-items: center;
-  background: color-mix(in srgb, var(--cream) 86%, transparent);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--line);
-}
+.stage { padding-block: 64px 96px; }
 
-.masthead .wrap {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  font-size: 0.82rem;
-  text-decoration: none;
-}
-.brand img { width: 28px; height: 28px; border-radius: 8px; }
-
-.masthead nav {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  font-size: 0.92rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.masthead nav a { text-decoration: none; color: var(--ink-soft); transition: color 150ms ease; }
-.masthead nav a:hover { color: var(--ink); }
-.masthead nav a.lang { color: var(--ink); border-left: 1px solid var(--line); padding-left: 1.5rem; }
-
-@media (max-width: 640px) {
-  .masthead nav { gap: 1rem; font-size: 0.85rem; }
-  .masthead nav a.hide-narrow { display: none; }
-  .masthead nav a.lang { padding-left: 1rem; }
-}
-
-/* ── 버튼 ───────────────────────────────────────────── */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  white-space: nowrap;
-  font: inherit;
-  font-weight: 700;
-  text-decoration: none;
-  padding: 0.85rem 1.6rem;
-  border-radius: 999px;
-  border: 1.5px solid transparent;
-  background: var(--ink);
-  color: var(--cream);
-  cursor: pointer;
-  transition: transform 120ms ease, opacity 150ms ease, background-color 150ms ease;
-}
-.btn:hover { opacity: 0.9; }
-.btn:active { transform: translateY(1px) scale(0.985); }
-
-.btn.ghost {
-  background: transparent;
-  color: var(--ink);
-  border-color: var(--line);
-}
-.btn.ghost:hover { background: var(--accent-soft); opacity: 1; }
-
-/* ── 히어로 ─────────────────────────────────────────── */
-
-.hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-  align-items: center;
-  gap: clamp(2rem, 5vw, 4.5rem);
-  padding-block: clamp(3rem, 7vw, 5.5rem) clamp(3.5rem, 8vw, 6rem);
-}
-
-.hero-copy p.lead {
-  margin-top: 1.35rem;
-  font-size: 1.12rem;
-  color: var(--ink-soft);
-  max-width: 33ch;
-}
-
-.hero-actions {
-  margin-top: 2.1rem;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.85rem;
-}
-
-.hero-actions .note {
-  flex-basis: 100%;
-  font-size: 0.88rem;
-  color: var(--ink-faint);
-}
-
-/* 캐릭터가 바탕화면 위에 떠 있고, 그 옆에 팀 창이 열려 있는 모습 */
-.hero-stage {
+.window {
   position: relative;
-  aspect-ratio: 5 / 4;
-  border-radius: 26px;
-  background:
-    radial-gradient(130% 100% at 24% 6%, var(--accent-soft), transparent 58%),
-    var(--sunk);
-  overflow: hidden;
+  width: var(--pane);
+  margin-inline: auto;
+  background: var(--panel);
+  border: var(--window-edge);
+  border-radius: var(--r-window);
+  box-shadow: 0 40px 90px -30px rgba(20, 18, 26, 0.45), 0 2px 6px rgba(20, 18, 26, 0.1);
 }
-
-/* 캐릭터는 늘 다른 창 위에 뜬다. 그림에서도 창 앞에 서 있어야 말이 된다. */
-.hero-stage .pet {
-  position: absolute;
-  z-index: 1;
-  left: -3%;
-  bottom: -6%;
-  width: 62%;
-  filter: drop-shadow(0 18px 26px rgba(74, 63, 51, 0.18));
-}
-
-.hero-stage .window {
-  position: absolute;
-  right: 5%;
-  top: 8%;
-  width: 47%;
-  aspect-ratio: 3 / 2.85;
-  object-fit: cover;
-  object-position: top center;
-  border-radius: 14px;
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
-}
-
-@media (max-width: 860px) {
-  .hero { grid-template-columns: 1fr; padding-block: 2.25rem 3rem; }
-  .hero-copy p.lead { max-width: none; }
-  .hero-stage { aspect-ratio: 5 / 3.4; }
-  .hero-stage .pet { width: 48%; left: 1%; }
-  .hero-stage .window { width: 40%; }
-}
-
-/* ── 섹션 공통 ──────────────────────────────────────── */
-
-section { padding-block: clamp(3.5rem, 8vw, 6.5rem); }
-
-.eyebrow {
-  font-size: 0.76rem;
-  font-weight: 800;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.section-head { max-width: 46ch; }
-.section-head h2 + p { margin-top: 1rem; color: var(--ink-soft); }
-
-/* ── 캐릭터 소개 (전폭) ─────────────────────────────── */
-
-.cast { text-align: center; }
-.cast .section-head { margin-inline: auto; }
-.cast p { margin-inline: auto; }
-
-.cast-strip {
-  margin-top: clamp(1.5rem, 4vw, 2.75rem);
-  width: 100%;
-}
-
-.cast-facts {
-  margin-top: clamp(1rem, 3vw, 2rem);
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 1.5rem 2.5rem;
-  text-align: left;
-  border-top: 1px solid var(--line);
-  padding-top: 1.75rem;
-}
-.cast-facts dt { font-weight: 700; }
-.cast-facts dd { margin-top: 0.3rem; color: var(--ink-soft); font-size: 0.95rem; }
-
-/* ── 동작 방식 (스크린샷 + 흐름) ────────────────────── */
-
-.flow {
-  display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-  gap: clamp(2rem, 5vw, 4.5rem);
-  align-items: center;
-}
-
-.flow-shot {
-  border-radius: var(--radius-panel);
-  overflow: hidden;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  aspect-ratio: 4 / 3.4;
-}
-.flow-shot img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
-
-.flow-steps { margin-top: 2rem; display: grid; gap: 1.6rem; }
-.flow-steps li { list-style: none; display: grid; grid-template-columns: auto 1fr; gap: 1.1rem; }
-
-.flow-steps .bead {
-  width: 2.4rem;
-  height: 2.4rem;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 800;
-  font-size: 0.95rem;
-}
-.flow-steps p { margin-top: 0.25rem; color: var(--ink-soft); font-size: 0.97rem; }
-
-@media (max-width: 860px) {
-  .flow { grid-template-columns: 1fr; }
-  .flow-shot { aspect-ratio: 4 / 2.6; }
-}
-
-/* ── 받기 ───────────────────────────────────────────── */
-
-.downloads { background: var(--sunk); }
-
-.dl-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.release-tag {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--ink-soft);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 0.3rem 0.9rem;
-}
-
-.dl-list { margin-top: 2rem; display: grid; gap: 0.85rem; }
-
-.dl-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 1.25rem;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-panel);
-  padding: 1.25rem 1.5rem;
-  transition: border-color 160ms ease, transform 160ms ease;
-}
-.dl-row:hover { border-color: var(--ink-faint); }
-
-/* 지금 보고 있는 컴퓨터에 맞는 줄 하나만 도드라지게 한다 */
-.dl-row[data-recommended] {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
-}
-
-.dl-row .name { font-weight: 700; }
-.dl-row .meta { margin-top: 0.15rem; font-size: 0.9rem; color: var(--ink-soft); }
-.dl-row .flag {
-  display: none;
-  margin-left: 0.55rem;
-  font-size: 0.76rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: var(--accent);
-  vertical-align: 1px;
-}
-.dl-row[data-recommended] .flag { display: inline; }
-
-@media (max-width: 560px) {
-  .dl-row { grid-template-columns: 1fr; }
-  .dl-row .btn { width: 100%; }
-}
-
-.dl-fallback {
-  margin-top: 1.5rem;
-  font-size: 0.92rem;
-  color: var(--ink-soft);
-}
-.dl-fallback a { color: var(--accent); }
-
-/* ── 처음 열 때 (설치 안내) ────────────────────────── */
-
-.warn-intro {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-left: 4px solid var(--accent);
-  border-radius: var(--radius-panel);
-  padding: 1.4rem 1.6rem;
-  margin-top: 1.75rem;
-  max-width: 70ch;
-}
-.warn-intro p + p { margin-top: 0.75rem; }
-
-.guides {
-  margin-top: 2.25rem;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.guide {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-panel);
-  padding: 1.75rem;
-}
-.guide h3 { display: flex; align-items: baseline; gap: 0.6rem; }
-.guide h3 span { font-size: 0.8rem; font-weight: 700; color: var(--ink-faint); }
-
-.guide ol { margin: 1.1rem 0 0 1.2rem; display: grid; gap: 0.7rem; }
-.guide li::marker { color: var(--accent); font-weight: 700; }
-.guide li strong { font-weight: 700; }
-
-.guide .aside {
-  margin-top: 1.25rem;
-  padding-top: 1.1rem;
-  border-top: 1px solid var(--line);
-  font-size: 0.93rem;
-  color: var(--ink-soft);
-}
-
-.copy-line {
-  margin-top: 0.7rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
-  background: var(--sunk);
-  border-radius: var(--radius-chip);
-  padding: 0.6rem 0.75rem;
-}
-/* 명령이 잘려 보이면 믿음이 가지 않는다. 줄을 바꿔서라도 전부 보여 준다. */
-.copy-line code {
-  background: none;
-  padding: 0;
-  flex: 1;
-  min-width: 0;
-  font-size: 0.8rem;
-  line-height: 1.55;
-  white-space: pre-wrap;
-  word-break: break-all;
-  color: var(--ink);
-}
-.copy-line button {
-  flex-shrink: 0;
-  margin-top: 0.1rem;
-  font: inherit;
-  font-size: 0.8rem;
-  font-weight: 700;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--ink);
-  border-radius: 999px;
-  padding: 0.28rem 0.8rem;
-  cursor: pointer;
-}
-.copy-line button:hover { border-color: var(--ink-faint); }
-
-/* ── 알아두면 좋은 점 ──────────────────────────────── */
-
-.notes-grid {
-  margin-top: 2rem;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem 3rem;
-}
-.notes-grid > div { border-top: 1px solid var(--line); padding-top: 1.1rem; }
-.notes-grid p { margin-top: 0.5rem; color: var(--ink-soft); font-size: 0.97rem; }
-.notes-grid a { color: var(--accent); }
-
-/* ── 자주 묻는 것 ──────────────────────────────────── */
-/* 크림색 섹션이 네 개 연달아 오므로 받기 섹션처럼 바닥색을 한 번 바꿔 준다. */
-
-.faq { background: var(--sunk); }
-.qa-list {
-  margin-top: 2rem;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 2rem 3rem;
-}
-.qa { border-top: 1px solid var(--line); padding-top: 1.1rem; }
-.qa p { margin-top: 0.5rem; color: var(--ink-soft); font-size: 0.97rem; }
-.qa a { color: var(--accent); }
-
-/* ── 꼬리말 ─────────────────────────────────────────── */
-
-footer {
-  border-top: 1px solid var(--line);
-  padding-block: 2.5rem 3.5rem;
-  font-size: 0.92rem;
-  color: var(--ink-soft);
-}
-footer .wrap {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem 2rem;
-  align-items: center;
-  justify-content: space-between;
-}
-footer nav { display: flex; flex-wrap: wrap; gap: 1.4rem; }
-footer a { color: var(--ink-soft); text-decoration: none; }
-footer a:hover { color: var(--ink); text-decoration: underline; }
-
-/* ── 스크롤에 맞춰 살짝 떠오르기 ───────────────────── */
 
 @media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    .rise {
-      animation: rise linear both;
-      animation-timeline: view();
-      /* 화면에 들어오는 동안에만 끝낸다. 끝까지 스크롤하지 않아도 다 보인다. */
-      animation-range: entry 0% entry 80%;
-    }
-    @keyframes rise {
-      from { opacity: 0; transform: translateY(18px); }
-      to { opacity: 1; transform: none; }
-    }
+  .window { animation: window-in 420ms cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+  @keyframes window-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: none; }
   }
+}
+
+.titlebar {
+  position: sticky;
+  top: 0;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 22px;
+  height: 52px;
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+  border-radius: var(--r-window) var(--r-window) 0 0;
+}
+.lights { width: 42px; flex: none; }
+.titlebar .title { font-size: 0.86rem; font-weight: 700; letter-spacing: -0.01em; }
+.titlebar nav { margin-left: auto; display: flex; gap: 1.3rem; font-size: 0.86rem; }
+.titlebar nav a { text-decoration: none; color: var(--ink-soft); }
+.titlebar nav a:hover { color: var(--ink); }
+/* 언어 바꾸기는 같은 페이지 안을 오가는 링크가 아니다. 선을 그어 구분한다. */
+.titlebar nav a.lang { color: var(--ink); border-left: 1px solid var(--line); padding-left: 1.3rem; }
+
+/* ── 판 (섹션) ────────────────────────────────────────── */
+
+.pane { padding: 46px 40px; }
+.pane + .pane, main > .pane ~ .pane { border-top: 1px solid var(--line); }
+.pane > .label + h2 { margin-top: 8px; }
+.sub { margin-top: 10px; max-width: 46ch; color: var(--ink-soft); }
+
+.hero { padding-block: 62px 54px; }
+.hero .lead { margin-top: 18px; font-size: 1.06rem; color: var(--ink-soft); max-width: 28ch; }
+.actions { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 10px; }
+.hero .note { margin-top: 16px; font-size: 0.84rem; color: var(--ink-soft); }
+
+/*
+ * 창 모서리를 밟고 서는 고양이. 이 한 장이 컨셉을 다 설명하므로 진짜로 넘어와야 한다.
+ *
+ * hero-cat.png 는 오른쪽 32%가 투명 여백이다(알파 기준 x 0.15~0.68). 그래서
+ * right 를 그냥 -70px 주면 그림 상자만 넘어가고 고양이는 창 안에 머문다.
+ * 실제로 70px 넘기려면 70 + 0.32 x width 만큼 밀어야 한다.
+ */
+.escapee {
+  position: absolute;
+  right: -198px; /* 70 + 0.32 x 400 */
+  top: 40px;
+  width: 400px;
+  z-index: 2;
+  filter: drop-shadow(0 18px 30px rgba(20, 18, 26, 0.28));
+  pointer-events: none;
+}
+
+.strip { margin-top: 26px; width: 100%; }
+.facts { margin-top: 26px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 22px; }
+.facts dt { font-weight: 700; font-size: 0.95rem; }
+.facts dd { margin-top: 5px; font-size: 0.9rem; color: var(--ink-soft); }
+
+/* ── 버튼 ─────────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  white-space: nowrap; font: inherit; font-weight: 700; font-size: 0.94rem;
+  text-decoration: none; padding: 0.68rem 1.35rem;
+  border-radius: 8px; border: 1px solid transparent;
+  background: var(--ink); color: var(--panel);
+  cursor: pointer; transition: transform 120ms ease, opacity 150ms ease;
+}
+.btn:hover { opacity: 0.9; }
+.btn:active { transform: translateY(1px); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn.ghost:hover { border-color: var(--ink-soft); opacity: 1; }
+
+/* ── 받기 ─────────────────────────────────────────────── */
+
+.pane-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.tag { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+
+.dl-list { margin-top: 26px; display: grid; gap: 8px; }
+.dl-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px;
+  transition: transform 120ms ease, border-color 150ms ease;
+}
+.dl-row:hover { transform: translateY(-1px); border-color: var(--ink-soft); }
+.dl-row[data-recommended] { border-color: var(--accent); }
+.dl-row .name { font-weight: 700; font-size: 0.96rem; }
+.dl-row .meta { font-size: 0.82rem; color: var(--ink-soft); }
+.dl-row .btn { padding: 0.5rem 1.05rem; font-size: 0.86rem; }
+
+.hint { margin-top: 18px; font-size: 0.85rem; color: var(--ink-soft); max-width: 62ch; }
+.hint a { color: var(--accent); }
+.hint strong { color: var(--ink); font-weight: 700; }
+
+/* ── 처음 열 때 ───────────────────────────────────────── */
+
+.guides { margin-top: 26px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+.guides ol { margin-top: 12px; padding-left: 1.1rem; display: grid; gap: 8px; font-size: 0.9rem; color: var(--ink-soft); }
+.guides li::marker { color: var(--accent); font-weight: 800; }
+.guides li strong { color: var(--ink); font-weight: 700; }
+
+/* ── 궁금한 것 ────────────────────────────────────────── */
+
+/*
+ * 여섯 개를 한 줄로 세우면 창 아래쪽이 평평하게 길어진다. 두 칸으로 접어
+ * 눈이 한 번에 훑을 수 있게 한다. 좁아지면 알아서 한 칸으로 돌아간다.
+ */
+.qa-list {
+  margin-top: 26px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 22px 34px;
+  align-items: start;
+}
+.qa { border-top: 1px solid var(--line); padding-top: 16px; }
+.qa p { margin-top: 6px; font-size: 0.93rem; color: var(--ink-soft); }
+
+/* ── 받고 나면 이 창이 열려요 (리듬을 끊는 판) ─────────── */
+
+.shot-pane {
+  background: var(--sunk);
+  border-top: none; /* 바닥색이 바뀌는 것으로 이미 나뉜다 */
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: 40px;
+  padding-block: 40px;
+}
+
+/* 진짜 앱 창처럼 보이게 — 페이지를 감싼 창과 같은 모서리, 같은 그림자 결 */
+.app-frame {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 18px 40px -18px rgba(20, 18, 26, 0.42);
+}
+/* 원본이 800x1560 으로 아주 길다. 팀 목록이 끝나는 데서 끊는다. */
+.app-shot {
+  width: 100%;
+  aspect-ratio: 3 / 2.75; /* 언어 고르는 줄 바로 아래에서 끊는다 */
+  object-fit: cover;
+  object-position: top center;
+}
+
+.shot-copy h2 { font-size: clamp(1.4rem, 2.4vw, 1.85rem); }
+.shot-copy p { margin-top: 14px; color: var(--ink-soft); max-width: 32ch; }
+
+/* ── 꼬리말 ───────────────────────────────────────────── */
+
+.window footer {
+  display: flex; flex-wrap: wrap; gap: 1rem 2rem; justify-content: space-between;
+  padding: 22px 40px 26px; border-top: 1px solid var(--line);
+  font-size: 0.84rem; color: var(--ink-soft);
+}
+.window footer nav { display: flex; gap: 1.2rem; }
+.window footer a { text-decoration: none; }
+.window footer a:hover { color: var(--ink); }
+
+/* ── 좁은 화면: 창틀을 없앤다 ─────────────────────────── */
+
+@media (max-width: 900px) {
+  .shot-pane { grid-template-columns: 1fr; gap: 26px; }
+  .shot-copy { order: -1; }
+  .stage { padding: 0; }
+  .window { width: 100%; border: none; border-radius: 0; box-shadow: none; animation: none; }
+  .titlebar { border-radius: 0; padding-inline: 20px; }
+  .pane { padding: 36px 20px; }
+  .window footer { padding: 20px; }
+  /* 창이 없으면 넘어올 창틀도 없다 */
+  .escapee { display: none; }
+}
+
+@media (max-width: 1180px) {
+  /* 같은 계산: 20 + 0.32 x 280 */
+  .escapee { right: -110px; width: 280px; }
+}
+
+/* ── 빼꼼 ───────────────────────────────────────────── */
+/*
+ * 페이지 양옆에서 캐릭터 다섯이 모서리 뒤로 몸을 기울여 얼굴을 비스듬히 내민다.
+ * 왼쪽 → 오른쪽 → 왼쪽 순으로 지그재그이고, 히어로부터 설치 안내까지 페이지
+ * 전체에 흩어져 있어서 스크롤할 때마다 한 마리씩 나타난다.
+ *
+ * 기우는 방향은 그림에 이미 구워져 있다. 왼쪽에 서는 판다·강아지·고양이는
+ * 오른쪽으로, 오른쪽에 서는 토끼·오리는 왼쪽으로 눕혀 렌더했으므로 좌우를
+ * 바꾸면 화면 바깥을 보고 자세가 무너진다.
+ *
+ * 그림에는 캐릭터가 통째로 들어 있고 어느 모서리에도 닿지 않는다. 화면에 내미는
+ * 것은 얼굴이 있는 쪽 절반 남짓이고 나머지는 화면 밖으로 밀어 둔다. 그래서
+ * 잘리는 선은 화면 가장자리 하나, 세로선뿐이다. 몸통이 가로로 뚝 잘려 보이면
+ * 그건 그림이 프레임에 걸렸다는 뜻이니 CSS 가 아니라 렌더를 고쳐야 한다
+ * (`npm run site-images -- peek-duck` 뒤 알파 여백을 확인할 것).
+ *
+ * 크기를 키울 때는 width 와 left/right 를 같은 비율로 키운다. 그래야 얼굴이
+ * 잘리지 않는 이 비율이 유지된다.
+ *
+ * 1440px 아래에서는 나오지 않는다. 본문 칸 바깥 여백이 그보다 좁으면 글과
+ * 부딪힌다. 있으면 좋은 것이지 없으면 안 되는 것이 아니다.
+ *
+ * 좁은 화면이라고 캐릭터를 줄이지는 않는다. 크기는 그대로 두고 더 깊이 물려서
+ * 얼굴만 내밀게 한다. 줄이면 그냥 작아 보이지만, 물리면 더 빼꼼해 보인다.
+ * 맥북 14"(1512px)·13"(1470px)가 이 구간이라 여기서 사라지면 안 된다.
+ */
+
+.peekers { display: none; }
+
+@media (min-width: 1440px) {
+  .peekers {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* 맨 아래 고양이와 그 그림자까지 담는 높이. 모자라면 여기서 잘린다. */
+    height: 2680px;
+    /*
+     * hidden 이 아니라 clip 이다. hidden 은 스크롤 컨테이너를 만들어서, 아래
+     * view() 타임라인이 페이지가 아니라 이 칸을 기준으로 잡히고 결국 아무것도
+     * 움직이지 않는다. clip 은 잘라 주기만 하고 컨테이너를 만들지 않는다.
+     */
+    overflow: clip;
+    z-index: 5; /* 머리말(10)보다 뒤 */
+    pointer-events: none;
+  }
+
+  .peek {
+    position: absolute;
+    aspect-ratio: 340 / 460;
+    background-repeat: no-repeat;
+    background-size: contain;
+    filter: drop-shadow(0 12px 20px var(--peek-shadow));
+  }
+
+  /*
+   * 토끼와 오리가 크게 걸려 있는 것은 실수가 아니다. 토끼는 귀 때문에, 오리는
+   * 부리 때문에 그림 안에서 차지하는 폭이 좁다. 화면에서 다섯 얼굴이 같은
+   * 크기로 보이는 쪽을 택했다.
+   */
+  .peek-panda { top: 120px; left: -135px; width: 240px; background-image: url('/assets/peek-panda.png'); }
+  .peek-bunny { top: 560px; right: -195px; width: 300px; background-image: url('/assets/peek-bunny.png'); }
+  .peek-dog { top: 1020px; left: -132px; width: 240px; background-image: url('/assets/peek-dog.png'); }
+  .peek-duck { top: 1600px; right: -175px; width: 270px; background-image: url('/assets/peek-duck.png'); }
+  .peek-cat { top: 2160px; left: -128px; width: 240px; background-image: url('/assets/peek-cat.png'); }
+}
+
+/* 창이 940px 뿐이라 여백이 넓다. 여기서부터는 더 많이 내민다. */
+@media (min-width: 1600px) {
+  .peek-panda { left: -40px; }
+  .peek-bunny { right: -150px; }
+  .peek-dog { left: -36px; }
+  .peek-duck { right: -132px; }
+  .peek-cat { left: -34px; }
+}
+
+@media (min-width: 1900px) {
+  .peek-panda { top: 116px; left: -50px; width: 300px; }
+  .peek-bunny { top: 560px; right: -190px; width: 370px; }
+  .peek-dog { top: 1030px; left: -46px; width: 300px; }
+  .peek-duck { top: 1610px; right: -166px; width: 335px; }
+  .peek-cat { top: 2175px; left: -44px; width: 300px; }
+}
+
+/*
+ * 스크롤을 따라 한 마리씩 미끄러져 들어온다. 한 번 나오면 그대로 머문다 —
+ * `is-in` 은 peekers.js 가 붙이고 다시는 떼지 않는다.
+ *
+ * 스크롤 타임라인(animation-timeline: view())을 쓰지 않는 이유가 둘이다.
+ * 하나, 그건 스크롤 위치에 연동되는 것이라 위로 되감으면 캐릭터도 되감겨
+ * 사라진다. 둘, 처음부터 화면에 있는 맨 위 두 마리는 이미 구간이 끝난 상태라
+ * 등장 자체가 없다. 시간 기반 전환이면 둘 다 해결된다.
+ *
+ * 느리게 나오는 것이 이 연출의 전부다. 빠르면 그냥 튀어나오는 것이고,
+ * 느려야 모서리 뒤에서 조심스럽게 내다보는 것이 된다.
+ */
+
+.peek { transform: translateX(var(--peek-from)); }
+
+/*
+ * 전환(transition)이 아니라 애니메이션이다. 전환은 "바뀌기 전 모습"이 한 번
+ * 그려져야 일어나는데, 처음부터 화면에 있는 맨 위 두 마리는 스크립트가 곧바로
+ * is-in 을 붙이는 바람에 그 그려질 틈이 없어 미끄러지지 않고 그냥 도착해 있었다.
+ * 애니메이션은 붙는 순간 스스로 재생되므로 그 조건이 없다.
+ */
+.peek.is-in {
+  animation: peek-in 1200ms cubic-bezier(0.16, 0.84, 0.3, 1) both;
+}
+
+@keyframes peek-in {
+  from { transform: translateX(var(--peek-from)); }
+  to { transform: translateX(0); }
+}
+
+.from-left { --peek-from: -104%; }
+.from-right { --peek-from: 104%; }
+
+/* 맨 위 둘은 화면을 열자마자 함께 나온다. 시차를 줘야 둘이 같이 튀지 않는다. */
+.peek-panda.is-in { animation-delay: 220ms; }
+.peek-bunny.is-in { animation-delay: 620ms; }
+
+/*
+ * 모션을 줄이기로 한 사람에게는 미끄러지지 않고 처음부터 제자리에 있다.
+ * peekers.js 가 is-in 을 붙이든 말든 결과가 같다.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .peek { transform: none; }
+  .peek.is-in { animation: none; }
 }
