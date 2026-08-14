@@ -464,6 +464,68 @@ delete from public.teams t
  where not exists (select 1 from public.members m where m.team_id = t.id);
 
 -- ────────────────────────────────────────────────────────────
+-- 안 쓰는 익명 계정 정리
+-- ────────────────────────────────────────────────────────────
+--
+-- 익명 계정은 앱을 설치할 때마다, 그리고 세션을 잃을 때마다 하나씩 늘어난다.
+-- 대부분은 팀에 들어가지 않고 버려지는 것들이라 그냥 두면 계속 쌓인다.
+--
+-- 지우는 기준이 중요하다. members.user_id 가 `on delete cascade` 라서, 아직 쓰는
+-- 사람을 잘못 지우면 그 사람의 팀 소속까지 함께 사라진다. 그래서 두 겹으로 막는다.
+--
+--   1) 어느 팀에도 속하지 않은 계정만  → 쓰는 사람은 반드시 members 에 줄이 있다
+--   2) 만든 지 유예기간이 지난 계정만  → 지금 막 로그인하고 팀을 만드는 중인 사람을
+--                                        쓸어가지 않기 위해서다
+--
+-- 1번만으로도 데이터를 잃지는 않지만(팀이 없으면 잃을 것도 없다), 2번이 없으면
+-- 가입과 팀 생성 사이의 짧은 틈에 걸려 "팀 만들기"가 이유 없이 실패할 수 있다.
+create or replace function public.cleanup_anonymous_users(
+  p_grace interval default interval '7 days'
+) returns int
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+declare
+  v_deleted int;
+begin
+  delete from auth.users u
+   where u.is_anonymous
+     and greatest(u.created_at, coalesce(u.last_sign_in_at, u.created_at)) < now() - p_grace
+     and not exists (select 1 from public.members m where m.user_id = u.id);
+
+  get diagnostics v_deleted = row_count;
+  return v_deleted;
+end;
+$$;
+
+-- 하루 한 번, 한국 시간으로 새벽 3시(UTC 18시)에 돌린다.
+--
+-- 이 앱 규모에서는 쌓이는 속도가 느려 더 자주 돌 이유가 없고, 반대로 주 단위로 미루면
+-- 그만큼 안 쓰는 계정이 MAU 에 잡힌 채 남는다. 지우는 일 자체는 인덱스를 탄 삭제
+-- 한 번이라 사람이 쓰는 시간에 돌아도 상관없지만, 굳이 한가한 때로 잡았다.
+create extension if not exists pg_cron;
+
+do $$
+begin
+  if not exists (select 1 from pg_extension where extname = 'pg_cron') then
+    raise notice 'pg_cron 이 없어 자동 정리를 걸지 않았습니다. 대시보드에서 켠 뒤 이 파일을 다시 실행하세요.';
+    return;
+  end if;
+
+  if exists (select 1 from cron.job where jobname = 'tap-tap-cleanup-anonymous') then
+    perform cron.unschedule('tap-tap-cleanup-anonymous');
+  end if;
+
+  perform cron.schedule(
+    'tap-tap-cleanup-anonymous',
+    '0 18 * * *',
+    $cron$select public.cleanup_anonymous_users()$cron$
+  );
+end;
+$$;
+
+-- ────────────────────────────────────────────────────────────
 -- 실시간 채널: 팀원만 자기 팀 채널에 붙는다
 -- ────────────────────────────────────────────────────────────
 --
@@ -520,3 +582,7 @@ grant execute on function public.rename_team(uuid, text)        to authenticated
 grant execute on function public.invite_ttl()                   to authenticated;
 grant execute on function public.max_teams_per_user()           to authenticated;
 grant execute on function public.max_members_per_team()         to authenticated;
+
+-- cleanup_anonymous_users 는 일부러 이 목록에 없다. 계정을 지우는 함수라 앱이 부를 일이
+-- 없고, 위 일괄 회수에 걸려 아무 역할도 실행할 수 없다. 예약된 작업은 이 함수의 주인
+-- 권한으로 돌기 때문에 그것만으로 충분하다. (빠진 줄이 아니다 — 넣지 마세요)

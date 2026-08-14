@@ -121,3 +121,23 @@ Supabase 대시보드의 **Table Editor → teams** 에서도 방금 만든 팀�
 
 세션이 곧 신원이라, 그것을 잃으면(프로필 폴더 삭제·오래된 백업 복원 등) 속한 팀과 남남이
 됩니다. 되찾는 길은 초대코드로 다시 들어오는 것뿐입니다.
+
+### 안 쓰는 익명 계정은 알아서 정리됩니다
+
+익명 계정은 설치할 때마다, 세션을 잃을 때마다 하나씩 늘어납니다. 그래서 `pg_cron` 으로
+**하루 한 번(한국 시간 새벽 3시)** `cleanup_anonymous_users()` 를 돌립니다.
+`pg_cron` 은 대시보드 Database → Extensions 에서 켤 수 있고, 안 켜져 있으면 스키마를
+실행할 때 안내만 남기고 넘어갑니다.
+
+지우는 대상은 **어느 팀에도 속하지 않고, 만든 지 7일이 지난** 익명 계정뿐입니다.
+`members.user_id` 가 `on delete cascade` 라서 쓰는 사람을 잘못 지우면 팀 소속까지 함께
+사라지기 때문에, 팀이 있는 계정은 손대지 않습니다. 7일이라는 유예는 지금 막 로그인하고
+팀을 만드는 중인 사람이 쓸려가지 않게 하는 장치입니다.
+
+직접 돌려 보거나 기준을 바꿔 보고 싶으면 SQL Editor 에서 이렇게 합니다.
+
+```sql
+select public.cleanup_anonymous_users();                 -- 기본 7일, 지운 개수를 돌려준다
+select public.cleanup_anonymous_users(interval '30 days');
+select * from cron.job where jobname = 'tap-tap-cleanup-anonymous';
+```
