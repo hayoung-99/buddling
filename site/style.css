@@ -312,6 +312,11 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
  * 좁은 화면이라고 캐릭터를 줄이지는 않는다. 크기는 그대로 두고 더 깊이 물려서
  * 얼굴만 내밀게 한다. 줄이면 그냥 작아 보이지만, 물리면 더 빼꼼해 보인다.
  * 맥북 14"(1512px)·13"(1470px)가 이 구간이라 여기서 사라지면 안 된다.
+ *
+ * 다만 **물리는 깊이의 한계는 얼굴이 정한다.** 캐릭터가 정면을 보게 된 뒤로
+ * 얼굴이 그림 한가운데에 있어서, 예전 값 그대로 물리면 두 눈 사이가 잘린다.
+ * 아래 값은 얼굴 가로폭의 3분의 1쯤만 넘어가도록 잡은 것이다. 더 물리고
+ * 싶으면 눈 위치부터 재고 오는 편이 빠르다.
  */
 
 .peekers { display: none; }
@@ -348,11 +353,11 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
    * 부리 때문에 그림 안에서 차지하는 폭이 좁다. 화면에서 다섯 얼굴이 같은
    * 크기로 보이는 쪽을 택했다.
    */
-  .peek-panda { top: 120px; left: -135px; width: 240px; background-image: url('/assets/peek-panda.png'); }
-  .peek-bunny { top: 560px; right: -195px; width: 300px; background-image: url('/assets/peek-bunny.png'); }
-  .peek-dog { top: 1020px; left: -132px; width: 240px; background-image: url('/assets/peek-dog.png'); }
-  .peek-duck { top: 1600px; right: -175px; width: 270px; background-image: url('/assets/peek-duck.png'); }
-  .peek-cat { top: 2160px; left: -128px; width: 240px; background-image: url('/assets/peek-cat.png'); }
+  .peek-panda { top: 120px; left: -120px; width: 240px; background-image: url('/assets/peek-panda.png'); }
+  .peek-bunny { top: 560px; right: -181px; width: 300px; background-image: url('/assets/peek-bunny.png'); }
+  .peek-dog { top: 1020px; left: -119px; width: 240px; background-image: url('/assets/peek-dog.png'); }
+  .peek-duck { top: 1600px; right: -171px; width: 270px; background-image: url('/assets/peek-duck.png'); }
+  .peek-cat { top: 2160px; left: -122px; width: 240px; background-image: url('/assets/peek-cat.png'); }
 }
 
 /* 창이 940px 뿐이라 여백이 넓다. 여기서부터는 더 많이 내민다. */
