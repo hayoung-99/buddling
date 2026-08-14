@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/hayoung-99/tap-tap/compare/v0.2.0...v0.2.1) (2026-08-14)
+
+
+### 고친 것
+
+* **main:** don't open a window before the app is ready ([#17](https://github.com/hayoung-99/tap-tap/issues/17)) ([70b3445](https://github.com/hayoung-99/tap-tap/commit/70b344511c999c11ff069393a0dc30d482c01153))
+
 ## [0.2.0](https://github.com/hayoung-99/tap-tap/compare/v0.1.1...v0.2.0) (2026-08-14)
 
 
