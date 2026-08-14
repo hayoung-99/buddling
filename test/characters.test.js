@@ -9,7 +9,7 @@ import {
   TAIL,
   SNOUT,
   ARM,
-} from '../src/shared/characters.js'
+} from '../src/shared/characters'
 
 describe('캐릭터 스펙', () => {
   it('컨셉아트의 5종이 모두 있다', () => {

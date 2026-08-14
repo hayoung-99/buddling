@@ -12,15 +12,20 @@
 
 ```bash
 npm test              # 단위 테스트. 고칠 때마다 돌린다. Supabase 없이 돈다.
-npm start             # 앱 실행
+npm run typecheck     # 타입 검사. 화면을 고쳤으면 이것도 돌린다.
+npm run build         # 화면(React·TS)과 preload 빌드
+npm run dev           # 화면을 고칠 때마다 다시 빌드 (창은 새로고침)
+npm start             # 앱 실행 (먼저 빌드한다)
 npm run start:both    # A·B 두 명인 척 동시 실행 (Ctrl+C 한 번에 둘 다 종료)
 npm run check         # 실제 Supabase 를 거치는 e2e 점검 (.env 필요, 데이터는 지운다)
 npm run check:site    # 랜딩페이지 점검
 npm run preview       # 캐릭터 5종을 나란히 놓고 눈으로 확인
 ```
 
-CI(`.github/workflows/ci.yml`)가 미는 것마다 돌리는 것은 `npm test` 와
-`npm run check:site` 둘뿐입니다. **이 둘이 통과하지 않으면 끝난 게 아닙니다.**
+CI(`.github/workflows/ci.yml`)가 미는 것마다 돌리는 것은 `npm test` ·
+`npm run typecheck` · `npm run build` · `npm run check:site` 넷입니다.
+**이 넷이 통과하지 않으면 끝난 게 아닙니다.** (Electron 앱을 포장하는 것은 여전히
+태그를 밀 때만 합니다 — 10분이 넘고 러너를 셋 잡아먹습니다.)
 
 ### 일을 시작하기 전에 의존성부터 맞춘다
 
@@ -47,6 +52,10 @@ npm ci
 
 린터도 포매터도 없습니다. 주변 코드의 모양을 눈으로 보고 맞추세요
 (세미콜론 없음, 작은따옴표, 들여쓰기 2칸).
+
+**화면은 빌드해서 씁니다.** 창이 여는 것은 `src/renderer/` 가 아니라 `dist-renderer/`
+이고, preload 도 `dist-preload/*.cjs` 입니다. 소스만 고치고 빌드하지 않으면 **아무것도
+안 바뀐 것처럼 보입니다.** `npm start` 는 알아서 먼저 빌드합니다.
 
 ---
 
@@ -140,9 +149,9 @@ PR 본문에는 **무엇을 왜 했는지와 무엇을 확인했는지**를 적�
 ### 1. 순수 함수로 빼서 테스트한다
 
 Electron 도 브라우저도 없이 돌릴 수 있는 계산은 별도 모듈로 빼고 `test/` 에서 검증합니다.
-이미 그렇게 되어 있는 것들 — `shared/power.js`, `renderer/pet/pacer.js`,
-`renderer/pet/tween.js`, `renderer/pet/animations.js`, `main/pet-size.js`,
-`main/update-check.js`.
+이미 그렇게 되어 있는 것들 — `shared/power.ts`, `renderer/pet/pacer.ts`,
+`renderer/pet/tween.ts`, `renderer/pet/animations.ts`, `main/pet-size.js`,
+`main/update-check.js`, `main/quit.js`.
 
 새 로직을 넣을 때 "이건 Electron 이 있어야 테스트된다" 는 생각이 들면,
 대개 계산 부분을 덜 떼어낸 것입니다.
@@ -182,6 +191,11 @@ preload 의 `call()` 이 봉투를 풀어 다시 던집니다 — 새 창을 만
 반대로 **CSS 애니메이션으로 되는 것(말풍선·이름표)은 이 루프에 넣지 마세요** —
 컴포지터가 알아서 부드럽게 돌립니다.
 
+**이 루프에 React 를 들이지 마세요.** 캐릭터 창의 React(`pet/main.tsx`)는 캔버스와
+오버레이 두 칸을 얹고 나면 다시 그리지 않습니다. 그 뒤로는 `pet.ts` 가 DOM 을 직접
+만집니다. 프레임마다 상태를 건드리면 그때마다 재조정이 돌아, 위에서 아낀 것을 그대로
+반납하게 됩니다.
+
 숨긴 창의 `requestAnimationFrame` 은 **브라우저가 멈춰 주지 않습니다.** 재보면
 숨겨도 CPU 가 그대로였습니다. 그래서 메인 프로세스가 `render` 채널로 직접 껐다 켭니다.
 
@@ -210,6 +224,12 @@ DB 는 `security definer` RPC 로만 접근합니다. 테이블은 RLS 로 잠�
 
 ## 밟기 쉬운 함정
 
+- **preload 는 CommonJS 여야 합니다.** 창들이 `sandbox` 를 끄지 않아서, ESM 으로
+  내보내면 preload 가 통째로 뜨지 않습니다. 그러면 `window.teamApi` 가 없어 **화면이
+  빈 채로** 뜨는데, 오류는 눈에 잘 안 띄는 곳에만 남습니다
+  (`vite.preload.config.mts` 참고).
+- **Vite 설정의 `base: './'` 를 건드리지 마세요.** 창은 `file://` 로 열리므로 절대경로면
+  자산을 못 찾습니다. 개발 중에는 멀쩡해 보이고 **배포본에서만** 깨집니다.
 - **`.env` 를 Bash 로 읽으려 하면 훅이 막습니다.** 필요하면 사용자에게 부탁하세요.
 - **`src/main/config.generated.json` 이 있으면 `SUPABASE_URL=` 로 비워도 소용없습니다.**
   `main/config.js` 가 환경변수 → `.env` → 구운 값 순으로 찾기 때문입니다. 오프라인

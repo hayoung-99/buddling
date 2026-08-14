@@ -34,11 +34,11 @@ export function createPacer() {
 
   return {
     /**
-     * @param {number} delta 지난 기회로부터 흐른 시간(초)
-     * @param {number} fps 목표 초당 프레임 수. Infinity 면 기회가 올 때마다 그린다.
-     * @returns {number|null} 이번에 그릴 때 쓸 시간. null 이면 이번 기회는 건너뛴다.
+     * @param delta 지난 기회로부터 흐른 시간(초)
+     * @param fps 목표 초당 프레임 수. Infinity 면 기회가 올 때마다 그린다.
+     * @returns 이번에 그릴 때 쓸 시간. null 이면 이번 기회는 건너뛴다.
      */
-    tick(delta, fps) {
+    tick(delta: number, fps: number): number | null {
       gate += delta
       elapsed += delta
 

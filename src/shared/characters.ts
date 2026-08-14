@@ -18,7 +18,7 @@ export const EAR = {
   ROUND: 'round', // 판다
   LONG: 'long', // 토끼
   NONE: 'none', // 오리
-}
+} as const
 
 /** 꼬리 모양 */
 export const TAIL = {
@@ -27,21 +27,66 @@ export const TAIL = {
   PUFF: 'puff', // 토끼·판다 (동그란 뭉치)
   FEATHER: 'feather', // 오리
   NONE: 'none',
-}
+} as const
 
 /** 주둥이 모양 */
 export const SNOUT = {
   MUZZLE: 'muzzle', // 포유류 주둥이
   BEAK: 'beak', // 오리 부리
-}
+} as const
 
 /** 앞다리 모양 */
 export const ARM = {
   PAW: 'paw', // 앞발
   WING: 'wing', // 날개
+} as const
+
+export type EarType = (typeof EAR)[keyof typeof EAR]
+export type TailType = (typeof TAIL)[keyof typeof TAIL]
+export type SnoutType = (typeof SNOUT)[keyof typeof SNOUT]
+export type ArmType = (typeof ARM)[keyof typeof ARM]
+
+/**
+ * 색은 이름으로 고른다. 부위마다 직접 색값을 적는 대신 팔레트의 어느 칸을 쓸지만
+ * 가리키므로, 종의 색을 바꿀 때 한 곳만 고치면 된다.
+ */
+export type PaletteKey =
+  | 'body'
+  | 'belly'
+  | 'accent'
+  | 'snout'
+  | 'nose'
+  | 'eye'
+  | 'cheek'
+  | 'foot'
+
+export type Palette = Record<PaletteKey, number>
+
+export interface CharacterBuild {
+  bodyRadius: number
+  /** 몸통 x/y/z 스케일 */
+  bodyShape: [number, number, number]
+  headRadius: number
+  /** 몸통·머리가 겹치는 정도 (작을수록 머리가 몸에 파묻힌다) */
+  headLift: number
+  legLength: number
+  feet: 'paw' | 'webbed'
+  ears: { type: EarType; size: number; spread: number; tilt: number; color?: PaletteKey }
+  snout: { type: SnoutType; size: number }
+  tail: { type: TailType; size: number }
+  arms: { type: ArmType; size: number; color?: PaletteKey }
+  patches: string[]
 }
 
-export const CHARACTERS = [
+export interface CharacterSpec {
+  key: string
+  name: string
+  cry: string
+  palette: Palette
+  build: CharacterBuild
+}
+
+export const CHARACTERS: CharacterSpec[] = [
   {
     key: 'cat',
     name: 'HAPPY CAT',
@@ -188,13 +233,13 @@ export const CHARACTERS = [
 
 export const DEFAULT_CHARACTER_KEY = 'cat'
 
-export const CHARACTER_KEYS = CHARACTERS.map((c) => c.key)
+export const CHARACTER_KEYS: string[] = CHARACTERS.map((c) => c.key)
 
 /** 키로 캐릭터 스펙을 찾는다. 없거나 잘못된 키면 기본 캐릭터를 돌려준다. */
-export function getCharacter(key) {
+export function getCharacter(key: string | null | undefined): CharacterSpec {
   return CHARACTERS.find((c) => c.key === key) ?? CHARACTERS[0]
 }
 
-export function isCharacterKey(key) {
-  return CHARACTER_KEYS.includes(key)
+export function isCharacterKey(key: string | null | undefined): boolean {
+  return CHARACTER_KEYS.includes(key as string)
 }

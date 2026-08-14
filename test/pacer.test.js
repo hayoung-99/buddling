@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createPacer, MAX_STEP } from '../src/renderer/pet/pacer.js'
+import { createPacer, MAX_STEP } from '../src/renderer/pet/pacer'
 
 /** 화면이 fps 로 delta 를 주는 상황을 흉내 낸다 */
 const frame = (hz) => 1 / hz

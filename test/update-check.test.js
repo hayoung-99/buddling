@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
-import { isNewer, startUpdateCheck } from '../src/main/update-check.js'
-import { canAutoInstall } from '../src/main/updates.js'
+import { isNewer, startUpdateCheck } from '../src/main/update-check'
+import { canAutoInstall } from '../src/main/updates'
 
 describe('isNewer', () => {
   it('뒷자리가 올라간 것도 새 버전으로 본다', () => {

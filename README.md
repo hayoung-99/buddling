@@ -97,7 +97,10 @@ CPU 수치는 M 시리즈 맥에서 `TAPTAP_METRICS=5 npm start` 로 잰 값입�
 ## 개발
 
 ```bash
+npm run build         # 화면(React·TS)과 preload 를 빌드한다 — 실행 전에 한 번은 필요하다
+npm run dev           # 화면을 고칠 때마다 다시 빌드한다 (창은 새로고침)
 npm test              # 단위 테스트 (vitest) — Supabase 없이 돈다
+npm run typecheck     # 타입 검사
 npm run check         # 실제 Supabase 연결 점검 (.env 필요)
 npm run preview       # 캐릭터 5종을 나란히 놓고 비율·애니메이션 확인
 npm run tray-icon     # 메뉴바 아이콘 PNG 다시 생성
@@ -160,9 +163,12 @@ TAPTAP_FAKE_NET=1 npm start
 
 ## 구조
 
+**화면은 빌드해서 씁니다.** `npm start` 가 알아서 먼저 빌드하지만, 소스를 고친 뒤에는
+`npm run build` (또는 `npm run dev`) 를 거쳐야 창에 반영됩니다.
+
 ```
 src/
-├── main/          Electron 메인 프로세스
+├── main/          Electron 메인 프로세스 (자바스크립트 · CommonJS)
 │   ├── main.js         진입점 · 팀 수에 맞춰 캐릭터 창을 만들고 지운다
 │   ├── windows.js      투명 캐릭터 창 / 팀 창 / 크기 조절 패널
 │   ├── session.js      저장소 · 네트워크 · 창을 잇는 상태 한 곳 (팀별 소속·연결)
@@ -177,17 +183,20 @@ src/
 │   ├── update-check.js 나왔다고 알리기만 (그 밖 · 내려받기 실패 시)
 │   └── config.js       Supabase 접속 정보 (개발용 파일 / 빌드에 구운 값)
 │   ├── store.js        userData 안 JSON 한 개
-├── preload/       렌더러에 노출할 좁은 API
-├── shared/        characters.js (캐릭터 5종 스펙) · i18n/ (언어별 사전)
-├── renderer/
-│   ├── pet/            Three.js 캐릭터 (critter · animations · scene · bubble · notes · nameplate)
-│   ├── team/           팀 목록 창(list) + 팀 상세 창(detail) + 공용 조각(ui)
+├── preload/       렌더러에 노출할 좁은 API (TS → CommonJS 로 빌드된다)
+├── shared/        characters · power · i18n/ · state·ipc (창들이 함께 쓰는 타입)
+├── renderer/      React + 타입스크립트
+│   ├── pet/            Three.js 캐릭터. 렌더 루프는 명령형이고 React 는 껍데기만이다
+│   ├── team/           팀 목록 창(TeamList) + 팀 상세 창(TeamDetail)
 │   ├── settings/       절전 강도·언어를 고르는 창
+│   ├── size/           캐릭터 크기 조절 패널
 │   ├── preview/        개발용 캐릭터 미리보기
 │   ├── icon/           앱 아이콘을 그리는 화면 (배포본에는 안 들어간다)
 │   └── site-assets/    랜딩페이지 그림을 그리는 화면 (배포본에는 안 들어간다)
 └── services/      net.js 인터페이스 · supabase-net · 테스트용 fake-net
 
+dist-renderer/     빌드된 화면 (창이 여는 것은 이쪽이다)
+dist-preload/      빌드된 preload
 site/              랜딩페이지 (빌드 도구 없는 HTML·CSS, Vercel 로 올라간다)
 build/             앱 아이콘 산출물 (icns · ico · png)
 ```

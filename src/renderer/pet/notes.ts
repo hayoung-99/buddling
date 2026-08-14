@@ -9,6 +9,16 @@
 
 import * as THREE from 'three'
 
+/**
+ * `traverse` 는 Object3D 를 주는데 재질과 형상은 Mesh 에만 있다.
+ * 아래 정리·투명도 조절이 전부 이 좁히기를 거친다.
+ */
+const isMesh = (object: THREE.Object3D): object is THREE.Mesh =>
+  (object as THREE.Mesh).isMesh === true
+
+/** 이 파일이 만드는 재질은 전부 하나짜리다 (배열이 아니다) */
+const materialOf = (mesh: THREE.Mesh) => mesh.material as THREE.MeshStandardMaterial
+
 const NOTE_COLOR = 0xf0cf58
 const BEAM_COLOR = 0xe8c247
 
@@ -19,7 +29,7 @@ const RISE = 0.55
 /** 좌우로 살랑이는 폭 */
 const SWAY = 0.08
 
-function material(color) {
+function material(color: number) {
   return new THREE.MeshStandardMaterial({
     color,
     roughness: 0.45,
@@ -30,20 +40,20 @@ function material(color) {
 }
 
 /** 음표 머리: 살짝 기울어진 납작한 타원 */
-function head(size, mat) {
+function head(size: number, mat: THREE.Material) {
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(size * 0.34, 18, 12), mat)
   mesh.scale.set(1.2, 0.92, 0.7)
   mesh.rotation.z = 0.35
   return mesh
 }
 
-function stem(size, mat) {
+function stem(size: number, mat: THREE.Material) {
   const bar = new THREE.Mesh(new THREE.BoxGeometry(size * 0.15, size * 0.95, size * 0.15), mat)
   return bar
 }
 
 /** 8분음표 하나 (머리 + 기둥 + 꼬리) */
-function buildEighth(size) {
+function buildEighth(size: number) {
   const group = new THREE.Group()
   const mat = material(NOTE_COLOR)
 
@@ -66,7 +76,7 @@ function buildEighth(size) {
 }
 
 /** 이어진 8분음표 둘 (머리 둘 + 기둥 둘 + 잇는 대들보) */
-function buildBeamed(size) {
+function buildBeamed(size: number) {
   const group = new THREE.Group()
   const mat = material(NOTE_COLOR)
   const beamMat = material(BEAM_COLOR)
@@ -88,13 +98,25 @@ function buildBeamed(size) {
   return group
 }
 
+/** 떠 있는 음표 하나 */
+interface Note {
+  object: THREE.Object3D
+  origin: THREE.Vector3
+  /** 음수인 동안은 아직 나오지 않은 상태 */
+  age: number
+  swayPhase: number
+  swayDir: number
+  spin: number
+  tilt: number
+}
+
 /**
- * @param {THREE.Object3D} parent 캐릭터가 담긴 그룹
- * @param {number} unit 캐릭터 키 (월드 단위) — 음표 크기·높이를 여기에 맞춘다
+ * @param parent 캐릭터가 담긴 그룹
+ * @param unit 캐릭터 키 (월드 단위) — 음표 크기·높이를 여기에 맞춘다
  */
-export function createNotes(parent, unit = 2) {
+export function createNotes(parent: THREE.Object3D, unit = 2) {
   const templates = [buildEighth(unit * 0.21), buildBeamed(unit * 0.21)]
-  const live = []
+  const live: Note[] = []
 
   /** 한 마리 주위로 음표 몇 개를 시간차로 띄운다 */
   function burst({ count = 5, spread = 0.55, stagger = 0.18 } = {}) {
@@ -103,7 +125,7 @@ export function createNotes(parent, unit = 2) {
       const object = template.clone(true)
       // clone 은 재질을 공유하므로, 개별로 흐려지게 하려면 따로 떼어 준다
       object.traverse((child) => {
-        if (child.isMesh) child.material = child.material.clone()
+        if (isMesh(child)) child.material = materialOf(child).clone()
       })
 
       const side = Math.random() < 0.5 ? -1 : 1
@@ -130,14 +152,14 @@ export function createNotes(parent, unit = 2) {
     }
   }
 
-  function release(entry) {
+  function release(entry: Note) {
     entry.object.removeFromParent()
     entry.object.traverse((child) => {
-      if (child.isMesh) child.material.dispose()
+      if (isMesh(child)) materialOf(child).dispose()
     })
   }
 
-  function update(delta) {
+  function update(delta: number) {
     for (let index = live.length - 1; index >= 0; index -= 1) {
       const entry = live[index]
       entry.age += delta
@@ -165,7 +187,7 @@ export function createNotes(parent, unit = 2) {
       entry.object.rotation.set(0, entry.spin * t, entry.tilt + Math.sin(t * 4) * 0.12)
 
       entry.object.traverse((child) => {
-        if (child.isMesh) child.material.opacity = fade
+        if (isMesh(child)) materialOf(child).opacity = fade
       })
     }
   }
@@ -175,9 +197,9 @@ export function createNotes(parent, unit = 2) {
     live.length = 0
     for (const template of templates) {
       template.traverse((child) => {
-        if (child.isMesh) {
+        if (isMesh(child)) {
           child.geometry.dispose()
-          child.material.dispose()
+          materialOf(child).dispose()
         }
       })
     }

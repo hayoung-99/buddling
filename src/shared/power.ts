@@ -14,22 +14,30 @@
  */
 
 /** 화면에 보여줄 순서이기도 하다 (왼쪽이 가장 부드럽고 오른쪽이 가장 아낀다) */
-export const POWER_LEVELS = ['smooth', 'balanced', 'saver']
+export const POWER_LEVELS = ['smooth', 'balanced', 'saver'] as const
 
-export const DEFAULT_POWER = 'balanced'
+export type PowerLevel = (typeof POWER_LEVELS)[number]
 
-const PROFILES = {
+export interface PowerProfile {
+  idleFps: number
+  activeFps: number
+  idleShadows: boolean
+  pixelRatioCap: number
+}
+
+export const DEFAULT_POWER: PowerLevel = 'balanced'
+
+const PROFILES: Record<PowerLevel, PowerProfile> = {
   smooth: { idleFps: Infinity, activeFps: Infinity, idleShadows: true, pixelRatioCap: 2 },
   balanced: { idleFps: 30, activeFps: 60, idleShadows: false, pixelRatioCap: 2 },
   saver: { idleFps: 10, activeFps: 60, idleShadows: false, pixelRatioCap: 1 },
 }
 
 /** 고른 값이 없거나 알 수 없으면 기본 단계로 간다 (저장 파일이 깨져도 앱은 뜬다) */
-export function resolvePower(level) {
-  return PROFILES[level] ? level : DEFAULT_POWER
+export function resolvePower(level: string | null | undefined): PowerLevel {
+  return level != null && level in PROFILES ? (level as PowerLevel) : DEFAULT_POWER
 }
 
-/** @returns {{idleFps: number, activeFps: number, idleShadows: boolean, pixelRatioCap: number}} */
-export function powerProfile(level) {
+export function powerProfile(level: string | null | undefined): PowerProfile {
   return PROFILES[resolvePower(level)]
 }

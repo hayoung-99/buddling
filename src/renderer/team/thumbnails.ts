@@ -6,14 +6,17 @@
  */
 
 import * as THREE from 'three'
-import { CHARACTERS } from '../../shared/characters.js'
-import { createCritter, disposeCritter, scaleToStandardHeight } from '../pet/critter.js'
-import { addLighting } from '../pet/scene.js'
+import { CHARACTERS } from '../../shared/characters'
+import { createCritter, disposeCritter, scaleToStandardHeight } from '../pet/critter'
+import { addLighting } from '../pet/scene'
 
 /**
- * @returns {Map<string, string>} 캐릭터 키 → PNG data URL
+ * @returns 캐릭터 키 → PNG data URL
  */
-export function renderCharacterThumbnails({ width = 132, height = 148 } = {}) {
+export function renderCharacterThumbnails({
+  width = 132,
+  height = 148,
+}: { width?: number; height?: number } = {}): Map<string, string> {
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
   renderer.setClearColor(0x000000, 0)
   renderer.setPixelRatio(2)
@@ -44,4 +47,17 @@ export function renderCharacterThumbnails({ width = 132, height = 148 } = {}) {
   renderer.dispose()
   renderer.forceContextLoss()
   return thumbnails
+}
+
+/**
+ * 창 하나에 한 벌만 만든다.
+ *
+ * 그리는 데 WebGL 컨텍스트가 필요해서 값이 싸지 않고, 다시 그려도 결과가 같다.
+ * 컴포넌트가 다시 그려질 때마다 새로 만들면 컨텍스트가 계속 쌓인다.
+ */
+let cached: Map<string, string> | null = null
+
+export function characterThumbnails(): Map<string, string> {
+  cached ??= renderCharacterThumbnails()
+  return cached
 }

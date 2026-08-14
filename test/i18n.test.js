@@ -5,8 +5,8 @@ import {
   DEFAULT_LANGUAGE,
   resolveLanguage,
   createTranslator,
-} from '../src/shared/i18n/index.js'
-import { CHARACTER_KEYS } from '../src/shared/characters.js'
+} from '../src/shared/i18n/index'
+import { CHARACTER_KEYS } from '../src/shared/characters'
 
 const CODES = Object.keys(DICTIONARIES)
 

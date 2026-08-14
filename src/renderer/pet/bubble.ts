@@ -10,9 +10,22 @@ const SHOW_MS = 1400
 const EDGE = 6 // 창 가장자리와 띄울 최소 거리(px)
 const GAP = 12 // 머리 끝과 말풍선 사이 간격(px)
 
-export function createBubble(element) {
-  let hideTimer = null
-  let anchor = { centerX: 0, top: 0 }
+/** 캐릭터 머리 위 좌표 */
+export interface BubbleAnchor {
+  centerX: number
+  top: number
+}
+
+export interface Bubble {
+  show: (text: string) => void
+  placeAbove: (anchor: BubbleAnchor) => void
+  setLift: (pixels: number) => void
+  setScale: (next: number) => void
+}
+
+export function createBubble(element: HTMLElement): Bubble {
+  let hideTimer: ReturnType<typeof setTimeout> | undefined
+  let anchor: BubbleAnchor = { centerX: 0, top: 0 }
   let lift = 0
   let scale = 1
 
@@ -34,7 +47,7 @@ export function createBubble(element) {
     element.style.top = `${top}px`
   }
 
-  function show(text) {
+  function show(text: string) {
     element.textContent = text
     element.classList.remove('is-visible')
     // 연달아 호출돼도 애니메이션이 다시 시작되도록 리플로우를 강제한다
@@ -47,13 +60,13 @@ export function createBubble(element) {
   }
 
   /** 캐릭터 머리 위 좌표를 알려준다 */
-  function placeAbove(next) {
+  function placeAbove(next: BubbleAnchor) {
     anchor = next
     apply()
   }
 
   /** 점프하는 동안 말풍선도 같이 떠오르게 한다 (창 위에 닿으면 거기서 멈춘다) */
-  function setLift(pixels) {
+  function setLift(pixels: number) {
     const next = Math.round(pixels)
     if (next === lift) return
     lift = next
@@ -61,7 +74,7 @@ export function createBubble(element) {
   }
 
   /** 캐릭터 크기 배율에 맞춰 말풍선도 키우거나 줄인다 */
-  function setScale(next) {
+  function setScale(next: number) {
     if (next === scale) return
     scale = next
     element.style.setProperty('--bubble-scale', String(next))

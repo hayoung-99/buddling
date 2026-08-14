@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { createSession } from '../src/main/session.js'
-import { createFakeServer, createFakeNet, MAX_TEAMS_PER_USER } from '../src/services/fake-net.js'
+import { createSession } from '../src/main/session'
+import { createFakeServer, createFakeNet, MAX_TEAMS_PER_USER } from '../src/services/fake-net'
 
 /** Electron 없이 돌아가는 저장소 흉내 */
 function memoryStore(userId = 'user-me') {

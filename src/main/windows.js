@@ -16,6 +16,17 @@ const { clampScale, petSizeFor, nextPetBounds, PET_BASE_SIZE } = require('./pet-
 
 const ROOT = path.join(__dirname, '..', '..')
 
+/**
+ * 창에 얹을 화면과 preload 는 이제 빌드해서 쓴다 (`npm run build`).
+ *
+ * 소스가 아니라 산출물을 가리키는 것이 중요하다. 렌더러는 타입스크립트·JSX 라
+ * 브라우저가 그대로 읽지 못하고, preload 는 sandbox 때문에 CommonJS 로 묶여 있어야
+ * 한다. 경로를 여기 두 함수로 모아 둔 이유는, 전에는 다섯 군데에 흩어져 있어서
+ * 한 곳만 고치고 나머지를 빠뜨리기 쉬웠기 때문이다.
+ */
+const rendererPage = (...parts) => path.join(ROOT, 'dist-renderer', ...parts)
+const preloadScript = (name) => path.join(ROOT, 'dist-preload', `${name}.cjs`)
+
 const SIZE_PANEL = { width: 244, height: 56 }
 
 /**
@@ -75,7 +86,7 @@ function createPetWindow({ teamId, index = 0 }) {
     closable: false,
     title: 'tap-tap',
     webPreferences: {
-      preload: path.join(__dirname, '..', 'preload', 'pet.js'),
+      preload: preloadScript('pet'),
       contextIsolation: true,
       nodeIntegration: false,
       additionalArguments: [`--team-id=${teamId}`],
@@ -90,7 +101,7 @@ function createPetWindow({ teamId, index = 0 }) {
   // forward: true 라야 통과 상태에서도 mousemove 를 계속 받을 수 있다.
   window.setIgnoreMouseEvents(true, { forward: true })
 
-  window.loadFile(path.join(ROOT, 'src', 'renderer', 'pet', 'index.html'))
+  window.loadFile(rendererPage('pet', 'index.html'))
   return window
 }
 
@@ -122,7 +133,7 @@ function createSizeWindow() {
     show: false,
     title: 'tap-tap 크기',
     webPreferences: {
-      preload: path.join(__dirname, '..', 'preload', 'size.js'),
+      preload: preloadScript('size'),
       contextIsolation: true,
       nodeIntegration: false,
     },
@@ -130,7 +141,7 @@ function createSizeWindow() {
 
   window.setAlwaysOnTop(true, 'screen-saver')
   window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
-  window.loadFile(path.join(ROOT, 'src', 'renderer', 'size', 'index.html'))
+  window.loadFile(rendererPage('size', 'index.html'))
   return window
 }
 
@@ -166,13 +177,13 @@ function createSettingsWindow() {
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     show: false,
     webPreferences: {
-      preload: path.join(__dirname, '..', 'preload', 'settings.js'),
+      preload: preloadScript('settings'),
       contextIsolation: true,
       nodeIntegration: false,
     },
   })
 
-  window.loadFile(path.join(ROOT, 'src', 'renderer', 'settings', 'index.html'))
+  window.loadFile(rendererPage('settings', 'index.html'))
   window.once('ready-to-show', () => window.show())
   return window
 }
@@ -189,13 +200,13 @@ function createTeamWindow() {
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     show: false,
     webPreferences: {
-      preload: path.join(__dirname, '..', 'preload', 'team.js'),
+      preload: preloadScript('team'),
       contextIsolation: true,
       nodeIntegration: false,
     },
   })
 
-  window.loadFile(path.join(ROOT, 'src', 'renderer', 'team', 'index.html'))
+  window.loadFile(rendererPage('team', 'index.html'))
   window.once('ready-to-show', () => window.show())
   return window
 }
@@ -216,7 +227,7 @@ function createTeamDetailWindow(teamId, index = 0) {
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     show: false,
     webPreferences: {
-      preload: path.join(__dirname, '..', 'preload', 'team.js'),
+      preload: preloadScript('team'),
       contextIsolation: true,
       nodeIntegration: false,
       additionalArguments: [`--team-id=${teamId}`],
@@ -225,7 +236,7 @@ function createTeamDetailWindow(teamId, index = 0) {
 
   const [x, y] = window.getPosition()
   window.setPosition(x + offset, y + offset)
-  window.loadFile(path.join(ROOT, 'src', 'renderer', 'team', 'detail.html'))
+  window.loadFile(rendererPage('team', 'detail.html'))
   window.once('ready-to-show', () => window.show())
   return window
 }

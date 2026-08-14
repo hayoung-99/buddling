@@ -36,6 +36,15 @@ jobs:
       - name: 단위 테스트
         run: npm test
 
+      - name: 타입 검사
+        run: npm run typecheck
+
+      # 화면은 이제 빌드해서 쓴다. 빌드가 깨진 채로 머지되면 테스트는 소스를 그대로
+      # 읽으므로 초록인데 앱만 빈 창이 뜬다 — 조용히 지나가기 딱 좋은 자리라 막아 둔다.
+      # (Electron 앱 자체를 포장하는 것과는 다르다. 그건 여전히 태그를 밀 때 한다.)
+      - name: 화면·preload 빌드
+        run: npm run build
+
       # 파일 참조 · 주소 일치 · 구조화 데이터 · hreflang · sitemap
       - name: 랜딩페이지 점검
         run: npm run check:site
