@@ -25,6 +25,7 @@ const {
   clampScale,
 } = require('./windows')
 const { attachPointerControl } = require('./click-through')
+const { releaseUnclosableWindows } = require('./quit')
 const { createSession } = require('./session')
 const { createTray } = require('./tray')
 const { registerIpc } = require('./ipc')
@@ -328,13 +329,32 @@ electronApp.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) app.openTeamWindow()
 })
 
-electronApp.on('before-quit', async () => {
+electronApp.on('before-quit', () => {
   app.quitting = true
   app.updates?.stop()
-  // 미뤄 둔 저장부터 끝낸다. Electron 은 이 처리기의 await 을 기다려 주지 않으므로,
-  // 아래 dispose 뒤로 미루면 마지막 위치나 크기를 잃을 수 있다.
+
+  // 캐릭터 창을 먼저 걷어낸다. `closable: false` 라서 그냥 두면 Electron 이 이 창을 닫지
+  // 못하고, 그 실패가 종료를 통째로 취소시킨다 (까닭은 `quit.js` 에 적어 두었다).
+  //
+  // 반드시 `app.quitting` 을 세운 뒤라야 한다. destroy() 가 쏘는 `closed` 처리기가
+  // syncPetWindows() 로 창을 다시 세우기 때문에, 순서가 바뀌면 종료하는 도중에 캐릭터가
+  // 되살아나 또 종료를 막는다.
+  releaseUnclosableWindows(app.pets.values())
+
+  // 미뤄 둔 저장을 끝낸다. Electron 은 이 처리기를 기다려 주지 않으므로 뒤로 미룰수록
+  // 마지막 위치나 크기를 잃기 쉽다.
   store.flush()
-  await app.session?.dispose()
+
+  // 기다리지 않는다. 이 처리기를 async 로 만들어 await 을 걸어도 Electron 은 돌려주는
+  // 약속을 보지 않는다 (`HandleBeforeQuit()` 이 동기로 부른다). 그래서 await 은 "정리가
+  // 끝난 뒤에 종료된다" 는 오해만 남긴다.
+  //
+  // 채널을 미처 닫지 못한 채 프로세스가 죽지만, 소켓이 끊기면 서버가 알아서 접속을
+  // 내려 준다. 반대로 여기서 종료를 붙잡았다가 정리가 늦어지면 그것이 그대로 "앱이 안
+  // 꺼진다" 가 된다 — 지금 고친 것과 똑같은 고장을 새로 심는 셈이다.
+  app.session?.dispose().catch(() => {
+    // 끄는 길에 할 수 있는 일이 없다. 여기서 새어 나가면 오류창만 뜬다.
+  })
 })
 
 process.on('unhandledRejection', (reason) => {
