@@ -311,6 +311,12 @@ electronApp.on('window-all-closed', () => {
 })
 
 electronApp.on('activate', () => {
+  // 맥에서 Dock 아이콘을 눌러 앱을 *켤* 때는 이 이벤트가 `whenReady` 보다 먼저 온다.
+  // 그때 창을 만들려 하면 "Cannot create BrowserWindow before app is ready" 로 메인
+  // 프로세스가 죽고, 사용자에게는 오류창만 뜨거나 Dock 에서 튀기만 한다.
+  // 흘려보내도 잃는 것은 없다 — 준비가 끝나면 위 `whenReady` 가 캐릭터 창과
+  // (팀이 없을 때는) 팀 창까지 알아서 세운다.
+  if (!electronApp.isReady()) return
   if (BrowserWindow.getAllWindows().length === 0) app.openTeamWindow()
 })
 
