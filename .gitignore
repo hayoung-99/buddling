@@ -19,3 +19,8 @@ build/icon.iconset/
 
 # Playwright MCP 가 남기는 스크린샷·스냅샷
 .playwright-mcp/
+
+# 브라우저로 읽는 플랜서(고치기 전)와 완료 보고서(고친 뒤). 읽고 나면 쓸모가 끝나는
+# 문서라, 커밋하면 PR 디프에 HTML 덩어리만 섞여 정작 코드 리뷰를 방해한다.
+.claude/plans/
+.claude/reports/
