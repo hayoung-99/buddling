@@ -10,6 +10,9 @@ const { createEmitter } = require('./net')
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 
+/** 초대코드 길이 (schema.sql 의 gen_invite_code 와 맞춘다) */
+const CODE_LENGTH = 8
+
 /** 한 기기가 동시에 속할 수 있는 팀 수 (schema.sql 의 max_teams_per_device 와 맞춘다) */
 const MAX_TEAMS_PER_DEVICE = 3
 
@@ -36,7 +39,7 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
   function generateInviteCode() {
     for (let attempt = 0; attempt < 50; attempt += 1) {
       let code = ''
-      for (let i = 0; i < 6; i += 1) {
+      for (let i = 0; i < CODE_LENGTH; i += 1) {
         code += CODE_ALPHABET[Math.floor(random() * CODE_ALPHABET.length)]
       }
       if (!codes.has(code)) return code

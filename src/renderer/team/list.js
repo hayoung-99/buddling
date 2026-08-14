@@ -57,8 +57,8 @@ function joinForms() {
   const inviteCode = el('input', {
     type: 'text',
     class: 'code',
-    maxlength: '6',
-    placeholder: 'XXXXXX',
+    maxlength: '8',
+    placeholder: 'XXXXXXXX',
     value: draft.inviteCode,
     oninput: (event) => {
       draft.inviteCode = event.target.value.toUpperCase()

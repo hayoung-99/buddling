@@ -38,9 +38,9 @@ describe('팀 만들기', () => {
     net = twoDevices()
   })
 
-  it('6자리 초대코드를 발급한다', async () => {
+  it('8자리 초대코드를 발급한다', async () => {
     const { team } = await net.alice.createTeam({ name: '디자인팀', nickname: '나영' })
-    expect(team.inviteCode).toMatch(/^[A-HJ-NP-Z2-9]{6}$/)
+    expect(team.inviteCode).toMatch(/^[A-HJ-NP-Z2-9]{8}$/)
     expect(team.name).toBe('디자인팀')
   })
 
