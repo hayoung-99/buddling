@@ -36,7 +36,15 @@ if (process.env.TAPTAP_PROFILE) {
 }
 
 if (!electronApp.requestSingleInstanceLock()) {
+  // 이미 떠 있는 인스턴스가 있으니 이 프로세스는 물러난다.
+  //
+  // `quit()` 은 예약일 뿐이라 여기서 멈추지 않으면 아래가 그대로 이어 돌고,
+  // `ready` 가 종료보다 먼저 오면 두 번째 인스턴스가 트레이와 캐릭터 창을 만들기
+  // 시작한다. 먼저 뜬 인스턴스와 같은 저장 파일을 두고 다투게 되는 자리다.
+  //
+  // CommonJS 모듈은 함수로 감싸여 실행되므로 최상위 `return` 이 먹는다.
   electronApp.quit()
+  return
 }
 
 /** 창·세션·트레이를 서로 이어주는 얇은 껍데기 */
