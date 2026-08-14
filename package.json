@@ -56,7 +56,8 @@
     "mac": {
       "category": "public.app-category.social-networking",
       "icon": "build/icon.icns",
-      "identity": null,
+      "identity": "-",
+      "hardenedRuntime": false,
       "artifactName": "${productName}-${version}-${arch}.${ext}",
       "target": [
         {
