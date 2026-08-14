@@ -11,8 +11,14 @@
  *   발밑    — 누가 찔렀는지 (여기)
  */
 
-/** CSS 애니메이션 길이와 맞춰야 한다 */
+/** CSS 애니메이션 길이와 맞춰야 한다 (`theme.css` 의 chip-life) */
 const LIFE_MS = 2000
+
+/** 이름표 한 장의 모양. 살아 있는 동안의 연출은 `animate-chip` 이 따로 맡는다. */
+const CHIP =
+  'px-[11px] py-[3px] rounded-full bg-[rgba(255,250,240,0.94)] text-ink font-ui ' +
+  'text-[12px] font-bold leading-[normal] whitespace-nowrap ' +
+  'shadow-[0_2px_9px_rgba(74,63,51,0.2)]'
 /** 동시에 보여줄 이름 수. 넘치면 오래된 것부터 걷어낸다. */
 const MAX_VISIBLE = 3
 
@@ -58,9 +64,9 @@ export function createNameplate(container: HTMLElement): Nameplate {
       (chip): chip is HTMLElement => chip.textContent === name,
     )
     if (existing) {
-      existing.classList.remove('chip')
+      existing.classList.remove('animate-chip')
       void existing.offsetWidth
-      existing.classList.add('chip')
+      existing.classList.add('animate-chip')
       arm(existing) // 애니메이션만 되감고 타이머를 그대로 두면 늘린 만큼 살지 못한다
       return
     }
@@ -68,7 +74,7 @@ export function createNameplate(container: HTMLElement): Nameplate {
     while (container.childElementCount >= MAX_VISIBLE) container.firstElementChild?.remove()
 
     const chip = document.createElement('span')
-    chip.className = 'chip'
+    chip.className = `${CHIP} animate-chip`
     chip.textContent = name
     chip.addEventListener('animationend', () => chip.remove())
     arm(chip)

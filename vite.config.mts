@@ -12,6 +12,7 @@
 
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
@@ -21,7 +22,7 @@ const renderer = (...parts: string[]) => path.resolve(here, 'src', 'renderer', .
 export default defineConfig({
   root: renderer(),
   base: './',
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   build: {
     outDir: path.resolve(here, 'dist-renderer'),
     emptyOutDir: true,

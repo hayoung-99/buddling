@@ -185,7 +185,9 @@ src/
 │   ├── store.js        userData 안 JSON 한 개
 ├── preload/       렌더러에 노출할 좁은 API (TS → CommonJS 로 빌드된다)
 ├── shared/        characters · power · i18n/ · state·ipc (창들이 함께 쓰는 타입)
-├── renderer/      React + 타입스크립트
+├── renderer/      React + 타입스크립트 + Tailwind
+│   ├── theme.css       색·모서리 토큰과 Tailwind 바탕
+│   ├── ui.ts           여러 창이 되풀이해 쓰는 유틸리티 묶음
 │   ├── pet/            Three.js 캐릭터. 렌더 루프는 명령형이고 React 는 껍데기만이다
 │   ├── team/           팀 목록 창(TeamList) + 팀 상세 창(TeamDetail)
 │   ├── settings/       절전 강도·언어를 고르는 창

@@ -17,6 +17,7 @@ import type { Translate } from '../../shared/i18n'
 import type { AppState, Membership } from '../../shared/state'
 import { characterThumbnails } from './thumbnails'
 import { useAppState, useRunner } from './hooks'
+import * as ui from '../ui'
 
 /** 사용자가 입력 중인 값. 화면이 다시 그려져도 날아가지 않게 여기 붙잡아 둔다. */
 interface Draft {
@@ -45,21 +46,22 @@ function JoinForms({
 }) {
   return (
     <>
-      <section>
-        <h2>{t('form.createSection')}</h2>
-        <div className="field">
-          <label>{t('form.teamName')}</label>
+      <section className={ui.section}>
+        <h2 className={ui.h2}>{t('form.createSection')}</h2>
+        <div>
+          <label className={ui.label}>{t('form.teamName')}</label>
           <input
             type="text"
+            className={ui.input}
             maxLength={40}
             placeholder={t('form.teamNamePlaceholder')}
             value={draft.teamName}
             onChange={(event) => setDraft((d) => ({ ...d, teamName: event.target.value }))}
           />
         </div>
-        <div className="buttons">
+        <div className="flex gap-[10px] mt-[16px]">
           <button
-            className="block"
+            className={`${ui.button} flex-1 w-full`}
             disabled={busy}
             onClick={() =>
               run(async () => {
@@ -74,11 +76,11 @@ function JoinForms({
         </div>
       </section>
 
-      <section>
-        <h2>{t('form.joinSection')}</h2>
+      <section className={ui.section}>
+        <h2 className={ui.h2}>{t('form.joinSection')}</h2>
         <input
           type="text"
-          className="code"
+          className={`${ui.input} uppercase tracking-[0.28em] font-bold text-center`}
           maxLength={8}
           placeholder="XXXXXXXX"
           value={draft.inviteCode}
@@ -86,9 +88,9 @@ function JoinForms({
             setDraft((d) => ({ ...d, inviteCode: event.target.value.toUpperCase() }))
           }
         />
-        <div className="buttons">
+        <div className="flex gap-[10px] mt-[16px]">
           <button
-            className="block ghost"
+            className={`${ui.buttonGhost} flex-1 w-full`}
             disabled={busy}
             onClick={() =>
               run(async () => {
@@ -121,10 +123,11 @@ function NicknameField({
   setDraft: (update: (draft: Draft) => Draft) => void
 }) {
   return (
-    <div className="field">
-      <label>{t('form.myName')}</label>
+    <div>
+      <label className={ui.label}>{t('form.myName')}</label>
       <input
         type="text"
+        className={ui.input}
         maxLength={20}
         placeholder={t('form.nicknamePlaceholder')}
         value={draft.nickname || state.nickname || ''}
@@ -149,17 +152,21 @@ function TeamRow({ entry, state, t }: { entry: Membership; state: AppState; t: T
         : t('list.connecting')
 
   return (
-    <button className="team-row" onClick={() => window.teamApi.openTeam(team.id)}>
-      <img src={characterThumbnails().get(spec.key)} alt={t(`character.${spec.key}`)} />
-      <span className="row-main">
-        <span className="row-name">{team.name}</span>
-        <span className="row-sub">
+    <button className={ui.row} onClick={() => window.teamApi.openTeam(team.id)}>
+      <img
+        className="w-[42px] h-[46px] object-contain flex-none"
+        src={characterThumbnails().get(spec.key)}
+        alt={t(`character.${spec.key}`)}
+      />
+      <span className={ui.rowMain}>
+        <span className={ui.rowName}>{team.name}</span>
+        <span className={ui.rowSub}>
           {[t('list.members', { count: members.length, max: state.maxMembers }), presence].join(
             ' · ',
           )}
         </span>
       </span>
-      <span className="row-arrow">›</span>
+      <span className={ui.rowArrow}>›</span>
     </button>
   )
 }
@@ -180,8 +187,11 @@ function UpdateBanner({ state, t }: { state: AppState; t: Translate }) {
   const label = ready ? t('update.restart') : t('update.action')
 
   return (
+    // 눈에 띄되 화면을 가로채지는 않는다 — 하던 일이 우선이다
     <button
-      className="update-banner"
+      className="w-full mb-[16px] px-[14px] py-[10px] rounded-field bg-notice text-ink
+        border-[1.5px] border-[rgba(224,138,92,0.35)] text-[13px] font-semibold text-left
+        cursor-pointer"
       title={label}
       onClick={() => (ready ? window.teamApi.installUpdate() : window.teamApi.openDownloadPage())}
     >
@@ -197,26 +207,26 @@ export function TeamList() {
   /** 팀이 있는 화면에서 "팀 추가하기"를 펼쳤는지 */
   const [adding, setAdding] = useState(false)
 
-  if (!state) return <div className="loading">···</div>
+  if (!state) return <div className={ui.loading}>···</div>
 
   const t = createTranslator(state.language)
 
   const setupNeeded = (
     <>
-      <h1>{t('setup.title')}</h1>
-      <p className="lead">{t('setup.lead')}</p>
-      <div className="notice">
-        <strong>{state.configError ?? t('error.missingConfig')}</strong>
-        <ol>
+      <h1 className={ui.h1}>{t('setup.title')}</h1>
+      <p className={ui.lead}>{t('setup.lead')}</p>
+      <div className="bg-notice rounded-card p-[16px] text-[13px]">
+        <strong className="block mb-[6px]">{state.configError ?? t('error.missingConfig')}</strong>
+        <ol className="list-decimal mt-[8px] ml-[18px]">
           <li>{t('setup.step1')}</li>
           <li>
             {t('setup.step2a')}
-            <code>supabase/schema.sql</code>
+            <code className={ui.code}>supabase/schema.sql</code>
             {t('setup.step2b')}
           </li>
           <li>
             {t('setup.step3a')}
-            <code>.env</code>
+            <code className={ui.code}>.env</code>
             {t('setup.step3b')}
           </li>
           <li>{t('setup.step4')}</li>
@@ -228,9 +238,9 @@ export function TeamList() {
 
   const onboarding = (
     <>
-      <h1>{t('onboarding.title')}</h1>
-      <p className="lead">{t('onboarding.lead')}</p>
-      <section>
+      <h1 className={ui.h1}>{t('onboarding.title')}</h1>
+      <p className={ui.lead}>{t('onboarding.lead')}</p>
+      <section className={ui.section}>
         <NicknameField t={t} state={state} draft={draft} setDraft={setDraft} />
       </section>
       <JoinForms
@@ -241,7 +251,7 @@ export function TeamList() {
         run={run}
         onDone={() => setAdding(false)}
       />
-      <div className="error">{error}</div>
+      <div className={ui.errorLine}>{error}</div>
     </>
   )
 
@@ -249,24 +259,27 @@ export function TeamList() {
 
   const list = (
     <>
-      <div className="top">
-        <h1>{t('list.title')}</h1>
-        <span className="quota">{`${state.memberships.length} / ${state.maxTeams}`}</span>
+      <div className="flex items-baseline justify-between gap-[10px]">
+        <h1 className={ui.h1}>{t('list.title')}</h1>
+        <span className={ui.quota}>{`${state.memberships.length} / ${state.maxTeams}`}</span>
       </div>
-      <p className="lead">{t('list.lead')}</p>
+      <p className={ui.lead}>{t('list.lead')}</p>
 
-      <div className="team-list">
+      <div className={ui.rowList}>
         {state.memberships.map((entry) => (
           <TeamRow key={entry.team.id} entry={entry} state={state} t={t} />
         ))}
       </div>
 
-      <div className="error">{error}</div>
+      <div className={ui.errorLine}>{error}</div>
 
       {full ? (
-        <p className="quota-note">{t('list.full', { max: state.maxTeams })}</p>
+        <p className={ui.quotaNote}>{t('list.full', { max: state.maxTeams })}</p>
       ) : adding ? (
-        <div className="adding">
+        <div
+          className="mt-[18px] p-[14px] rounded-adding border-[1.5px] border-dashed border-line
+            [&_section:first-of-type]:mt-[16px]"
+        >
           <NicknameField t={t} state={state} draft={draft} setDraft={setDraft} />
           <JoinForms
             t={t}
@@ -276,13 +289,18 @@ export function TeamList() {
             run={run}
             onDone={() => setAdding(false)}
           />
-          <div className="footer">
-            <button onClick={() => setAdding(false)}>{t('form.cancel')}</button>
+          <div className={ui.footer}>
+            <button className={ui.buttonQuiet} onClick={() => setAdding(false)}>
+              {t('form.cancel')}
+            </button>
           </div>
         </div>
       ) : (
-        <div className="buttons">
-          <button className="block ghost" onClick={() => setAdding(true)}>
+        <div className="flex gap-[10px] mt-[16px]">
+          <button
+            className={`${ui.buttonGhost} flex-1 w-full`}
+            onClick={() => setAdding(true)}
+          >
             {t('list.addTeam')}
           </button>
         </div>
@@ -292,15 +310,17 @@ export function TeamList() {
 
   return (
     <>
-      <header className="titlebar">
+      <header className={ui.titlebar}>
         <span>TAP TAP!</span>
       </header>
-      <main id="app">
+      <main className={ui.main}>
         <UpdateBanner state={state} t={t} />
         {!state.configured ? setupNeeded : state.memberships.length > 0 ? list : onboarding}
         {/* 언어와 절전 강도는 설정 창에 모여 있다. 여기서는 그리로 가는 길만 둔다. */}
-        <div className="footer">
-          <button onClick={() => window.teamApi.openSettings()}>{t('app.settings')}</button>
+        <div className={ui.footer}>
+          <button className={ui.buttonQuiet} onClick={() => window.teamApi.openSettings()}>
+            {t('app.settings')}
+          </button>
         </div>
       </main>
     </>

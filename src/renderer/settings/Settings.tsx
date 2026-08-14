@@ -19,6 +19,7 @@ import { createTranslator, LANGUAGES } from '../../shared/i18n'
 import type { Translate } from '../../shared/i18n'
 import { POWER_LEVELS, resolvePower } from '../../shared/power'
 import type { AppState } from '../../shared/state'
+import * as ui from '../ui'
 
 /** 라디오 한 줄. 이름표 전체가 눌리는 카드다. */
 function Choice({
@@ -37,17 +38,25 @@ function Choice({
   onPick: (value: string) => void
 }) {
   return (
-    <label className="choice">
+    // 이름표 전체가 누를 수 있는 카드다 — 작은 동그라미만 노리지 않아도 된다
+    <label
+      className="flex items-start gap-[11px] px-[14px] py-[12px] border-[1.5px] border-line
+        rounded-card bg-card cursor-pointer hover:border-line-strong
+        has-checked:border-accent has-checked:shadow-[inset_0_0_0_1.5px_var(--color-accent)]
+        has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent
+        has-[:focus-visible]:outline-offset-2"
+    >
       <input
         type="radio"
+        className="flex-none mt-[2px] accent-accent"
         name={group}
         value={value}
         checked={value === current}
         onChange={() => onPick(value)}
       />
-      <div className="text">
-        <div className="name">{name}</div>
-        {desc ? <div className="desc">{desc}</div> : null}
+      <div className="flex-1 min-w-0">
+        <div className="text-[14px] font-bold">{name}</div>
+        {desc ? <div className="mt-[2px] text-[12px] leading-[1.5] text-ink-soft">{desc}</div> : null}
       </div>
     </label>
   )
@@ -57,8 +66,8 @@ function PowerView({ state, t }: { state: AppState; t: Translate }) {
   const current = resolvePower(state.power)
   return (
     <>
-      <p className="hint">{t('settings.powerHint')}</p>
-      <div className="choices">
+      <p className={ui.hint}>{t('settings.powerHint')}</p>
+      <div className="flex flex-col gap-[8px]">
         {POWER_LEVELS.map((level) => (
           <Choice
             key={level}
@@ -78,8 +87,8 @@ function PowerView({ state, t }: { state: AppState; t: Translate }) {
 function LanguageView({ state, t }: { state: AppState; t: Translate }) {
   return (
     <>
-      <p className="hint">{t('settings.languageHint')}</p>
-      <div className="choices">
+      <p className={ui.hint}>{t('settings.languageHint')}</p>
+      <div className="flex flex-col gap-[8px]">
         {LANGUAGES.map((option) => (
           <Choice
             key={option.code}
@@ -142,50 +151,52 @@ export function Settings() {
     document.title = t('settings.title')
   }, [t])
 
-  if (!state) return <div className="loading">···</div>
+  if (!state) return <div className={ui.loading}>···</div>
 
   const item = ITEMS.find((candidate) => candidate.key === screen) ?? null
 
   return (
     <>
-      <header className="titlebar">
+      <header className={ui.titlebar}>
         <span>TAP TAP!</span>
       </header>
-      <main id="app">
+      <main className={ui.main}>
         {item ? (
           <>
             {/* 뒤로가기는 타이틀바가 아니라 제목 왼쪽에 붙는다 (settings.css 참고) */}
-            <div className="detail-head">
+            {/* 화살표를 왼쪽 여백 밖으로 조금 내밀어야 제목이 목록 화면과 같은 자리에서 시작한다 */}
+            <div className="flex items-center gap-[2px] -ml-[14px]">
               <button
-                className="back"
+                className="px-[6px] bg-transparent text-ink-soft text-[22px] leading-none
+                  cursor-pointer hover:text-ink"
                 // 홑화살괄호 하나뿐이라 어디로 가는지 소리로는 알 수 없다
                 aria-label={t('settings.title')}
                 onClick={() => setScreen(null)}
               >
                 ‹
               </button>
-              <h1>{item.name(t)}</h1>
+              <h1 className={ui.h1}>{item.name(t)}</h1>
             </div>
             <item.View state={state} t={t} />
           </>
         ) : (
           <>
-            <h1>{t('settings.title')}</h1>
-            {/* 한 줄의 생김새는 팀 목록(team.css 의 .team-row)에서 그대로 빌려 쓴다 */}
-            <div className="team-list">
+            <h1 className={ui.h1}>{t('settings.title')}</h1>
+            {/* 한 줄의 생김새는 팀 목록에서 그대로 빌려 쓴다 (renderer/ui.ts 의 row) */}
+            <div className={ui.rowList}>
               {ITEMS.map((entry) => (
                 <button
                   key={entry.key}
-                  className="team-row"
+                  className={ui.row}
                   // 개발용 스크린샷(dev-capture.js)이 이 표식으로 항목을 눌러 상세를 찍는다
                   data-item={entry.key}
                   onClick={() => setScreen(entry.key)}
                 >
-                  <span className="row-main">
-                    <span className="row-name">{entry.name(t)}</span>
-                    <span className="row-sub">{entry.value(t, state)}</span>
+                  <span className={ui.rowMain}>
+                    <span className={ui.rowName}>{entry.name(t)}</span>
+                    <span className={ui.rowSub}>{entry.value(t, state)}</span>
                   </span>
-                  <span className="row-arrow">›</span>
+                  <span className={ui.rowArrow}>›</span>
                 </button>
               ))}
             </div>

@@ -9,6 +9,25 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 const DEFAULT_PERCENT = 100
 
+/**
+ * 슬라이더는 브라우저가 만드는 조각(트랙·손잡이)으로 이뤄져 있어서, 그 안쪽은
+ * 가상 요소로만 닿는다. Tailwind 의 임의 변형(`[&::-webkit-…]`)이 그 자리를 맡는다.
+ */
+const RANGE = [
+  'flex-1 min-w-0 h-[22px] appearance-none bg-transparent cursor-pointer',
+  '[&::-webkit-slider-runnable-track]:h-[5px]',
+  '[&::-webkit-slider-runnable-track]:rounded-[3px]',
+  '[&::-webkit-slider-runnable-track]:bg-[rgba(74,63,51,0.16)]',
+  '[&::-webkit-slider-thumb]:appearance-none',
+  '[&::-webkit-slider-thumb]:w-[17px]',
+  '[&::-webkit-slider-thumb]:h-[17px]',
+  '[&::-webkit-slider-thumb]:-mt-[6px]',
+  '[&::-webkit-slider-thumb]:rounded-full',
+  '[&::-webkit-slider-thumb]:bg-ink',
+  '[&::-webkit-slider-thumb]:shadow-[0_1px_4px_rgba(74,63,51,0.4)]',
+  '[&:active::-webkit-slider-thumb]:bg-accent',
+].join(' ')
+
 export function Size() {
   const [percent, setPercent] = useState(DEFAULT_PERCENT)
   const [caption, setCaption] = useState('')
@@ -56,19 +75,35 @@ export function Size() {
   }, [apply, refresh])
 
   return (
-    <div className="pill">
-      <span className="cap">{caption}</span>
+    <div
+      className="absolute inset-[6px] flex items-center gap-[9px] px-[12px] rounded-[22px]
+        bg-card shadow-[0_6px_20px_rgba(74,63,51,0.26)]"
+    >
+      <span
+        className="text-[11px] font-bold tracking-[0.02em] text-ink-soft flex-none max-w-[74px]
+          overflow-hidden text-ellipsis whitespace-nowrap"
+      >
+        {caption}
+      </span>
       <input
         ref={rangeRef}
         type="range"
+        className={RANGE}
         min={25}
         max={200}
         step={5}
         value={percent}
         onChange={(event) => apply(Number(event.target.value), true)}
       />
-      <span className="value">{percent}%</span>
-      <button title={resetHint} onClick={() => apply(DEFAULT_PERCENT)}>
+      <span className="text-[12px] font-bold tabular-nums w-[38px] text-right flex-none">
+        {percent}%
+      </span>
+      <button
+        className="flex-none text-[13px] leading-none w-[24px] h-[24px] rounded-full
+          bg-[rgba(74,63,51,0.09)] text-ink cursor-pointer hover:bg-[rgba(74,63,51,0.17)]"
+        title={resetHint}
+        onClick={() => apply(DEFAULT_PERCENT)}
+      >
         ↺
       </button>
     </div>
