@@ -22,8 +22,10 @@ npm run check:site    # 랜딩페이지 점검
 npm run preview       # 캐릭터 5종을 나란히 놓고 눈으로 확인
 ```
 
-CI(`.github/workflows/ci.yml`)가 미는 것마다 돌리는 것은 `npm test` 와
-`npm run check:site` 둘뿐입니다. **이 둘이 통과하지 않으면 끝난 게 아닙니다.**
+CI(`.github/workflows/ci.yml`)가 미는 것마다 돌리는 것은 `npm test` ·
+`npm run typecheck` · `npm run build` · `npm run check:site` 넷입니다.
+**이 넷이 통과하지 않으면 끝난 게 아닙니다.** (Electron 앱을 포장하는 것은 여전히
+태그를 밀 때만 합니다 — 10분이 넘고 러너를 셋 잡아먹습니다.)
 
 ### 일을 시작하기 전에 의존성부터 맞춘다
 
