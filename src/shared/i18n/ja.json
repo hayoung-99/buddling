@@ -4,6 +4,7 @@
   "settings.title": "設定",
   "settings.power": "省電力",
   "settings.powerHint": "tap-tap はパソコンを終了するまで画面に出ています。キャラクターが動いていないとき、どのくらい控えめにするか選んでください。",
+  "settings.languageHint": "tap-tap が使うことばです。チームのみんなにはそれぞれが選んだことばで表示されます。",
   "power.smooth": "なめらか",
   "power.smoothHint": "いちばんなめらかに動きます。バッテリーをいちばん使います。",
   "power.balanced": "バランス",

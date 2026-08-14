@@ -4,6 +4,7 @@
   "settings.title": "设置",
   "settings.power": "省电",
   "settings.powerHint": "tap-tap 会一直显示到你关机。请选择角色闲着时要节省多少。",
+  "settings.languageHint": "tap-tap 使用的语言。队友看到的是他们各自选择的语言。",
   "power.smooth": "流畅",
   "power.smoothHint": "动作最流畅，也最耗电。",
   "power.balanced": "均衡",

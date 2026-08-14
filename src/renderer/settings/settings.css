@@ -1,7 +1,30 @@
-/* 팀 창(team.css)의 크림색 톤을 그대로 쓰고, 여기서는 라디오 목록만 더한다. */
+/* 팀 창(team.css)의 크림색 톤을 그대로 쓰고, 여기서는 라디오 목록만 더한다.
+   목록 한 줄(.team-row·.row-main·.row-arrow)도 team.css 것을 그대로 빌려 쓴다. */
+
+/* 뒤로가기는 제목 왼쪽에 붙는다. macOS 는 타이틀바 왼쪽에 신호등이 겹쳐 있어서
+   그 줄에는 둘 자리가 없고, 제목 옆이면 신호등이 없는 Windows 와도 자리가 같다. */
+.detail-head {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  /* 화살표를 왼쪽 여백 밖으로 조금 내밀어야 제목이 목록 화면과 같은 자리에서 시작한다 */
+  margin-left: -14px;
+}
+
+.back {
+  padding: 0 6px;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.back:hover {
+  color: var(--ink);
+}
 
 .hint {
-  margin-bottom: 14px;
+  margin: 8px 0 14px;
   font-size: 12px;
   line-height: 1.6;
   color: var(--ink-soft);
@@ -66,10 +89,4 @@
   font-size: 12px;
   line-height: 1.5;
   color: var(--ink-soft);
-}
-
-/* 이 창에서는 언어 칸도 한 항목이라 가운데가 아니라 왼쪽에 붙는다 */
-.settings-language {
-  justify-content: flex-start;
-  margin-top: 0;
 }
