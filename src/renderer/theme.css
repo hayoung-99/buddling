@@ -1,0 +1,73 @@
+/**
+ * 창들이 함께 쓰는 Tailwind 바탕.
+ *
+ * 컨셉아트의 따뜻한 크림색·둥근 모서리 톤을 토큰으로 옮겨 두었다. 색과 반지름을 이름으로
+ * 부르면 `bg-card` `rounded-row` 처럼 읽히고, 톤을 바꿀 일이 생겨도 여기 한 곳만 고치면
+ * 된다. 예전 `team.css` 의 `:root` 변수들이 그대로 이 자리에 왔다.
+ *
+ * 반지름에 이름을 붙인 이유가 하나 더 있다. 이 화면들은 12·13·14·16·18px 을 자리마다
+ * 다르게 쓰는데, 숫자로 적어 두면 어느 것이 "같은 뜻으로 같은 값" 인지 알 수 없다.
+ */
+
+@import 'tailwindcss';
+
+/* 클래스 이름을 찾을 곳. 이 파일이 있는 폴더 아래 전부다. */
+@source './';
+
+@theme {
+  --color-cream: #f5efe1;
+  --color-card: #fffaf0;
+  --color-ink: #4a3f33;
+  --color-ink-soft: rgba(74, 63, 51, 0.55);
+  --color-line: rgba(74, 63, 51, 0.12);
+  --color-line-strong: rgba(74, 63, 51, 0.24);
+  --color-accent: #e08a5c;
+  --color-online: #6fc48a;
+
+  /* 알림과 오류 */
+  --color-danger: #b4523a;
+  --color-notice: #fff3d6;
+  --color-warn: #ffe0d3;
+  --color-warn-ink: #8c4a2f;
+
+  --font-ui: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', sans-serif;
+  --font-code: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --radius-field: 12px; /* 글자 칸 · 버튼 */
+  --radius-pick: 13px; /* 캐릭터 고르기 칸 */
+  --radius-card: 14px; /* 초대코드 · 안내 · 멤버 목록 */
+  --radius-row: 16px; /* 팀 한 줄 */
+  --radius-adding: 18px; /* 팀 추가 상자 */
+
+  /* 찌른 사람 이름표. CSS 애니메이션이라 렌더 루프 밖에서 흐른다. */
+  --animate-chip: chip-life 2000ms ease-out both;
+}
+
+@keyframes chip-life {
+  0% {
+    opacity: 0;
+    transform: translateY(7px) scale(0.9);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  82% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.98);
+  }
+}
+
+/**
+ * 창을 끌어 옮길 수 있는 자리.
+ *
+ * `-webkit-app-region` 은 Electron 이 알아듣는 값이라 Tailwind 에 대응하는 유틸리티가
+ * 없다. 타이틀바에서만 쓰지만 이름을 붙여 두면 왜 그 줄만 드래그되는지가 드러난다.
+ */
+@utility drag-region {
+  -webkit-app-region: drag;
+}

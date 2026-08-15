@@ -49,14 +49,18 @@ export function createBubble(element: HTMLElement): Bubble {
 
   function show(text: string) {
     element.textContent = text
-    element.classList.remove('is-visible')
+    // 보임 여부는 `data-visible` 로 알린다. 모양은 `main.tsx` 의 유틸리티가 정하고
+    // 여기서는 언제 보일지만 정하므로, 두 곳이 클래스 이름으로 얽히지 않는다.
+    element.dataset.visible = 'false'
     // 연달아 호출돼도 애니메이션이 다시 시작되도록 리플로우를 강제한다
     void element.offsetWidth
     apply() // 글자가 바뀌면 크기도 달라지므로 다시 잡는다
-    element.classList.add('is-visible')
+    element.dataset.visible = 'true'
 
     clearTimeout(hideTimer)
-    hideTimer = setTimeout(() => element.classList.remove('is-visible'), SHOW_MS)
+    hideTimer = setTimeout(() => {
+      element.dataset.visible = 'false'
+    }, SHOW_MS)
   }
 
   /** 캐릭터 머리 위 좌표를 알려준다 */
