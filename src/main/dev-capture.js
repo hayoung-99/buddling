@@ -208,6 +208,9 @@ async function captureIfRequested(app, electronApp) {
     console.log(`captured → ${file}`)
   }
 
+  // `exit()` 은 `before-quit` 을 거치지 않는다. 그래서 끄기 전 정리를 여기서 직접
+  // 부른다 — 이걸 빠뜨리면 캐릭터 창이 파괴되자마자 다시 세워져 앱이 남는다.
+  app.shutdown()
   electronApp.exit(0)
 }
 

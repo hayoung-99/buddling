@@ -250,6 +250,42 @@ const app = {
   quit() {
     electronApp.quit()
   },
+
+  /**
+   * 끄기 전에 해 둘 일.
+   *
+   * **앱을 끄는 문이 둘이라 한곳에 모아 둔다.** 사람이 종료를 누르면 `before-quit` 이
+   * 오지만, 개발용 캡처(`dev-capture.js`)는 `app.exit()` 으로 곧장 나간다. 그 길에는
+   * `before-quit` 이 오지 않아서, 여기 있는 것들을 저쪽에서 직접 불러 줘야 한다.
+   *
+   * 특히 `quitting` 을 세우는 일이 중요하다. 이 표시가 없으면 캐릭터 창이 파괴되는
+   * 순간 `closed` 처리기가 `syncPetWindows()` 로 **새 창을 다시 세우고**, 그 창은
+   * Electron 이 이미 훑어 둔 목록에 없어서 아무도 닫지 않는다. 그러면 앱이 영영 남는다.
+   */
+  shutdown() {
+    if (app.quitting) return
+    app.quitting = true
+    app.updates?.stop()
+
+    // 캐릭터 창을 걷어낸다. `closable: false` 라서 그냥 두면 Electron 이 이 창을 닫지
+    // 못하고, 그 실패가 종료를 통째로 취소시킨다 (까닭은 `quit.js` 에 적어 두었다).
+    // 위 `quitting` 을 세운 뒤라야 한다 — 순서가 바뀌면 캐릭터가 되살아난다.
+    releaseUnclosableWindows(app.pets.values())
+
+    // 미뤄 둔 저장을 끝낸다. Electron 은 종료 처리기를 기다려 주지 않으므로 뒤로
+    // 미룰수록 마지막 위치나 크기를 잃기 쉽다.
+    store.flush()
+
+    // 기다리지 않는다. `before-quit` 을 async 로 만들어 await 을 걸어도 Electron 은
+    // 돌려주는 약속을 보지 않는다 (`HandleBeforeQuit()` 이 동기로 부른다).
+    //
+    // 채널을 미처 닫지 못한 채 프로세스가 죽지만, 소켓이 끊기면 서버가 알아서 접속을
+    // 내려 준다. 반대로 여기서 종료를 붙잡았다가 정리가 늦어지면 그것이 그대로 "앱이
+    // 안 꺼진다" 가 된다 — 고쳐 놓은 것과 똑같은 고장을 새로 심는 셈이다.
+    app.session?.dispose().catch(() => {
+      // 끄는 길에 할 수 있는 일이 없다. 여기서 새어 나가면 오류창만 뜬다.
+    })
+  },
 }
 
 electronApp.on('second-instance', () => app.openTeamWindow())
@@ -329,33 +365,7 @@ electronApp.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) app.openTeamWindow()
 })
 
-electronApp.on('before-quit', () => {
-  app.quitting = true
-  app.updates?.stop()
-
-  // 캐릭터 창을 먼저 걷어낸다. `closable: false` 라서 그냥 두면 Electron 이 이 창을 닫지
-  // 못하고, 그 실패가 종료를 통째로 취소시킨다 (까닭은 `quit.js` 에 적어 두었다).
-  //
-  // 반드시 `app.quitting` 을 세운 뒤라야 한다. destroy() 가 쏘는 `closed` 처리기가
-  // syncPetWindows() 로 창을 다시 세우기 때문에, 순서가 바뀌면 종료하는 도중에 캐릭터가
-  // 되살아나 또 종료를 막는다.
-  releaseUnclosableWindows(app.pets.values())
-
-  // 미뤄 둔 저장을 끝낸다. Electron 은 이 처리기를 기다려 주지 않으므로 뒤로 미룰수록
-  // 마지막 위치나 크기를 잃기 쉽다.
-  store.flush()
-
-  // 기다리지 않는다. 이 처리기를 async 로 만들어 await 을 걸어도 Electron 은 돌려주는
-  // 약속을 보지 않는다 (`HandleBeforeQuit()` 이 동기로 부른다). 그래서 await 은 "정리가
-  // 끝난 뒤에 종료된다" 는 오해만 남긴다.
-  //
-  // 채널을 미처 닫지 못한 채 프로세스가 죽지만, 소켓이 끊기면 서버가 알아서 접속을
-  // 내려 준다. 반대로 여기서 종료를 붙잡았다가 정리가 늦어지면 그것이 그대로 "앱이 안
-  // 꺼진다" 가 된다 — 지금 고친 것과 똑같은 고장을 새로 심는 셈이다.
-  app.session?.dispose().catch(() => {
-    // 끄는 길에 할 수 있는 일이 없다. 여기서 새어 나가면 오류창만 뜬다.
-  })
-})
+electronApp.on('before-quit', () => app.shutdown())
 
 process.on('unhandledRejection', (reason) => {
   console.error('[tap-tap] 처리되지 않은 오류', reason)
