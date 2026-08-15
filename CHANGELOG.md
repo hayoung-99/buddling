@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.0](https://github.com/hayoung-99/tap-tap/compare/v0.3.0...v0.4.0) (2026-08-15)
+
+
+### 새로운 것
+
+* **renderer:** rebuild the windows on Vite, React and TypeScript ([#32](https://github.com/hayoung-99/tap-tap/issues/32)) ([72f8cee](https://github.com/hayoung-99/tap-tap/commit/72f8ceed879046a260113cf079f54cca6317fb81))
+* **renderer:** style the windows with Tailwind ([#33](https://github.com/hayoung-99/tap-tap/issues/33)) ([3318932](https://github.com/hayoung-99/tap-tap/commit/33189324f44b6fd51b176b3210a3df9a376c5527))
+* **site:** let the peeking characters face front and keep both eyes on screen ([#30](https://github.com/hayoung-99/tap-tap/issues/30)) ([0e68bc4](https://github.com/hayoung-99/tap-tap/commit/0e68bc4ca07ef31f78515e79f16298f815a52b4e))
+* **tray:** open the team list on left click, the menu on right click ([#31](https://github.com/hayoung-99/tap-tap/issues/31)) ([1380a3d](https://github.com/hayoung-99/tap-tap/commit/1380a3daa74e5c7f6a542e3284eaa216c3822af3))
+
+
+### 고친 것
+
+* **capture:** let TAPTAP_CAPTURE exit once a character is on screen ([#34](https://github.com/hayoung-99/tap-tap/issues/34)) ([c572174](https://github.com/hayoung-99/tap-tap/commit/c572174af020b915fa4d4b71a293e64f6daf7af0))
+* **main:** let the app actually quit while a character is on screen ([#27](https://github.com/hayoung-99/tap-tap/issues/27)) ([1d59c7e](https://github.com/hayoung-99/tap-tap/commit/1d59c7e701ecd1418c59a15a1a3192ccff7e832f))
+
 ## [0.3.0](https://github.com/hayoung-99/tap-tap/compare/v0.2.2...v0.3.0) (2026-08-14)
 
 
