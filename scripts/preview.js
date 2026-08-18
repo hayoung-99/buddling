@@ -19,7 +19,7 @@ const OUTPUT = path.join(
   DANCE ? 'dance.png' : HOP ? 'hop.png' : 'characters.png',
 )
 
-app.whenReady().then(async () => {
+void app.whenReady().then(async () => {
   const window = new BrowserWindow({
     width: 1360,
     height: 560,

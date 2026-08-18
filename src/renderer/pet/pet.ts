@@ -347,7 +347,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
     else stopLoop()
   })
 
-  window.petApi.getState().then(applyState)
+  void window.petApi.getState().then(applyState)
   setCharacter('cat')
   syncOverlayScale()
   startLoop()

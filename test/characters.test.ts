@@ -10,6 +10,7 @@ import {
   SNOUT,
   ARM,
 } from '../src/shared/characters'
+import type { PaletteKey } from '../src/shared/characters'
 
 describe('캐릭터 스펙', () => {
   it('컨셉아트의 5종이 모두 있다', () => {
@@ -23,12 +24,15 @@ describe('캐릭터 스펙', () => {
   it.each(CHARACTERS)('$key 는 표시에 필요한 정보를 갖는다', (spec) => {
     expect(spec.name).toBeTruthy()
     expect(spec.cry).toBeTruthy()
-    // 화면에 보여줄 이름은 나라말마다 다르므로 사전(i18n)에 있다
-    expect(spec.label).toBeUndefined()
+    // 화면에 보여줄 이름은 나라말마다 다르므로 사전(i18n)에 있다.
+    // (`CharacterSpec` 에 `label` 이 없어 타입도 막아 주지만, 데이터가 손으로 늘어나는
+    //  자리라 실제 값도 확인해 둔다)
+    expect('label' in spec).toBe(false)
   })
 
   it.each(CHARACTERS)('$key 의 팔레트에 필요한 색이 모두 있다', (spec) => {
-    for (const slot of ['body', 'belly', 'accent', 'snout', 'nose', 'eye', 'cheek', 'foot']) {
+    const slots: PaletteKey[] = ['body', 'belly', 'accent', 'snout', 'nose', 'eye', 'cheek', 'foot']
+    for (const slot of slots) {
       expect(typeof spec.palette[slot], `${spec.key}.${slot}`).toBe('number')
     }
   })

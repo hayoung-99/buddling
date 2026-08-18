@@ -21,7 +21,7 @@ import { startMorningSchedule } from './update-schedule'
 import type { UpdateInfo } from '../shared/state'
 
 /** 이 플랫폼에서 받아서 설치까지 할 수 있는가 */
-function canAutoInstall(platform: NodeJS.Platform | string): boolean {
+function canAutoInstall(platform: string): boolean {
   return platform === 'win32'
 }
 
@@ -43,7 +43,8 @@ function canAutoInstall(platform: NodeJS.Platform | string): boolean {
  */
 export interface UpdatesOptions {
   currentVersion: string
-  platform: NodeJS.Platform | string
+  /** `process.platform` 을 그대로 받는다 */
+  platform: string
   onUpdate: (info: UpdateInfo) => void
   readLastDay: () => string | null
   writeLastDay: (day: string) => void

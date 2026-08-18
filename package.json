@@ -17,7 +17,7 @@
   "scripts": {
     "build": "vite build --config vite.config.mts && vite build --config vite.preload.config.mts && vite build --config vite.main.config.mts",
     "typecheck": "tsc --noEmit",
-    "lint": "oxlint",
+    "lint": "oxlint --type-aware",
     "start": "npm run build && electron .",
     "start:second": "npm run build && TAPTAP_PROFILE=second electron .",
     "start:both": "npm run build && (trap 'kill 0' INT TERM EXIT; electron . & TAPTAP_PROFILE=second electron . & wait)",
@@ -124,6 +124,7 @@
     "electron": "^43.4.0",
     "electron-builder": "^26.15.3",
     "oxlint": "^1.78.0",
+    "oxlint-tsgolint": "^7.0.2001",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "tailwindcss": "^4.3.3",

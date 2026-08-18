@@ -28,8 +28,9 @@ describe('resolvePower', () => {
   })
 
   it('모르는 값은 기본 단계로 떨어뜨린다 — 저장 파일이 깨져도 앱이 뜬다', () => {
+    // 일부러 잘못된 값을 먹인다 — 저장 파일이 깨졌을 때를 흉내 내는 것이 이 검사의 요지다
     for (const bad of [undefined, null, '', 'turbo', 42, {}]) {
-      expect(resolvePower(bad)).toBe(DEFAULT_POWER)
+      expect(resolvePower(bad as string)).toBe(DEFAULT_POWER)
     }
   })
 })

@@ -93,7 +93,7 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
 
   // ── 캐릭터 창 전용 ──
   ipcMain.on('pet:tap', (_event, { teamId }) => {
-    session.tap({ teamId, toMemberId: null })
+    void session.tap({ teamId, toMemberId: null })
   })
 
   ipcMain.on('pet:interactive', (_event, { teamId, interactive }) => {
@@ -130,7 +130,7 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
    */
   ipcMain.on('window:open-download', () => {
     const url = session.snapshot().update?.url
-    if (url) shell.openExternal(url)
+    if (url) void shell.openExternal(url)
   })
 
   /**

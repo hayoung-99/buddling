@@ -37,7 +37,7 @@ describe('사전', () => {
   })
 
   it.each(CODES)('%s 사전의 빈칸({이름})이 기본 언어와 같다', (code) => {
-    const slots = (text) => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort()
+    const slots = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort()
     for (const [key, base] of Object.entries(DICTIONARIES[DEFAULT_LANGUAGE])) {
       expect(slots(DICTIONARIES[code][key]), `${code} / ${key}`).toEqual(slots(base))
     }

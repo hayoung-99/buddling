@@ -127,7 +127,7 @@ function startUpdateCheck({
    * 내려받기가 실패해 이 길로 갈아탄 경우다. 오늘 몫은 그쪽에서 이미 썼으므로
    * 일정만 걸면 내일 아침까지 아무 말도 하지 않게 된다. 그러라고 만든 길이 아니다.
    */
-  if (immediate) check()
+  if (immediate) void check()
 
   const scheduled = schedule(check)
 

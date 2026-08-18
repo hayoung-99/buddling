@@ -69,7 +69,24 @@ CI 도 같은 파일을 봅니다(`node-version-file: .nvmrc`). **Node 를 올�
 눈으로 보고 맞추세요 — 세미콜론 없음, 작은따옴표, 들여쓰기 2칸.
 
 규칙은 `.oxlintrc.json` 에 있고 아껴서 켭니다. `correctness` 범주와, 손으로 고른 넷
-(`no-undef` · `eqeqeq` · `no-shadow` · `import/no-cycle`) 뿐입니다. **모양을 강요하는
+(`no-undef` · `eqeqeq` · `no-shadow` · `import/no-cycle`) 뿐입니다.
+
+**타입을 아는 규칙도 켜 둡니다** (`oxlint --type-aware`). 이것을 도는 것은
+`oxlint-tsgolint` 이고, 이 저장소의 `typescript@7` 과 **같은 typescript-go** 위에
+서 있어 짝이 맞습니다. 느려질까 걱정할 정도는 아닙니다 — 0.3초에서 0.6초가 됩니다.
+
+가장 값을 하는 것은 `no-floating-promises` 입니다. **일부러 기다리지 않는 자리에는
+`void` 를 적어 두세요** (`void window.loadFile(...)` 처럼). 그러면 *실수로* 빠뜨린
+`await` 만 걸립니다. 이 앱은 타이머와 이벤트 처리기가 많아서 삼켜진 오류가 조용히
+사라지기 쉬운 자리입니다.
+
+**`plugins` 에 `typescript` 를 빠뜨리지 마세요.** 이 배열을 적는 순간 기본값을 통째로
+덮어쓰기 때문에, 빠뜨리면 `typescript/*` 규칙이 **하나도 돌지 않으면서 오류도 안 납니다.**
+실제로 한동안 그런 상태였습니다.
+
+false positive 라 꺼 둔 것 셋이 있습니다 — `unbound-method`(이 저장소는 `this` 를 쓰지
+않는 클로저를 돌려주는 방식이라 전부 헛짚습니다) · `require-array-sort-compare` ·
+`no-base-to-string`. **모양을 강요하는
 범주(`style`)는 켜지 않습니다** — 켜 보니 4,015건이 나왔는데 전부 `sort-keys` 처럼
 이 저장소가 손으로 맞춰 둔 것과 다투는 규칙이었습니다. 포매터를 넣지 않는 이유도
 같습니다. 기존 코드가 통째로 다시 포맷되면 그 diff 가 정작 볼 것을 덮습니다.
@@ -199,12 +216,16 @@ Electron 도 브라우저도 없이 돌릴 수 있는 계산은 별도 모듈로
 대개 계산 부분을 덜 떼어낸 것입니다.
 
 `main/session.ts` 는 `store` 와 `net` 을 인자로 받습니다. 테스트에서는 메모리 저장소와
-`services/fake-net.js` 를 꽂습니다. **이 주입 통로를 막지 마세요.**
+`services/fake-net.ts` 를 꽂습니다. **이 주입 통로를 막지 마세요.**
+
+**테스트도 타입스크립트입니다** (`test/*.test.ts`). 흉내 내는 것에는 진짜 타입을 답니다 —
+`session.test.ts` 의 메모리 저장소는 `Store` 를, `fake-net` 은 `Net` 을 만족해야 합니다.
+그래야 진짜 쪽 모양이 바뀔 때 **테스트가 깨지기 전에** 컴파일러가 먼저 잡습니다.
 
 ### 2. 네 언어 사전은 항상 함께 고친다
 
 문구를 하나 추가하면 `src/shared/i18n/{ko,en,ja,zh}.json` **네 개 모두** 고쳐야 합니다.
-빠진 열쇠·남는 열쇠·`{빈칸}` 불일치·빈 문장을 `test/i18n.test.js` 가 잡아냅니다.
+빠진 열쇠·남는 열쇠·`{빈칸}` 불일치·빈 문장을 `test/i18n.test.ts` 가 잡아냅니다.
 
 로직은 `src/shared/i18n/index.ts` **한 곳에만** 있습니다. `src/main/i18n.ts` 는 그 위의
 얇은 껍데기로, "앱이 지금 쓰는 언어" 하나만 들고 있습니다. 예전에는 메인이 CommonJS 라
