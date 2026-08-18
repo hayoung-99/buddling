@@ -103,7 +103,7 @@ function createPetWindow({ teamId, index = 0 }: { teamId: string; index?: number
   // forward: true 라야 통과 상태에서도 mousemove 를 계속 받을 수 있다.
   window.setIgnoreMouseEvents(true, { forward: true })
 
-  window.loadFile(rendererPage('pet', 'index.html'))
+  void window.loadFile(rendererPage('pet', 'index.html'))
   return window
 }
 
@@ -143,7 +143,7 @@ function createSizeWindow() {
 
   window.setAlwaysOnTop(true, 'screen-saver')
   window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
-  window.loadFile(rendererPage('size', 'index.html'))
+  void window.loadFile(rendererPage('size', 'index.html'))
   return window
 }
 
@@ -185,7 +185,7 @@ function createSettingsWindow() {
     },
   })
 
-  window.loadFile(rendererPage('settings', 'index.html'))
+  void window.loadFile(rendererPage('settings', 'index.html'))
   window.once('ready-to-show', () => window.show())
   return window
 }
@@ -208,7 +208,7 @@ function createTeamWindow() {
     },
   })
 
-  window.loadFile(rendererPage('team', 'index.html'))
+  void window.loadFile(rendererPage('team', 'index.html'))
   window.once('ready-to-show', () => window.show())
   return window
 }
@@ -238,7 +238,7 @@ function createTeamDetailWindow(teamId: string, index = 0) {
 
   const [x, y] = window.getPosition()
   window.setPosition(x + offset, y + offset)
-  window.loadFile(rendererPage('team', 'detail.html'))
+  void window.loadFile(rendererPage('team', 'detail.html'))
   window.once('ready-to-show', () => window.show())
   return window
 }

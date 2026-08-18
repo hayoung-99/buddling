@@ -161,7 +161,7 @@ async function main() {
   await step('팀마다 다른 캐릭터를 갖는다', async () => {
     const mine = await alice.getMyTeams()
     const keys = mine.map((m) => m.member.characterKey)
-    if (new Set(keys).size !== 2) throw new Error(`캐릭터가 갈리지 않았습니다: ${keys}`)
+    if (new Set(keys).size !== 2) throw new Error(`캐릭터가 갈리지 않았습니다: ${keys.join(', ')}`)
     return keys.join(' / ')
   })
 

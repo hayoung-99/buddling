@@ -329,7 +329,7 @@ function start() {
   const wake = () => {
     app.awake = true
     app.setRendering()
-    app.session?.recover()
+    void app.session?.recover()
   }
 
   // 하나씩 거는 이유: `powerMonitor.on` 은 이벤트마다 오버로드가 따로라 배열로 돌리면
@@ -339,7 +339,7 @@ function start() {
   powerMonitor.on('resume', wake)
   powerMonitor.on('unlock-screen', wake)
 
-  electronApp.whenReady().then(async () => {
+  void electronApp.whenReady().then(async () => {
     store.load()
 
     // 캐릭터가 바탕화면 위젯처럼 느껴지도록 Dock 아이콘은 숨긴다 (트레이로 접근)
