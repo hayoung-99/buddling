@@ -51,6 +51,20 @@ npm ci
 커밋에 딸려 들어갑니다 (optional 패키지의 `libc` 항목이 통째로 지워지는 식으로).
 `npm ci` 는 lockfile 이 적어 둔 그대로만 설치하고 그 파일을 건드리지 않습니다.
 
+**도구 버전은 `.nvmrc` 와 `package.json` 의 `packageManager` 가 정합니다.** 위 문제의
+뿌리는 사람마다 npm 버전이 다른 것이라, 아예 저장소가 정해 둡니다. `.nvmrc` 에 적힌
+Node 를 쓰면 그 배포본에 딸려 오는 npm 도 같아집니다 (22.23.2 → npm 10.9.8).
+
+```bash
+nvm use            # .nvmrc 를 읽는다. fnm 도 같다
+node -v && npm -v  # 22.23.2 / 10.9.8 이어야 한다
+```
+
+이 컴퓨터에는 Homebrew 와 `/usr/local` 에도 node 가 깔려 있습니다. 셸에 따라 그쪽이
+먼저 잡히면 버전이 조용히 갈라지므로, 작업을 시작할 때 위 두 줄로 한 번 확인하세요.
+CI 도 같은 파일을 봅니다(`node-version-file: .nvmrc`). **Node 를 올릴 때는 `.nvmrc` 와
+`packageManager` 를 함께 고칩니다** — 한쪽만 고치면 다시 어긋납니다.
+
 **린터는 oxlint 입니다 (`npm run lint`). 포매터는 없습니다.** 모양은 여전히 주변 코드를
 눈으로 보고 맞추세요 — 세미콜론 없음, 작은따옴표, 들여쓰기 2칸.
 

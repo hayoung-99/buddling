@@ -18,7 +18,10 @@
 
 ## 시작하기
 
+Node 는 `.nvmrc` 에 적힌 버전을 씁니다 (nvm·fnm 이 이 파일을 읽습니다).
+
 ```bash
+nvm use
 npm install
 ```
 

@@ -108,9 +108,12 @@ jobs:
       # 태그 이름으로 받으려 하면 안 된다.
       - uses: actions/checkout@v7
 
+      # Node 버전은 `.nvmrc` 한 곳에서만 정한다. 여기에 숫자를 또 적으면 로컬과
+      # 어긋나고, 그러면 딸려 오는 npm 버전도 갈라져 `package-lock.json` 이
+      # 손대지도 않았는데 다시 쓰인다.
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: npm
 
       - run: npm ci
