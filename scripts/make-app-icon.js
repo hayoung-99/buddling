@@ -190,7 +190,7 @@ async function main() {
   for (const file of written) console.log(`wrote ${file}`)
 }
 
-app.whenReady().then(async () => {
+void app.whenReady().then(async () => {
   try {
     await main()
     app.exit(0)

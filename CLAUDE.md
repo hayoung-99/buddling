@@ -69,7 +69,24 @@ CI 도 같은 파일을 봅니다(`node-version-file: .nvmrc`). **Node 를 올�
 눈으로 보고 맞추세요 — 세미콜론 없음, 작은따옴표, 들여쓰기 2칸.
 
 규칙은 `.oxlintrc.json` 에 있고 아껴서 켭니다. `correctness` 범주와, 손으로 고른 넷
-(`no-undef` · `eqeqeq` · `no-shadow` · `import/no-cycle`) 뿐입니다. **모양을 강요하는
+(`no-undef` · `eqeqeq` · `no-shadow` · `import/no-cycle`) 뿐입니다.
+
+**타입을 아는 규칙도 켜 둡니다** (`oxlint --type-aware`). 이것을 도는 것은
+`oxlint-tsgolint` 이고, 이 저장소의 `typescript@7` 과 **같은 typescript-go** 위에
+서 있어 짝이 맞습니다. 느려질까 걱정할 정도는 아닙니다 — 0.3초에서 0.6초가 됩니다.
+
+가장 값을 하는 것은 `no-floating-promises` 입니다. **일부러 기다리지 않는 자리에는
+`void` 를 적어 두세요** (`void window.loadFile(...)` 처럼). 그러면 *실수로* 빠뜨린
+`await` 만 걸립니다. 이 앱은 타이머와 이벤트 처리기가 많아서 삼켜진 오류가 조용히
+사라지기 쉬운 자리입니다.
+
+**`plugins` 에 `typescript` 를 빠뜨리지 마세요.** 이 배열을 적는 순간 기본값을 통째로
+덮어쓰기 때문에, 빠뜨리면 `typescript/*` 규칙이 **하나도 돌지 않으면서 오류도 안 납니다.**
+실제로 한동안 그런 상태였습니다.
+
+false positive 라 꺼 둔 것 셋이 있습니다 — `unbound-method`(이 저장소는 `this` 를 쓰지
+않는 클로저를 돌려주는 방식이라 전부 헛짚습니다) · `require-array-sort-compare` ·
+`no-base-to-string`. **모양을 강요하는
 범주(`style`)는 켜지 않습니다** — 켜 보니 4,015건이 나왔는데 전부 `sort-keys` 처럼
 이 저장소가 손으로 맞춰 둔 것과 다투는 규칙이었습니다. 포매터를 넣지 않는 이유도
 같습니다. 기존 코드가 통째로 다시 포맷되면 그 diff 가 정작 볼 것을 덮습니다.

@@ -101,7 +101,7 @@ async function capture({ shot, file, width, height, transparent }) {
   console.log(`wrote ${path.relative(ROOT, target)}  (${width}x${height})`)
 }
 
-app.whenReady().then(async () => {
+void app.whenReady().then(async () => {
   try {
     fs.mkdirSync(OUT_DIR, { recursive: true })
     for (const spec of targets) await capture(spec)

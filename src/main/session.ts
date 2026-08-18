@@ -194,7 +194,7 @@ function createSession({
     retryStep += 1
     retryTimer = setTimeout(() => {
       retryTimer = null
-      syncConnections()
+      void syncConnections()
     }, delay)
     // 이 타이머 때문에 앱이 종료되지 못하는 일이 없게 한다
     retryTimer.unref?.()

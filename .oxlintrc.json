@@ -1,12 +1,16 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["eslint", "unicorn", "oxc", "import"],
+  "plugins": ["eslint", "unicorn", "oxc", "import", "typescript"],
   "categories": { "correctness": "error" },
   "rules": {
     "no-undef": "error",
     "eqeqeq": ["error", "always", { "null": "ignore" }],
     "no-shadow": "error",
-    "import/no-cycle": "error"
+    "import/no-cycle": "error",
+
+    "typescript/unbound-method": "off",
+    "typescript/require-array-sort-compare": "off",
+    "typescript/no-base-to-string": "off"
   },
   "overrides": [
     {
