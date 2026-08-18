@@ -104,6 +104,7 @@ npm run build         # 화면(React·TS)과 preload 를 빌드한다 — 실행
 npm run dev           # 화면을 고칠 때마다 다시 빌드한다 (창은 새로고침)
 npm test              # 단위 테스트 (vitest) — Supabase 없이 돈다
 npm run typecheck     # 타입 검사
+npm run lint          # 린트 (oxlint)
 npm run check         # 실제 Supabase 연결 점검 (.env 필요)
 npm run preview       # 캐릭터 5종을 나란히 놓고 비율·애니메이션 확인
 npm run tray-icon     # 메뉴바 아이콘 PNG 다시 생성
