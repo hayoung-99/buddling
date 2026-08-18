@@ -364,13 +364,13 @@ async function main() {
 
   await step('팀 정원은 5명이다', async () => {
     const host = device()
-    const { team } = await host.createTeam({ name: `정원 점검 ${suffix}`, nickname: '방장' })
+    const { team: crowded } = await host.createTeam({ name: `정원 점검 ${suffix}`, nickname: '방장' })
 
     for (let i = 1; i < 5; i += 1) {
-      await device().joinTeam({ inviteCode: team.inviteCode, nickname: `손님${i}` })
+      await device().joinTeam({ inviteCode: crowded.inviteCode, nickname: `손님${i}` })
     }
     try {
-      await outsider.joinTeam({ inviteCode: team.inviteCode, nickname: '초과' })
+      await outsider.joinTeam({ inviteCode: crowded.inviteCode, nickname: '초과' })
     } catch (error) {
       if (error.message === 'error.TEAM_FULL') return '5명까지, 6번째 거절'
       throw error

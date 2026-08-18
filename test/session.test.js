@@ -11,7 +11,7 @@ function memoryStore(userId = 'user-me') {
       state = { ...state, ...patch }
       return state
     },
-    pet: (teamId) => ({ position: null, scale: 1, ...(state.pets[teamId] ?? {}) }),
+    pet: (teamId) => ({ position: null, scale: 1, ...state.pets[teamId] }),
     setPet(teamId, patch) {
       state.pets = { ...state.pets, [teamId]: { ...this.pet(teamId), ...patch } }
       return state.pets[teamId]
