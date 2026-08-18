@@ -11,6 +11,17 @@
 
 import type { AppState, TapPayload } from './state'
 
+/**
+ * 메인이 `ipcMain.handle` 로 답할 때의 봉투.
+ *
+ * 그냥 던지면 Electron 이 "Error invoking remote method '...'" 라는 껍데기를 씌워 버려서
+ * 그 문구가 사용자 화면에 그대로 보인다. 그래서 성패를 값으로 실어 보내고, preload 의
+ * `call()` 이 봉투를 풀어 다시 던진다.
+ *
+ * `error` 는 이미 지금 언어의 문장이다 — 열쇠를 문장으로 바꾸는 일은 `main/ipc.ts` 가 한다.
+ */
+export type IpcResult<T> = { ok: true; value: T } | { ok: false; error: string }
+
 /** 바탕화면 위 캐릭터 창 */
 export interface PetApi {
   /** 이 창이 맡은 팀. 창을 만들 때 `--team-id=` 로 받는다. */

@@ -13,21 +13,30 @@
  * security definer 함수로만 이뤄지므로, 키만으로는 남의 팀을 들여다볼 수 없다.
  */
 
-const fs = require('node:fs')
-const path = require('node:path')
+import fs from 'node:fs'
+import path from 'node:path'
+import dotenv from 'dotenv'
 
 const ROOT = path.join(__dirname, '..', '..')
-const BAKED = path.join(__dirname, 'config.generated.json')
+
+/**
+ * 구워 넣은 접속 정보. **저장소 루트에 둔다.**
+ *
+ * 예전에는 `src/main/` 안에 있었는데, 그 자리가 이제 빌드 산출물 폴더(`dist-main/main/`)
+ * 라 `emptyOutDir` 가 지워 버린다. 하필 `npm run dist` 는 굽기 → 빌드 순서라 정확히 그
+ * 순서로 사라진다. 루트로 빼면 빌드와 무관해진다.
+ */
+const BAKED = path.join(ROOT, 'config.generated.json')
 const ENV_FILE = '.env'
 
 function loadConfig() {
   // 이미 들어 있는 환경변수는 dotenv 가 덮어쓰지 않는다
-  require('dotenv').config({ path: path.join(ROOT, ENV_FILE) })
+  dotenv.config({ path: path.join(ROOT, ENV_FILE) })
   if (process.resourcesPath) {
-    require('dotenv').config({ path: path.join(process.resourcesPath, ENV_FILE) })
+    dotenv.config({ path: path.join(process.resourcesPath, ENV_FILE) })
   }
 
-  let baked = {}
+  let baked: { url?: string; anonKey?: string } = {}
   try {
     baked = JSON.parse(fs.readFileSync(BAKED, 'utf8'))
   } catch {
@@ -40,4 +49,4 @@ function loadConfig() {
   }
 }
 
-module.exports = { loadConfig, BAKED }
+export { loadConfig, BAKED }

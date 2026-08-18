@@ -9,9 +9,10 @@
  * 메뉴만 나온다. 그래서 메뉴는 손에 들고 있다가 오른쪽 클릭 때 직접 띄운다.
  */
 
-const path = require('node:path')
-const { Tray, Menu, nativeImage } = require('electron')
-const { t } = require('./i18n')
+import path from 'node:path'
+import { Tray, Menu, nativeImage } from 'electron'
+import { t } from './i18n'
+import type { AppState } from '../shared/state'
 
 const ICON = path.join(__dirname, '..', '..', 'assets', 'trayTemplate.png')
 
@@ -25,7 +26,25 @@ const ICON = path.join(__dirname, '..', '..', 'assets', 'trayTemplate.png')
  */
 const SPLITS_CLICKS = process.platform !== 'linux'
 
-function createTray(app) {
+/** 트레이가 부리는 것들. `main.ts` 의 `app` 껍데기가 이 모양을 만족한다. */
+export interface TrayHost {
+  session: { snapshot(): AppState } | null
+  openTeamWindow(): void
+  openTeamDetail(teamId: string): void
+  openSizePanel(teamId: string): void
+  openSettings(): void
+  isPetVisible(): boolean
+  setPetVisible(visible: boolean): void
+  quit(): void
+}
+
+export interface TrayHandle {
+  tray: Tray
+  /** 팀 목록이나 언어가 바뀌면 메뉴를 새로 짓는다 */
+  refresh(): void
+}
+
+function createTray(app: TrayHost): TrayHandle {
   const image = nativeImage.createFromPath(ICON)
   image.setTemplateImage(true)
 
@@ -36,14 +55,14 @@ function createTray(app) {
   )
 
   /** 오른쪽 클릭 때 띄울 메뉴. 팀 목록이나 언어가 바뀌면 `refresh()` 가 새로 짓는다. */
-  let menu = null
+  let menu: Menu | null = null
 
   function refresh() {
-    const state = app.session.snapshot()
-    const teams = state.memberships
-
-    const teamItems = teams.length
-      ? teams.map((entry) => ({
+    // 트레이는 세션보다 먼저 만들어질 수 있다. 그때는 팀이 없는 것으로 그린다.
+    const state = app.session?.snapshot()
+    const memberships = state?.memberships ?? []
+    const teamItems = memberships.length
+      ? memberships.map((entry) => ({
           label: t('app.teamSummary', { name: entry.team.name, count: entry.members.length }),
           submenu: [
             { label: t('app.detail'), click: () => app.openTeamDetail(entry.team.id) },
@@ -75,10 +94,10 @@ function createTray(app) {
   if (SPLITS_CLICKS) {
     tray.on('click', () => app.openTeamWindow())
     // 메뉴는 창이 열려 있든 말든 그 자리에서 뜬다 — 창을 거치지 않는 길이다
-    tray.on('right-click', () => tray.popUpContextMenu(menu))
+    tray.on('right-click', () => tray.popUpContextMenu(menu ?? undefined))
   }
 
   return { tray, refresh }
 }
 
-module.exports = { createTray }
+export { createTray }

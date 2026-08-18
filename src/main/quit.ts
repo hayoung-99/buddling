@@ -27,10 +27,13 @@
 /**
  * 넘겨받은 캐릭터 창을 없앤다. 이미 사라진 것은 건드리지 않는다.
  *
- * @param {Iterable<{ window: { isDestroyed: () => boolean, destroy: () => void } }>} pets
- * @returns {number} 실제로 없앤 창 수
+ * @returns 실제로 없앤 창 수
  */
-function releaseUnclosableWindows(pets) {
+export interface ReleasablePet {
+  window: { isDestroyed: () => boolean; destroy: () => void }
+}
+
+function releaseUnclosableWindows(pets: Iterable<ReleasablePet>): number {
   let released = 0
   for (const { window } of pets) {
     if (window.isDestroyed()) continue
@@ -40,4 +43,4 @@ function releaseUnclosableWindows(pets) {
   return released
 }
 
-module.exports = { releaseUnclosableWindows }
+export { releaseUnclosableWindows }

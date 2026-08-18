@@ -9,10 +9,12 @@
  * 창을 그대로 키우면 캐릭터도 같은 비율로 커진다.
  */
 
-const path = require('node:path')
-const { BrowserWindow, screen } = require('electron')
-const store = require('./store')
-const { clampScale, petSizeFor, nextPetBounds, PET_BASE_SIZE } = require('./pet-size')
+import path from 'node:path'
+import { BrowserWindow, screen } from 'electron'
+import store from './store'
+import { clampScale, petSizeFor, nextPetBounds, PET_BASE_SIZE } from './pet-size'
+import type { Size } from './pet-size'
+import type { PetSettings } from '../shared/state'
 
 const ROOT = path.join(__dirname, '..', '..')
 
@@ -24,8 +26,8 @@ const ROOT = path.join(__dirname, '..', '..')
  * 한다. 경로를 여기 두 함수로 모아 둔 이유는, 전에는 다섯 군데에 흩어져 있어서
  * 한 곳만 고치고 나머지를 빠뜨리기 쉬웠기 때문이다.
  */
-const rendererPage = (...parts) => path.join(ROOT, 'dist-renderer', ...parts)
-const preloadScript = (name) => path.join(ROOT, 'dist-preload', `${name}.cjs`)
+const rendererPage = (...parts: string[]) => path.join(ROOT, 'dist-renderer', ...parts)
+const preloadScript = (name: string) => path.join(ROOT, 'dist-preload', `${name}.cjs`)
 
 const SIZE_PANEL = { width: 244, height: 56 }
 
@@ -35,7 +37,7 @@ const SIZE_PANEL = { width: 244, height: 56 }
  * 팀이 여러 개면 캐릭터도 여러 마리라 같은 자리에 겹치면 안 된다.
  * 혼자서 두 명인 척 테스트할 때(TAPTAP_PROFILE)도 한 칸 더 비켜 세운다.
  */
-function defaultPetPosition(size, index = 0) {
+function defaultPetPosition(size: Size, index = 0) {
   const { workArea } = screen.getPrimaryDisplay()
   const slot = index + (process.env.TAPTAP_PROFILE ? 1 : 0)
   const shift = slot * (PET_BASE_SIZE.width + 40)
@@ -46,7 +48,7 @@ function defaultPetPosition(size, index = 0) {
 }
 
 /** 저장된 위치가 지금 연결된 모니터 안에 있는지 확인한다 (모니터를 뺐을 수도 있다) */
-function isOnScreen(position, size) {
+function isOnScreen(position: PetSettings['position'], size: Size): boolean {
   if (!position) return false
   return screen.getAllDisplays().some(({ workArea }) => {
     const centerX = position.x + size.width / 2
@@ -64,7 +66,7 @@ function isOnScreen(position, size) {
  * 팀 하나의 캐릭터 창.
  * 렌더러·preload 는 `--team-id=` 인자로 자기가 어느 팀 것인지 알게 된다.
  */
-function createPetWindow({ teamId, index = 0 }) {
+function createPetWindow({ teamId, index = 0 }: { teamId: string; index?: number }) {
   const pet = store.pet(teamId)
   const size = petSizeFor(pet.scale)
   const position = isOnScreen(pet.position, size) ? pet.position : defaultPetPosition(size, index)
@@ -107,9 +109,9 @@ function createPetWindow({ teamId, index = 0 }) {
 
 /**
  * 캐릭터 창을 새 크기로 바꾼다.
- * @returns {{x: number, y: number}} 실제로 적용된 창 위치 (저장용)
+ * @returns 실제로 적용된 창 위치 (저장용)
  */
-function resizePetWindow(window, scale) {
+function resizePetWindow(window: BrowserWindow, scale: number): { x: number; y: number } {
   const bounds = window.getBounds()
   const { workArea } = screen.getDisplayMatching(bounds)
   window.setBounds(nextPetBounds({ bounds, scale, workArea }))
@@ -146,7 +148,7 @@ function createSizeWindow() {
 }
 
 /** 크기 패널을 캐릭터 바로 아래에 붙인다. 자리가 없으면 위에 붙인다. */
-function placeSizeWindow(sizeWindow, petWindow) {
+function placeSizeWindow(sizeWindow: BrowserWindow | null, petWindow: BrowserWindow | null) {
   if (!sizeWindow || sizeWindow.isDestroyed() || !petWindow || petWindow.isDestroyed()) return
 
   const pet = petWindow.getBounds()
@@ -215,7 +217,7 @@ function createTeamWindow() {
  * 팀 하나의 상세 창. 팀마다 따로 뜬다.
  * 렌더러는 `--team-id=` 인자로 자기가 어느 팀 것인지 알게 된다.
  */
-function createTeamDetailWindow(teamId, index = 0) {
+function createTeamDetailWindow(teamId: string, index = 0) {
   const offset = index * 26 // 여러 개 열면 조금씩 어긋나게 쌓인다
   const window = new BrowserWindow({
     width: 430,
@@ -241,7 +243,7 @@ function createTeamDetailWindow(teamId, index = 0) {
   return window
 }
 
-module.exports = {
+export {
   createPetWindow,
   createTeamWindow,
   createTeamDetailWindow,

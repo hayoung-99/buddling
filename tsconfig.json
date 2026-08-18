@@ -15,5 +15,15 @@
     "noEmit": true,
     "types": ["vite/client", "node"]
   },
-  "include": ["src/renderer", "src/shared", "src/preload", "src/types", "test", "vite.config.mts", "vite.preload.config.mts"]
+  "include": [
+    "src/main",
+    "src/services",
+    "src/preload",
+    "src/renderer",
+    "src/shared",
+    "test",
+    "vite.config.mts",
+    "vite.main.config.mts",
+    "vite.preload.config.mts"
+  ]
 }

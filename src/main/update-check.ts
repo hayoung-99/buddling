@@ -28,7 +28,7 @@ const DOWNLOAD_PAGE = `https://github.com/${REPO}/releases/latest`
 const REQUEST_TIMEOUT_MS = 8000
 
 /** "v0.1.0" · "0.1.0" → [0, 1, 0]. 읽을 수 없으면 null. */
-function parseVersion(value) {
+function parseVersion(value: unknown): number[] | null {
   const cleaned = String(value ?? '')
     .trim()
     .replace(/^v/i, '')
@@ -48,7 +48,7 @@ function parseVersion(value) {
  * latest 가 current 보다 새 버전인가.
  * 판단할 수 없으면 false — 확실하지 않을 때 알림을 띄우지 않는다.
  */
-function isNewer(current, latest) {
+function isNewer(current: string, latest: string): boolean {
   const a = parseVersion(current)
   const b = parseVersion(latest)
   if (!a || !b) return false
@@ -87,24 +87,27 @@ async function fetchLatestVersion() {
  * `ready: false` 를 실어 보낸다 — 받아 둔 것이 없으니 화면은 "받으러 가기"를
  * 보여줘야 한다는 뜻이다. 받아 둔 경우는 `auto-update.js` 가 true 로 보낸다.
  *
- * @param {{
- *   currentVersion: string,
- *   onUpdate: (info: { version: string, url: string, ready: false }) => void,
- *   schedule: (check: () => void) => { stop: () => void },
- *   immediate?: boolean,
- *   fetchLatest?: () => Promise<string|null>,
- * }} options
- * @returns {{ stop: () => void }}
  */
+export interface UpdateCheckOptions {
+  currentVersion: string
+  onUpdate: (info: { version: string; url: string; ready: false }) => void
+  /** 언제 볼지를 정해 주는 쪽 (`update-schedule.ts`) */
+  schedule: (check: () => void) => { stop: () => void }
+  /** 자동 내려받기가 실패해 이 길로 갈아탄 경우, 일정을 기다리지 않고 지금 한 번 본다 */
+  immediate?: boolean
+  /** 테스트가 GitHub 대신 답한다 */
+  fetchLatest?: () => Promise<string | null>
+}
+
 function startUpdateCheck({
   currentVersion,
   onUpdate,
   schedule,
   immediate = false,
   fetchLatest = fetchLatestVersion,
-}) {
+}: UpdateCheckOptions) {
   let stopped = false
-  let announced = null
+  let announced: string | null = null
 
   async function check() {
     if (stopped) return
@@ -136,4 +139,4 @@ function startUpdateCheck({
   }
 }
 
-module.exports = { isNewer, startUpdateCheck }
+export { isNewer, startUpdateCheck }

@@ -14,7 +14,9 @@ const crypto = require('node:crypto')
 
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') })
 
-const { createSupabaseNet } = require('../src/services/supabase-net')
+// 소스가 아니라 빌드 산출물을 읽는다 (`src/services` 는 이제 타입스크립트다).
+// 먼저 `npm run build` 가 돌아야 한다 — package.json 의 이 명령들이 그렇게 되어 있다.
+const { createSupabaseNet } = require('../dist-main/services/supabase-net.cjs')
 
 const URL = process.env.SUPABASE_URL
 const KEY = process.env.SUPABASE_ANON_KEY

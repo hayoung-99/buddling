@@ -27,3 +27,6 @@ build/icon.iconset/
 # 문서라, 커밋하면 PR 디프에 HTML 덩어리만 섞여 정작 코드 리뷰를 방해한다.
 .claude/plans/
 .claude/reports/
+
+# 메인 프로세스 빌드 산출물 (npm run build 로 언제든 다시 만든다)
+dist-main/

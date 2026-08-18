@@ -25,7 +25,7 @@ const CHECK_HOUR = 9
 const TICK_MS = 30 * 60 * 1000
 
 /** 로컬 시각 기준 'YYYY-MM-DD'. 날짜가 바뀌었는지만 보면 되므로 이 정도면 충분하다. */
-function dayKey(date) {
+function dayKey(date: Date): string {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
@@ -35,10 +35,9 @@ function dayKey(date) {
 /**
  * 지금 확인해야 하는가.
  *
- * @param {Date} now
- * @param {string|null} lastCheckedDay 마지막으로 확인한 날 ('YYYY-MM-DD')
+ * @param lastCheckedDay 마지막으로 확인한 날 ('YYYY-MM-DD')
  */
-function isDue(now, lastCheckedDay) {
+function isDue(now: Date, lastCheckedDay: string | null): boolean {
   if (now.getHours() < CHECK_HOUR) return false
   return dayKey(now) !== lastCheckedDay
 }
@@ -49,22 +48,23 @@ function isDue(now, lastCheckedDay) {
  * 마지막으로 확인한 날은 밖에서 읽고 쓴다 — 앱을 껐다 켜도 하루 한 번을
  * 지키려면 어딘가 남아 있어야 하는데, 그 어딘가를 이 파일이 알 필요는 없다.
  *
- * @param {{
- *   onDue: () => void,
- *   readLastDay: () => string|null,
- *   writeLastDay: (day: string) => void,
- *   now?: () => Date,
- *   tickMs?: number,
- * }} options
- * @returns {{ stop: () => void, tick: () => void }}
  */
+export interface MorningScheduleOptions {
+  onDue: () => void
+  readLastDay: () => string | null
+  writeLastDay: (day: string) => void
+  /** 테스트가 시계를 대신 쥔다 */
+  now?: () => Date
+  tickMs?: number
+}
+
 function startMorningSchedule({
   onDue,
   readLastDay,
   writeLastDay,
   now = () => new Date(),
   tickMs = TICK_MS,
-}) {
+}: MorningScheduleOptions) {
   let stopped = false
 
   const tick = () => {
@@ -93,4 +93,4 @@ function startMorningSchedule({
   }
 }
 
-module.exports = { CHECK_HOUR, dayKey, isDue, startMorningSchedule }
+export { CHECK_HOUR, dayKey, isDue, startMorningSchedule }

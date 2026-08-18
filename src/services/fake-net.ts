@@ -6,7 +6,33 @@
  * 덕분에 Supabase 없이도 "A가 클릭하면 B가 반응한다"를 검증할 수 있다.
  */
 
-const { createEmitter } = require('./net')
+import { createEmitter } from './emitter'
+import type { Net, NetEvents, NetMembership } from './net'
+import type { Member, Team } from '../shared/state'
+
+/** 서버 안에서만 쓰는 팀. 밖으로 나갈 때는 `publicTeam` 이 `Team` 모양으로 깎는다. */
+interface StoredTeam {
+  id: string
+  name: string
+  inviteCode: string
+  /** 밀리초. 밖으로 나갈 때 ISO 문자열이 된다. */
+  inviteExpiresAt: number
+}
+
+/** 서버 안에서만 쓰는 멤버. `userId` 는 밖으로 내보내지 않는다. */
+interface StoredMember extends Member {
+  teamId: string
+  userId: string
+}
+
+/** 붙어 있는 클라이언트 하나 */
+interface Connection {
+  teamId: string
+  memberId: string
+  userId: string
+  deliver(event: 'tap' | 'roster', payload: Record<string, unknown>): void
+  presence(onlineIds: string[]): void
+}
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 
@@ -27,14 +53,15 @@ const INVITE_TTL_MS = 24 * 60 * 60 * 1000
  * `now` 를 갈아끼우면 시간을 앞으로 돌려 만료를 테스트할 수 있다.
  */
 function createFakeServer({ random = Math.random, now = () => Date.now() } = {}) {
-  const teams = new Map() // teamId → { id, name, inviteCode }
-  const codes = new Map() // inviteCode → teamId
-  const members = new Map() // `${teamId}:${userId}` → { id, teamId, userId, nickname, characterKey }
-  const connections = new Map() // teamId → Set<connection>
+  const teams = new Map<string, StoredTeam>()
+  const codes = new Map<string, string>()
+  /** `${teamId}:${userId}` → 멤버 */
+  const members = new Map<string, StoredMember>()
+  const connections = new Map<string, Set<Connection>>()
   let sequence = 0
 
   const nextId = () => `id-${(sequence += 1)}`
-  const key = (teamId, userId) => `${teamId}:${userId}`
+  const key = (teamId: string, userId: string) => `${teamId}:${userId}`
 
   function generateInviteCode() {
     for (let attempt = 0; attempt < 50; attempt += 1) {
@@ -47,37 +74,42 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
     throw new Error('CODE_GENERATION_FAILED')
   }
 
-  const publicTeam = (team) => ({
+  const publicTeam = (team: StoredTeam): Team => ({
     id: team.id,
     name: team.name,
     inviteCode: team.inviteCode,
     inviteExpiresAt: new Date(team.inviteExpiresAt).toISOString(),
   })
-  const publicMember = (member) => ({
+  const publicMember = (member: StoredMember): Member => ({
     id: member.id,
     nickname: member.nickname,
     characterKey: member.characterKey,
   })
 
-  const membersOf = (teamId) =>
+  const membersOf = (teamId: string): Member[] =>
     [...members.values()].filter((m) => m.teamId === teamId).map(publicMember)
 
-  const teamsOf = (userId) => [...members.values()].filter((m) => m.userId === userId)
+  const teamsOf = (userId: string) => [...members.values()].filter((m) => m.userId === userId)
 
-  const membership = (member) => ({
-    team: publicTeam(teams.get(member.teamId)),
+  const membership = (member: StoredMember): NetMembership => ({
+    team: publicTeam(teams.get(member.teamId)!),
     member: publicMember(member),
     members: membersOf(member.teamId),
   })
 
-  function broadcast(teamId, event, payload, exceptMemberId) {
+  function broadcast(
+    teamId: string,
+    event: 'tap' | 'roster',
+    payload: Record<string, unknown>,
+    exceptMemberId?: string,
+  ) {
     for (const connection of connections.get(teamId) ?? []) {
       if (connection.memberId === exceptMemberId) continue
       connection.deliver(event, { ...payload, teamId })
     }
   }
 
-  function syncPresence(teamId) {
+  function syncPresence(teamId: string) {
     const onlineIds = [...(connections.get(teamId) ?? [])].map((c) => c.memberId)
     for (const connection of connections.get(teamId) ?? []) connection.presence(onlineIds)
   }
@@ -88,7 +120,17 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
     MAX_TEAMS_PER_USER,
     MAX_MEMBERS_PER_TEAM,
 
-    createTeam({ userId, name, nickname, characterKey }) {
+    createTeam({
+      userId,
+      name,
+      nickname,
+      characterKey,
+    }: {
+      userId: string
+      name?: string
+      nickname: string
+      characterKey?: string
+    }): NetMembership {
       if (!nickname?.trim()) throw new Error('NICKNAME_REQUIRED')
       if (!userId?.trim()) throw new Error('NOT_SIGNED_IN')
       if (teamsOf(userId).length >= MAX_TEAMS_PER_USER) throw new Error('TEAM_LIMIT_REACHED')
@@ -113,11 +155,21 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
       return membership(member)
     },
 
-    joinTeam({ userId, inviteCode, nickname, characterKey }) {
+    joinTeam({
+      userId,
+      inviteCode,
+      nickname,
+      characterKey,
+    }: {
+      userId: string
+      inviteCode: string
+      nickname: string
+      characterKey?: string
+    }): NetMembership {
       if (!nickname?.trim()) throw new Error('NICKNAME_REQUIRED')
       const teamId = codes.get(String(inviteCode ?? '').trim().toUpperCase())
       if (!teamId) throw new Error('INVALID_INVITE_CODE')
-      if (teams.get(teamId).inviteExpiresAt <= now()) throw new Error('INVITE_EXPIRED')
+      if (teams.get(teamId)!.inviteExpiresAt <= now()) throw new Error('INVITE_EXPIRED')
 
       const taken = [...members.values()].some(
         (m) => m.teamId === teamId && m.nickname === nickname.trim() && m.userId !== userId,
@@ -146,18 +198,34 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
       return membership(member)
     },
 
-    getMyTeams({ userId }) {
+    getMyTeams({ userId }: { userId: string }): NetMembership[] {
       return teamsOf(userId).map(membership)
     },
 
-    setCharacter({ userId, teamId, characterKey }) {
+    setCharacter({
+      userId,
+      teamId,
+      characterKey,
+    }: {
+      userId: string
+      teamId: string
+      characterKey: string
+    }): Member {
       const member = members.get(key(teamId, userId))
       if (!member) throw new Error('NOT_A_MEMBER')
       member.characterKey = characterKey
       return publicMember(member)
     },
 
-    setNickname({ userId, teamId, nickname }) {
+    setNickname({
+      userId,
+      teamId,
+      nickname,
+    }: {
+      userId: string
+      teamId: string
+      nickname: string
+    }): Member {
       const name = String(nickname ?? '').trim()
       if (!name) throw new Error('NICKNAME_REQUIRED')
       const member = members.get(key(teamId, userId))
@@ -170,18 +238,19 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
       return publicMember(member)
     },
 
-    renameTeam({ userId, teamId, name }) {
+    renameTeam({ userId, teamId, name }: { userId: string; teamId: string; name: string }): Team {
       if (!members.has(key(teamId, userId))) throw new Error('NOT_A_MEMBER')
       const clean = String(name ?? '').trim()
       if (!clean) throw new Error('TEAM_NAME_REQUIRED')
-      const team = teams.get(teamId)
+      // 멤버가 있다는 것을 위에서 확인했으므로 팀도 반드시 있다
+      const team = teams.get(teamId)!
       team.name = clean
       return publicTeam(team)
     },
 
-    refreshInvite({ userId, teamId }) {
+    refreshInvite({ userId, teamId }: { userId: string; teamId: string }): Team {
       if (!members.has(key(teamId, userId))) throw new Error('NOT_A_MEMBER')
-      const team = teams.get(teamId)
+      const team = teams.get(teamId)!
       codes.delete(team.inviteCode) // 예전 코드는 그 즉시 못 쓰게 된다
       team.inviteCode = generateInviteCode()
       team.inviteExpiresAt = now() + INVITE_TTL_MS
@@ -189,7 +258,7 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
       return publicTeam(team)
     },
 
-    leaveTeam({ userId, teamId }) {
+    leaveTeam({ userId, teamId }: { userId: string; teamId: string }) {
       members.delete(key(teamId, userId))
 
       // 마지막 사람이 나갔으면 빈 팀과 초대코드를 함께 지운다 (schema.sql 과 같은 규칙)
@@ -202,18 +271,18 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
       }
     },
 
-    attach(connection) {
+    attach(connection: Connection) {
       // 진짜 서버에서는 realtime.messages 정책이 이 판단을 한다. 여기서 흉내 내지 않으면
       // "남의 팀 채널에 못 붙는다"를 테스트가 증명하지 못한다.
       if (!members.has(key(connection.teamId, connection.userId))) {
         throw new Error('NOT_A_MEMBER')
       }
       if (!connections.has(connection.teamId)) connections.set(connection.teamId, new Set())
-      connections.get(connection.teamId).add(connection)
+      connections.get(connection.teamId)!.add(connection)
       syncPresence(connection.teamId)
     },
 
-    detach(connection) {
+    detach(connection: Connection) {
       connections.get(connection.teamId)?.delete(connection)
       syncPresence(connection.teamId)
     },
@@ -223,15 +292,24 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
 }
 
 /** 가짜 서버에 붙는 클라이언트 하나. Net 인터페이스를 만족한다. */
-function createFakeNet({ server, userId }) {
-  const emitter = createEmitter()
-  /** teamId → { connection, member } */
-  const rooms = new Map()
+/**
+ * 반환값에 `Net` 을 적어 두면 아래 메서드들의 인자 타입이 저절로 따라오고,
+ * `supabase-net` 과 모양이 어긋나는 순간 컴파일러가 잡는다.
+ */
+function createFakeNet({
+  server,
+  userId,
+}: {
+  server: ReturnType<typeof createFakeServer>
+  userId: string
+}): Net {
+  const emitter = createEmitter<NetEvents>()
+  const rooms = new Map<string, { connection: Connection; member: Member }>()
 
-  async function disconnect(teamId = null) {
-    const targets = teamId === null ? [...rooms.keys()] : rooms.has(teamId) ? [teamId] : []
+  async function disconnect(teamId?: string) {
+    const targets = teamId === undefined ? [...rooms.keys()] : rooms.has(teamId) ? [teamId] : []
     for (const id of targets) {
-      const { connection } = rooms.get(id)
+      const { connection } = rooms.get(id)!
       rooms.delete(id)
       server.detach(connection)
     }
@@ -284,14 +362,17 @@ function createFakeNet({ server, userId }) {
 
     async connect(team, member) {
       await disconnect(team.id)
-      const connection = {
+      const connection: Connection = {
         teamId: team.id,
         memberId: member.id,
         userId,
         deliver: (event, payload) => {
           // 한 사람만 콕 찌른 경우 나머지는 무시한다 (supabase-net 과 같은 규칙)
           if (event === 'tap' && payload.toMemberId && payload.toMemberId !== member.id) return
-          emitter.emit(event, payload)
+          // 서버는 이벤트마다 다른 것을 싣는다. 어느 쪽인지는 `event` 가 정하므로
+          // 여기서 한 번 좁혀 준다 (`supabase-net` 은 채널이 갈라 줘서 이럴 일이 없다).
+          if (event === 'tap') emitter.emit('tap', payload as unknown as NetEvents['tap'])
+          else emitter.emit('roster', payload as unknown as NetEvents['roster'])
         },
         presence: (onlineIds) => emitter.emit('presence', { teamId: team.id, onlineIds }),
       }
@@ -330,12 +411,12 @@ function createFakeNet({ server, userId }) {
     },
 
     onlineIn(teamId) {
-      return rooms.has(teamId) ? [rooms.get(teamId).connection.memberId] : []
+      return rooms.has(teamId) ? [rooms.get(teamId)!.connection.memberId] : []
     },
   }
 }
 
-module.exports = {
+export {
   createFakeServer,
   createFakeNet,
   MAX_TEAMS_PER_USER,

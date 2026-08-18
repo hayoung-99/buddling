@@ -16,12 +16,12 @@
  * 나머지 코드는 손댈 곳이 없다.
  */
 
-const { startUpdateCheck } = require('./update-check')
-const { startAutoUpdate } = require('./auto-update')
-const { startMorningSchedule } = require('./update-schedule')
+import { startUpdateCheck } from './update-check'
+import { startMorningSchedule } from './update-schedule'
+import type { UpdateInfo } from '../shared/state'
 
 /** 이 플랫폼에서 받아서 설치까지 할 수 있는가 */
-function canAutoInstall(platform) {
+function canAutoInstall(platform: NodeJS.Platform | string): boolean {
   return platform === 'win32'
 }
 
@@ -37,17 +37,33 @@ function canAutoInstall(platform) {
  * 그 일정을 여기서 만들어 넘긴다. 어느 길로 가든 같은 시각에 움직여야
  * 사람이 겪는 모습이 플랫폼마다 달라지지 않는다.
  *
- * @param {{
- *   currentVersion: string,
- *   platform: string,
- *   onUpdate: (info: { version: string, ready: boolean, url: string|null }) => void,
- *   readLastDay: () => string|null,
- *   writeLastDay: (day: string) => void,
- * }} options
- * @returns {{ stop: () => void, install: () => void }}
+ * **`async` 인 이유**: 자동 설치 쪽은 `electron-updater` 를 늦게 읽는다. 배포본에 그
+ * 꾸러미가 빠져 있으면 읽는 순간 터지는데, 그걸 아래 try 안에서 잡아 알림 길로 갈아타야
+ * 한다. 파일 맨 위에서 정적으로 읽으면 그 실패가 메인 프로세스를 통째로 죽인다.
  */
-function startUpdates({ currentVersion, platform, onUpdate, readLastDay, writeLastDay }) {
-  const schedule = (check) => startMorningSchedule({ onDue: check, readLastDay, writeLastDay })
+export interface UpdatesOptions {
+  currentVersion: string
+  platform: NodeJS.Platform | string
+  onUpdate: (info: UpdateInfo) => void
+  readLastDay: () => string | null
+  writeLastDay: (day: string) => void
+}
+
+export interface Updates {
+  stop: () => void
+  /** 이미 받아 둔 새 버전을 지금 적용한다. 받아 두는 길이 아니면 아무것도 하지 않는다. */
+  install: () => void
+}
+
+async function startUpdates({
+  currentVersion,
+  platform,
+  onUpdate,
+  readLastDay,
+  writeLastDay,
+}: UpdatesOptions): Promise<Updates> {
+  const schedule = (check: () => void) =>
+    startMorningSchedule({ onDue: check, readLastDay, writeLastDay })
 
   /**
    * 알림만 하는 길. 자동 설치가 안 되거나, 되다 실패했을 때 쓴다.
@@ -62,10 +78,12 @@ function startUpdates({ currentVersion, platform, onUpdate, readLastDay, writeLa
   }
 
   /** 내려받기가 실패했을 때 갈아탈 알림 감시자 */
-  let fallback = null
+  let fallback: { stop: () => void } | null = null
 
-  let updater
+  let updater: ReturnType<typeof import('./auto-update').startAutoUpdate>
   try {
+    // 여기서 읽는다 — 실패하면 아래 catch 가 알림 길로 갈아탄다
+    const { startAutoUpdate } = await import('./auto-update')
     updater = startAutoUpdate({
       schedule,
       onReady: ({ version }) => onUpdate({ version, ready: true, url: null }),
@@ -100,4 +118,4 @@ function startUpdates({ currentVersion, platform, onUpdate, readLastDay, writeLa
   }
 }
 
-module.exports = { canAutoInstall, startUpdates }
+export { canAutoInstall, startUpdates }

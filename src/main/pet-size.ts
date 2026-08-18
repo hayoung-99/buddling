@@ -12,13 +12,23 @@ const PET_BASE_SIZE = { width: 260, height: 320 }
 const MIN_SCALE = 0.25
 const MAX_SCALE = 2.0
 
-const between = (value, min, max) => Math.max(min, Math.min(value, max))
+/** 화면이나 창의 네모. Electron 의 `Rectangle` 과 같은 모양이다. */
+export interface Rect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
 
-function clampScale(scale) {
+export type Size = Pick<Rect, 'width' | 'height'>
+
+const between = (value: number, min: number, max: number) => Math.max(min, Math.min(value, max))
+
+function clampScale(scale: number): number {
   return between(Number.isFinite(scale) ? scale : 1, MIN_SCALE, MAX_SCALE)
 }
 
-function petSizeFor(scale) {
+function petSizeFor(scale: number): Size {
   const safe = clampScale(scale)
   return {
     width: Math.round(PET_BASE_SIZE.width * safe),
@@ -32,9 +42,16 @@ function petSizeFor(scale) {
  * 발밑(아래 가운데)을 붙박아 두어야 크기를 바꿔도 캐릭터가 제자리에서 자란다.
  * 다만 화면 가장자리에서 키우면 그대로는 밖으로 삐져나가므로 화면 안으로 되민다.
  *
- * @param {{bounds: {x,y,width,height}, scale: number, workArea: {x,y,width,height}}} input
  */
-function nextPetBounds({ bounds, scale, workArea }) {
+function nextPetBounds({
+  bounds,
+  scale,
+  workArea,
+}: {
+  bounds: Rect
+  scale: number
+  workArea: Rect
+}): Rect {
   const size = petSizeFor(scale)
   const anchorX = bounds.x + bounds.width / 2
   const anchorY = bounds.y + bounds.height
@@ -54,4 +71,4 @@ function nextPetBounds({ bounds, scale, workArea }) {
   }
 }
 
-module.exports = { PET_BASE_SIZE, MIN_SCALE, MAX_SCALE, clampScale, petSizeFor, nextPetBounds }
+export { PET_BASE_SIZE, MIN_SCALE, MAX_SCALE, clampScale, petSizeFor, nextPetBounds }

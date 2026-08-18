@@ -37,6 +37,10 @@ if (!url || !anonKey) {
   process.exit(1)
 }
 
-const target = path.join(ROOT, 'src', 'main', 'config.generated.json')
+/*
+ * 저장소 루트에 쓴다. 예전에는 `src/main/` 안에 두었는데, 그 자리가 이제 빌드 산출물
+ * 폴더(`dist-main/main/`)라 빌드가 지워 버린다. `main/config.js` 도 루트에서 읽는다.
+ */
+const target = path.join(ROOT, 'config.generated.json')
 fs.writeFileSync(target, `${JSON.stringify({ url, anonKey }, null, 2)}\n`)
 console.log(`구워 넣음 → ${path.relative(ROOT, target)}  (${url})`)

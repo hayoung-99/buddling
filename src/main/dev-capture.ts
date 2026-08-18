@@ -28,20 +28,26 @@
  *   TAPTAP_UPDATE="0.2.0:ready"   이미 받아 둔 것처럼 만든다 ("지금 적용하기")
  */
 
-const fs = require('node:fs')
-const path = require('node:path')
+import fs from 'node:fs'
+import path from 'node:path'
+import type { BrowserWindow } from 'electron'
+import type { AppShell } from './main'
 
 const DELAY_MS = 2500
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
-async function captureIfRequested(app, electronApp) {
+async function captureIfRequested(app: AppShell, electronApp: Electron.App) {
   const directory = process.env.TAPTAP_CAPTURE
   if (!directory) return
 
   await wait(DELAY_MS)
 
+  // 이 함수는 `whenReady` 맨 끝에서만 불린다. 그때는 세션이 이미 있다.
+  const session = app.session
+  if (!session) return
+
   if (process.env.TAPTAP_LANG) {
-    app.session.setLanguage(process.env.TAPTAP_LANG)
+    session.setLanguage(process.env.TAPTAP_LANG)
     app.applyLanguage()
     await wait(500)
   }
@@ -50,7 +56,7 @@ async function captureIfRequested(app, electronApp) {
   if (process.env.TAPTAP_UPDATE) {
     const [version, state] = process.env.TAPTAP_UPDATE.split(':')
     const ready = state === 'ready'
-    app.session.setUpdate({
+    session.setUpdate({
       version,
       ready,
       url: ready ? null : 'https://example.com/download',
@@ -58,14 +64,15 @@ async function captureIfRequested(app, electronApp) {
     await wait(400)
   }
 
+  /** 팀 창. 없으면 그 단계는 건너뛴다. */
   const teamWindow = () => app.teamWindow
   const petWindows = () => [...app.pets.entries()]
-  const firstTeamId = () => app.session.snapshot().memberships[0]?.team.id ?? null
+  const firstTeamId = () => session.snapshot().memberships[0]?.team.id ?? null
 
   if (process.env.TAPTAP_SEED && teamWindow()) {
     for (const pair of process.env.TAPTAP_SEED.split(';')) {
       const [name, nickname] = pair.split(':')
-      await teamWindow().webContents.executeJavaScript(
+      await teamWindow()!.webContents.executeJavaScript(
         `window.teamApi.createTeam(${JSON.stringify({ name, nickname })})`,
       )
       await wait(1200)
@@ -74,18 +81,18 @@ async function captureIfRequested(app, electronApp) {
 
   if (process.env.TAPTAP_JOIN && teamWindow()) {
     const [inviteCode, nickname] = process.env.TAPTAP_JOIN.split(':')
-    await teamWindow().webContents.executeJavaScript(
+    await teamWindow()!.webContents.executeJavaScript(
       `window.teamApi.joinTeam(${JSON.stringify({ inviteCode, nickname })})`,
     )
     await wait(1500)
   }
 
   if (process.env.TAPTAP_CHARACTER && teamWindow()) {
-    const teams = app.session.snapshot().memberships
+    const teams = session.snapshot().memberships
     for (const [index, key] of process.env.TAPTAP_CHARACTER.split(',').entries()) {
       const teamId = teams[index]?.team.id
       if (!teamId) continue
-      await teamWindow().webContents.executeJavaScript(
+      await teamWindow()!.webContents.executeJavaScript(
         `window.teamApi.setCharacter(${JSON.stringify(teamId)}, ${JSON.stringify(key.trim())})`,
       )
       await wait(500)
@@ -93,7 +100,7 @@ async function captureIfRequested(app, electronApp) {
   }
 
   if (process.env.TAPTAP_DETAIL) {
-    const teams = app.session.snapshot().memberships
+    const teams = session.snapshot().memberships
     const target = teams[Number(process.env.TAPTAP_DETAIL) - 1]
     if (target) {
       app.openTeamDetail(target.team.id)
@@ -102,7 +109,7 @@ async function captureIfRequested(app, electronApp) {
   }
 
   if (process.env.TAPTAP_POWER) {
-    app.session.setPower(process.env.TAPTAP_POWER)
+    session.setPower(process.env.TAPTAP_POWER)
     await wait(400)
   }
 
@@ -161,19 +168,19 @@ async function captureIfRequested(app, electronApp) {
       process.env.TAPTAP_FAIL === 'join'
         ? `window.teamApi.joinTeam({ inviteCode: 'ZZZZZZ', nickname: '나영' })`
         : `window.teamApi.createTeam({ name: '넘침', nickname: '나영' })`
-    await teamWindow().webContents.executeJavaScript(
+    await teamWindow()!.webContents.executeJavaScript(
       `(async () => { try { await ${call} } catch (e) { window.__lastError = e.message } })()`,
     )
     await wait(1200)
     console.log(
       'FAIL_MESSAGE:',
-      await teamWindow().webContents.executeJavaScript('window.__lastError'),
+      await teamWindow()!.webContents.executeJavaScript('window.__lastError'),
     )
   }
 
   // 사용자가 언어 칸을 고른 것과 같은 경로(IPC)를 태워 본다
   if (process.env.TAPTAP_SWITCH_LANG && teamWindow()) {
-    await teamWindow().webContents.executeJavaScript(
+    await teamWindow()!.webContents.executeJavaScript(
       `window.teamApi.setLanguage(${JSON.stringify(process.env.TAPTAP_SWITCH_LANG)})`,
     )
     await wait(900)
@@ -189,10 +196,15 @@ async function captureIfRequested(app, electronApp) {
 
   fs.mkdirSync(directory, { recursive: true })
 
-  const targets = [
-    ...petWindows().map(([, pet], index) => [index === 0 ? 'pet' : `pet-${index + 1}`, pet.window]),
+  type Target = [name: string, window: BrowserWindow | null]
+
+  const targets: Target[] = [
+    ...petWindows().map(([, pet], index): Target => [
+      index === 0 ? 'pet' : `pet-${index + 1}`,
+      pet.window,
+    ]),
     ['team', teamWindow()],
-    ...[...app.teamDetails.entries()].map(([, window], index) => [
+    ...[...app.teamDetails.entries()].map(([, window], index): Target => [
       index === 0 ? 'detail' : `detail-${index + 1}`,
       window,
     ]),
@@ -214,4 +226,4 @@ async function captureIfRequested(app, electronApp) {
   electronApp.exit(0)
 }
 
-module.exports = { captureIfRequested }
+export { captureIfRequested }
