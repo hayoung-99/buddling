@@ -130,7 +130,7 @@ module.exports = {
 
   /** 팀별 화면 설정 (없으면 기본값) */
   pet(teamId) {
-    return { ...DEFAULT_PET, ...(state.pets[teamId] ?? {}) }
+    return { ...DEFAULT_PET, ...state.pets[teamId] }
   },
 
   setPet(teamId, patch) {

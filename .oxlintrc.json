@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "unicorn", "oxc", "import"],
+  "categories": { "correctness": "error" },
+  "rules": {
+    "no-undef": "error",
+    "eqeqeq": ["error", "always", { "null": "ignore" }],
+    "no-shadow": "error",
+    "import/no-cycle": "error"
+  },
+  "overrides": [
+    {
+      "files": ["src/main/**", "src/services/**", "scripts/**", "test/**", "*.mts"],
+      "env": { "node": true, "commonjs": true, "es2024": true }
+    },
+    {
+      "files": ["src/renderer/**", "src/shared/**", "site/**"],
+      "env": { "browser": true, "es2024": true }
+    },
+    {
+      "files": ["src/preload/**"],
+      "env": { "browser": true, "node": true, "commonjs": true, "es2024": true }
+    }
+  ]
+}

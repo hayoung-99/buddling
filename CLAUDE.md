@@ -13,6 +13,7 @@
 ```bash
 npm test              # 단위 테스트. 고칠 때마다 돌린다. Supabase 없이 돈다.
 npm run typecheck     # 타입 검사. 화면을 고쳤으면 이것도 돌린다.
+npm run lint          # oxlint. 빠르니 고칠 때마다 함께 돌린다.
 npm run build         # 화면(React·TS)과 preload 빌드
 npm run dev           # 화면을 고칠 때마다 다시 빌드 (창은 새로고침)
 npm start             # 앱 실행 (먼저 빌드한다)
@@ -23,9 +24,9 @@ npm run preview       # 캐릭터 5종을 나란히 놓고 눈으로 확인
 ```
 
 CI(`.github/workflows/ci.yml`)가 미는 것마다 돌리는 것은 `npm test` ·
-`npm run typecheck` · `npm run build` · `npm run check:site` 넷입니다.
-**이 넷이 통과하지 않으면 끝난 게 아닙니다.** (Electron 앱을 포장하는 것은 여전히
-태그를 밀 때만 합니다 — 10분이 넘고 러너를 셋 잡아먹습니다.)
+`npm run typecheck` · `npm run lint` · `npm run build` · `npm run check:site`
+다섯입니다. **이 다섯이 통과하지 않으면 끝난 게 아닙니다.** (Electron 앱을 포장하는 것은
+여전히 태그를 밀 때만 합니다 — 10분이 넘고 러너를 셋 잡아먹습니다.)
 
 ### 일을 시작하기 전에 의존성부터 맞춘다
 
@@ -50,8 +51,24 @@ npm ci
 커밋에 딸려 들어갑니다 (optional 패키지의 `libc` 항목이 통째로 지워지는 식으로).
 `npm ci` 는 lockfile 이 적어 둔 그대로만 설치하고 그 파일을 건드리지 않습니다.
 
-린터도 포매터도 없습니다. 주변 코드의 모양을 눈으로 보고 맞추세요
-(세미콜론 없음, 작은따옴표, 들여쓰기 2칸).
+**린터는 oxlint 입니다 (`npm run lint`). 포매터는 없습니다.** 모양은 여전히 주변 코드를
+눈으로 보고 맞추세요 — 세미콜론 없음, 작은따옴표, 들여쓰기 2칸.
+
+규칙은 `.oxlintrc.json` 에 있고 아껴서 켭니다. `correctness` 범주와, 손으로 고른 넷
+(`no-undef` · `eqeqeq` · `no-shadow` · `import/no-cycle`) 뿐입니다. **모양을 강요하는
+범주(`style`)는 켜지 않습니다** — 켜 보니 4,015건이 나왔는데 전부 `sort-keys` 처럼
+이 저장소가 손으로 맞춰 둔 것과 다투는 규칙이었습니다. 포매터를 넣지 않는 이유도
+같습니다. 기존 코드가 통째로 다시 포맷되면 그 diff 가 정작 볼 것을 덮습니다.
+
+`no-undef` 가 값을 하려면 파일이 어느 세상에 있는지 알아야 합니다 (메인은 Node·CJS,
+화면은 브라우저, preload 는 둘 다). 그 구분은 설정의 `overrides` 에 있습니다.
+**새 폴더를 만들면 거기에도 한 줄 더해야** 합니다 — 안 하면 그 폴더의 전역 이름이
+전부 "없는 이름"으로 잡힙니다.
+
+typescript-eslint 를 쓸 수 없어서 oxlint 를 골랐습니다. 이 저장소의 `typescript` 는
+7.x, 즉 Go 로 다시 쓴 네이티브 컴파일러라 기존 컴파일러 API 가 없는데,
+typescript-eslint 는 최신(8.67.0)도 `typescript <6.1.0` 을 요구합니다. oxlint 는
+TS 를 스스로 파싱하므로 그 제약을 받지 않습니다.
 
 **화면은 Tailwind 로 칠합니다.** 색과 모서리는 `renderer/theme.css` 의 토큰을 이름으로
 부르고(`bg-card` `rounded-row`), 여러 창에서 되풀이되는 묶음은 `renderer/ui.ts` 에
