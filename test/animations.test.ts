@@ -10,6 +10,7 @@ import {
   DANCE_CYCLE,
 } from '../src/renderer/pet/animations'
 import { sampleTrack, createSpring, easing, clamp } from '../src/renderer/pet/tween'
+import type { Keyframe } from '../src/renderer/pet/tween'
 import { createCritter, scaleToStandardHeight } from '../src/renderer/pet/critter'
 import { CHARACTERS, getCharacter } from '../src/shared/characters'
 
@@ -17,7 +18,7 @@ describe('sampleTrack', () => {
   const keys = [
     { t: 0, v: 0 },
     { t: 1, v: 10, ease: 'linear' },
-  ]
+  ] satisfies Keyframe[]
 
   it('구간 밖에서는 양 끝 값으로 고정된다', () => {
     expect(sampleTrack(keys, ['v'], -5).v).toBe(0)
@@ -354,7 +355,7 @@ describe('춤 (팀원이 찔렀을 때)', () => {
 })
 
 describe('춤을 실제로 캐릭터에 입혔을 때', () => {
-  const play = (frames, prepare) => {
+  const play = (frames: number, prepare: (animator: ReturnType<typeof createAnimator>) => void) => {
     const critter = createCritter(getCharacter('cat'))
     const animator = createAnimator(critter)
     prepare(animator)
