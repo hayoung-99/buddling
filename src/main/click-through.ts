@@ -9,7 +9,8 @@
  * 렌더러의 mousemove 대신 메인 프로세스가 실제 커서 좌표를 따라간다.
  */
 
-const { screen } = require('electron')
+import { screen } from 'electron'
+import type { BrowserWindow } from 'electron'
 
 const FOLLOW_INTERVAL = 16 // 약 60fps
 
@@ -22,9 +23,27 @@ const FOLLOW_INTERVAL = 16 // 약 60fps
  */
 const DRAG_TIMEOUT = 10000
 
-function attachPointerControl(window, { onDragEnd } = {}) {
+/** 끄는 중에만 있는 것. 커서와 창 왼쪽 위 모서리의 거리를 들고 따라다닌다. */
+interface Drag {
+  offsetX: number
+  offsetY: number
+  timer: ReturnType<typeof setInterval>
+  watchdog: ReturnType<typeof setTimeout>
+}
+
+export interface PointerControl {
+  /** 커서가 캐릭터 위에 있는 동안만 true. false 면 클릭이 바탕화면으로 통과된다. */
+  setInteractive(next: boolean): void
+  startDrag(): void
+  endDrag(): void
+}
+
+function attachPointerControl(
+  window: BrowserWindow,
+  { onDragEnd }: { onDragEnd?: (position: { x: number; y: number }) => void } = {},
+): PointerControl {
   let interactive = false
-  let drag = null
+  let drag: Drag | null = null
 
   function apply() {
     // 끄는 중에는 커서가 캐릭터를 벗어나도 계속 마우스를 잡고 있어야 한다
@@ -32,7 +51,7 @@ function attachPointerControl(window, { onDragEnd } = {}) {
     window.setIgnoreMouseEvents(!shouldReceive, { forward: true })
   }
 
-  function setInteractive(next) {
+  function setInteractive(next: boolean) {
     if (next === interactive) return
     interactive = next
     apply()
@@ -78,4 +97,4 @@ function attachPointerControl(window, { onDragEnd } = {}) {
   return { setInteractive, startDrag, endDrag }
 }
 
-module.exports = { attachPointerControl }
+export { attachPointerControl }

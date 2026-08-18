@@ -57,9 +57,16 @@ npm ci
 부르고(`bg-card` `rounded-row`), 여러 창에서 되풀이되는 묶음은 `renderer/ui.ts` 에
 문자열로 모아 둡니다. 별도의 `.css` 파일을 새로 만들기 전에 이 두 곳을 먼저 보세요.
 
-**화면은 빌드해서 씁니다.** 창이 여는 것은 `src/renderer/` 가 아니라 `dist-renderer/`
-이고, preload 도 `dist-preload/*.cjs` 입니다. 소스만 고치고 빌드하지 않으면 **아무것도
-안 바뀐 것처럼 보입니다.** `npm start` 는 알아서 먼저 빌드합니다.
+**이제 메인 프로세스까지 전부 빌드해서 씁니다.** 소스는 `src/` 지만 실제로 도는 것은
+산출물입니다 — Electron 이 여는 것은 `dist-main/main/main.cjs`(`package.json` 의 `main`),
+창이 여는 화면은 `dist-renderer/`, preload 는 `dist-preload/*.cjs` 입니다. 소스만 고치고
+빌드하지 않으면 **아무것도 안 바뀐 것처럼 보입니다.** `npm start` 는 알아서 먼저 빌드합니다.
+
+빌드는 Vite 설정 **세 벌**입니다 — 화면(`vite.config.mts`) · preload
+(`vite.preload.config.mts`) · 메인(`vite.main.config.mts`). 메인 설정은 `src/main` 과
+`src/services` 를 훑어 **파일 하나를 파일 하나로** 떨어뜨립니다. 한 덩어리로 묶으면
+`__dirname` 의 깊이가 달라져 `config.ts`·`windows.ts`·`tray.ts` 가 저장소 루트를 찾지
+못하는데, 그게 **배포본에서만** 드러납니다.
 
 ---
 
@@ -154,13 +161,13 @@ PR 본문에는 **무엇을 왜 했는지와 무엇을 확인했는지**를 적�
 
 Electron 도 브라우저도 없이 돌릴 수 있는 계산은 별도 모듈로 빼고 `test/` 에서 검증합니다.
 이미 그렇게 되어 있는 것들 — `shared/power.ts`, `renderer/pet/pacer.ts`,
-`renderer/pet/tween.ts`, `renderer/pet/animations.ts`, `main/pet-size.js`,
-`main/update-check.js`, `main/quit.js`.
+`renderer/pet/tween.ts`, `renderer/pet/animations.ts`, `main/pet-size.ts`,
+`main/update-check.ts`, `main/update-schedule.ts`, `main/quit.ts`, `main/write-json.ts`.
 
 새 로직을 넣을 때 "이건 Electron 이 있어야 테스트된다" 는 생각이 들면,
 대개 계산 부분을 덜 떼어낸 것입니다.
 
-`main/session.js` 는 `store` 와 `net` 을 인자로 받습니다. 테스트에서는 메모리 저장소와
+`main/session.ts` 는 `store` 와 `net` 을 인자로 받습니다. 테스트에서는 메모리 저장소와
 `services/fake-net.js` 를 꽂습니다. **이 주입 통로를 막지 마세요.**
 
 ### 2. 네 언어 사전은 항상 함께 고친다
@@ -168,8 +175,11 @@ Electron 도 브라우저도 없이 돌릴 수 있는 계산은 별도 모듈로
 문구를 하나 추가하면 `src/shared/i18n/{ko,en,ja,zh}.json` **네 개 모두** 고쳐야 합니다.
 빠진 열쇠·남는 열쇠·`{빈칸}` 불일치·빈 문장을 `test/i18n.test.js` 가 잡아냅니다.
 
-메인 프로세스(CJS)는 `src/main/i18n.js`, 렌더러(ESM)는 `src/shared/i18n/index.js` 로
-같은 JSON 을 읽습니다. **두 파일에 같은 로직이 두 벌 있으니 한쪽만 고치면 어긋납니다.**
+로직은 `src/shared/i18n/index.ts` **한 곳에만** 있습니다. `src/main/i18n.ts` 는 그 위의
+얇은 껍데기로, "앱이 지금 쓰는 언어" 하나만 들고 있습니다. 예전에는 메인이 CommonJS 라
+ESM 인 shared 를 부를 수 없어서 같은 로직이 두 벌이었고 한쪽만 고치면 조용히 어긋났는데,
+메인도 ESM 이 된 뒤로 그 함정이 없어졌습니다. **문장을 만드는 규칙을 바꿀 일이 생기면
+shared 만 고치면 됩니다.**
 
 ### 3. 오류는 문장이 아니라 열쇠로 옮긴다
 
@@ -217,8 +227,8 @@ preload 의 `call()` 이 봉투를 풀어 다시 던집니다 — 새 창을 만
 | 곳 | 무엇 |
 |---|---|
 | `supabase/schema.sql` | `max_teams_per_user()` · `max_members_per_team()` · `invite_ttl()` |
-| `src/main/session.js` | `MAX_TEAMS` · `MAX_MEMBERS` |
-| `src/services/fake-net.js` | `MAX_TEAMS_PER_USER` · `MAX_MEMBERS_PER_TEAM` · `INVITE_TTL_MS` |
+| `src/main/session.ts` | `MAX_TEAMS` · `MAX_MEMBERS` |
+| `src/services/fake-net.ts` | `MAX_TEAMS_PER_USER` · `MAX_MEMBERS_PER_TEAM` · `INVITE_TTL_MS` |
 
 DB 는 `security definer` RPC 로만 접근합니다. 테이블은 RLS 로 잠겨 있어서
 클라이언트에서 직접 select/insert 하면 아무것도 안 됩니다. 새 기능이 DB 를 건드린다면
@@ -235,8 +245,10 @@ DB 는 `security definer` RPC 로만 접근합니다. 테이블은 RLS 로 잠�
 - **Vite 설정의 `base: './'` 를 건드리지 마세요.** 창은 `file://` 로 열리므로 절대경로면
   자산을 못 찾습니다. 개발 중에는 멀쩡해 보이고 **배포본에서만** 깨집니다.
 - **`.env` 를 Bash 로 읽으려 하면 훅이 막습니다.** 필요하면 사용자에게 부탁하세요.
-- **`src/main/config.generated.json` 이 있으면 `SUPABASE_URL=` 로 비워도 소용없습니다.**
-  `main/config.js` 가 환경변수 → `.env` → 구운 값 순으로 찾기 때문입니다. 오프라인
+- **저장소 루트에 `config.generated.json` 이 있으면 `SUPABASE_URL=` 로 비워도 소용없습니다.**
+  `main/config.ts` 가 환경변수 → `.env` → 구운 값 순으로 찾기 때문입니다. (예전에는
+  `src/main/` 안에 있었는데, 그 자리가 빌드 산출물 폴더가 되면서 루트로 옮겼습니다 —
+  `emptyOutDir` 가 지워 버리기 때문입니다.) 오프라인
   상황을 흉내 내려면 닿지 않는 주소(`https://127.0.0.1:9`)를 주는 편이 확실합니다.
 - **앱이 이미 떠 있으면 두 번째 실행은 조용히 죽습니다** (단일 인스턴스 잠금).
   로그가 비어 있으면 이걸 먼저 의심하세요. `pkill -f "tap-tap/node_modules/electron"`.

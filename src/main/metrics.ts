@@ -9,11 +9,11 @@
  *   TAPTAP_METRICS=5    5초마다 (절전 단계를 바꿔가며 견줄 때)
  */
 
-const { BrowserWindow } = require('electron')
+import { BrowserWindow } from 'electron'
 
 const DEFAULT_SECONDS = 30
 
-function startMetrics(electronApp) {
+function startMetrics(electronApp: Electron.App) {
   const seconds = Number(process.env.TAPTAP_METRICS) || DEFAULT_SECONDS
   const startedAt = Date.now()
 
@@ -37,4 +37,4 @@ function startMetrics(electronApp) {
   return { stop: () => clearInterval(timer) }
 }
 
-module.exports = { startMetrics }
+export { startMetrics }

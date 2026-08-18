@@ -9,14 +9,22 @@
  * 밖으로 나가는 이벤트에는 항상 teamId 가 붙어, 어느 팀에서 온 신호인지 알 수 있다.
  */
 
-const { createClient } = require('@supabase/supabase-js')
-const WebSocket = require('ws')
-const { createEmitter, toFriendlyError } = require('./net')
+import { createClient } from '@supabase/supabase-js'
+import WebSocket from 'ws'
+import { createEmitter } from './emitter'
+import { toFriendlyError } from './errors'
+import type { Net, NetConfig, NetEvents } from './net'
+import type { Member, Team } from '../shared/state'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 
 const TAP_EVENT = 'tap'
 const ROSTER_EVENT = 'roster'
 
-function createSupabaseNet({ url, anonKey, storage = null }) {
+/**
+ * 반환값에 `Net` 을 적어 두면, 그 아래 메서드들의 인자 타입이 저절로 따라온다.
+ * 인터페이스와 어긋나는 순간 여기서 걸린다 — `fake-net` 과 짝이 맞는지도 함께 지켜진다.
+ */
+function createSupabaseNet({ url, anonKey, storage }: Required<Pick<NetConfig, 'url' | 'anonKey'>> & Pick<NetConfig, 'storage'>): Net {
   const client = createClient(url, anonKey, {
     auth: {
       // 세션이 곧 신원이다. 잃어버리면 팀에서 남남이 되므로 반드시 남겨야 한다.
@@ -28,17 +36,25 @@ function createSupabaseNet({ url, anonKey, storage = null }) {
       ...(storage ? { storage } : {}),
     },
     realtime: {
-      // Electron 메인 프로세스의 Node 에는 전역 WebSocket 이 없을 수 있어 직접 넘긴다
-      transport: WebSocket,
+      // Electron 메인 프로세스의 Node 에는 전역 WebSocket 이 없을 수 있어 직접 넘긴다.
+      // (Node 22 에는 전역이 생겼지만, 실제로 Realtime 이 붙는지 재 보기 전에는 그대로 둔다.)
+      // `ws` 의 생성자는 브라우저 WebSocket 과 모양이 미묘하게 달라 여기서 맞춰 준다.
+      transport: WebSocket as unknown as typeof globalThis.WebSocket,
       params: { eventsPerSecond: 20 },
     },
   })
 
-  const emitter = createEmitter()
-  /** teamId → { channel, member } */
-  const rooms = new Map()
+  const emitter = createEmitter<NetEvents>()
+
+  /** 열려 있는 팀 채널 하나 */
+  interface Room {
+    channel: RealtimeChannel
+    member: Member
+  }
+
+  const rooms = new Map<string, Room>()
   /** 로그인이 진행 중일 때의 약속. 계정이 여러 개 생기는 것을 막는다. */
-  let signingIn = null
+  let signingIn: ReturnType<typeof client.auth.signInAnonymously> | null = null
 
   /**
    * 로그인 화면이 없는 앱이라, 기기마다 익명 계정을 하나 만들어 그것으로 자신을 증명한다.
@@ -66,23 +82,23 @@ function createSupabaseNet({ url, anonKey, storage = null }) {
     return created.session
   }
 
-  async function rpc(name, args) {
+  async function rpc(name: string, args?: Record<string, unknown>) {
     await ensureSession()
     const { data, error } = await client.rpc(name, args)
     if (error) throw toFriendlyError(error)
     return data
   }
 
-  function onlineIn(teamId) {
+  function onlineIn(teamId: string): string[] {
     const room = rooms.get(teamId)
     if (!room) return []
     return Object.values(room.channel.presenceState())
       .flat()
-      .map((entry) => entry.memberId)
-      .filter(Boolean)
+      .map((entry) => (entry as { memberId?: string }).memberId)
+      .filter((id): id is string => Boolean(id))
   }
 
-  async function connect(team, member) {
+  async function connect(team: Team, member: Member) {
     await disconnect(team.id)
 
     // 붙기 전에 세션이 있어야 한다. private 채널은 토큰을 보고 들여보낼지 정한다.
@@ -115,7 +131,7 @@ function createSupabaseNet({ url, anonKey, storage = null }) {
     rooms.set(team.id, { channel, member })
 
     try {
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(
           () => reject(new Error('error.realtimeTimeout')),
           15000,
@@ -146,16 +162,16 @@ function createSupabaseNet({ url, anonKey, storage = null }) {
   }
 
   /** teamId 를 주면 그 팀만, 없으면 전부 끊는다 */
-  async function disconnect(teamId = null) {
-    const targets = teamId === null ? [...rooms.keys()] : rooms.has(teamId) ? [teamId] : []
+  async function disconnect(teamId?: string) {
+    const targets = teamId === undefined ? [...rooms.keys()] : rooms.has(teamId) ? [teamId] : []
     for (const id of targets) {
-      const { channel } = rooms.get(id)
+      const { channel } = rooms.get(id)!
       rooms.delete(id)
       await client.removeChannel(channel)
     }
   }
 
-  function requireRoom(teamId) {
+  function requireRoom(teamId: string): Room {
     const room = rooms.get(teamId)
     if (!room) throw new Error('error.notConnected')
     return room
@@ -279,4 +295,4 @@ function createSupabaseNet({ url, anonKey, storage = null }) {
   }
 }
 
-module.exports = { createSupabaseNet }
+export { createSupabaseNet }

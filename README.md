@@ -195,8 +195,9 @@ src/
 │   ├── preview/        개발용 캐릭터 미리보기
 │   ├── icon/           앱 아이콘을 그리는 화면 (배포본에는 안 들어간다)
 │   └── site-assets/    랜딩페이지 그림을 그리는 화면 (배포본에는 안 들어간다)
-└── services/      net.js 인터페이스 · supabase-net · 테스트용 fake-net
+└── services/      net.ts 인터페이스 · supabase-net · 테스트용 fake-net
 
+dist-main/         빌드된 메인 프로세스 (Electron 이 여는 것은 이쪽이다)
 dist-renderer/     빌드된 화면 (창이 여는 것은 이쪽이다)
 dist-preload/      빌드된 preload
 site/              랜딩페이지 (빌드 도구 없는 HTML·CSS, Vercel 로 올라간다)

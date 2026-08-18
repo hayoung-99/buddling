@@ -15,20 +15,22 @@
  * 코드 서명이 없어도 "받다가 깨졌거나 바뀐 파일"은 걸러진다.
  */
 
+import { autoUpdater } from 'electron-updater'
+
 /**
  * 언제 볼지는 `update-schedule.js` 가 정한다 — 아침에 하루 한 번이다.
  * 받아 두는 일이라 더 자주 봐도 되지만, 일하는 도중에 "받았어요" 줄이 불쑥
  * 뜨는 편보다 하루를 시작할 때 한 번 뜨는 편이 낫다.
  *
- * @param {{
- *   onReady: (info: { version: string }) => void,
- *   onFailure: () => void,
- *   schedule: (check: () => void) => { stop: () => void },
- * }} options
- * @returns {{ stop: () => void, install: () => void }}
  */
-function startAutoUpdate({ onReady, onFailure, schedule }) {
-  const { autoUpdater } = require('electron-updater')
+export interface AutoUpdateOptions {
+  onReady: (info: { version: string }) => void
+  onFailure: () => void
+  /** 언제 볼지를 정해 주는 쪽. 부르면 그때마다 확인한다. */
+  schedule: (check: () => void) => { stop: () => void }
+}
+
+function startAutoUpdate({ onReady, onFailure, schedule }: AutoUpdateOptions) {
 
   let stopped = false
   let downloaded = false
@@ -75,4 +77,4 @@ function startAutoUpdate({ onReady, onFailure, schedule }) {
   }
 }
 
-module.exports = { startAutoUpdate }
+export { startAutoUpdate }

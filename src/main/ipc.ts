@@ -9,16 +9,20 @@
  * 껍데기를 씌워 버려서, 그대로 두면 그 문구가 사용자 화면에 그대로 보인다.
  */
 
-const { ipcMain, Menu, shell } = require('electron')
-const { toFriendlyError } = require('../services/net')
-const { t } = require('./i18n')
+import { ipcMain, Menu, shell } from 'electron'
+import { toFriendlyError } from '../services/net'
+import { t } from './i18n'
+import type { BrowserWindow } from 'electron'
+import type { IpcResult } from '../shared/ipc'
+import type { AppShell } from './main'
+import type { Session } from './session'
 
-function registerIpc({ session, app }) {
-  const send = (window, channel, payload) => {
+function registerIpc({ session, app }: { session: Session; app: AppShell }) {
+  const send = (window: BrowserWindow | null, channel: string, payload?: unknown) => {
     if (window && !window.isDestroyed()) window.webContents.send(channel, payload)
   }
 
-  const broadcast = (channel, payload) => {
+  const broadcast = (channel: string, payload?: unknown) => {
     for (const { window } of app.pets.values()) send(window, channel, payload)
     for (const window of app.teamDetails.values()) send(window, channel, payload)
     send(app.teamWindow, channel, payload)
@@ -36,13 +40,19 @@ function registerIpc({ session, app }) {
   session.on('tap', (payload) => send(app.petWindow(payload.teamId), 'tap', payload))
 
   /** 오류 열쇠를 지금 언어의 문장으로 바꿔 값으로 돌려준다 */
-  const describe = (error) => {
+  const describe = (error: unknown): string => {
     const { maxTeams, maxMembers } = session.snapshot()
     return t(toFriendlyError(error).message, { maxTeams, maxMembers })
   }
 
-  const handle = (channel, run) =>
-    ipcMain.handle(channel, async (_event, payload) => {
+  /**
+   * 렌더러가 부르는 통로 하나.
+   *
+   * 실려 오는 것(`P`)은 **부르는 자리마다 손으로 적는다.** 화면에서 오는 값이라
+   * 믿을 수 없기도 하고, 여기 적힌 모양이 곧 그 채널의 약속이기 때문이다.
+   */
+  const handle = <P, T>(channel: string, run: (payload: P) => T | Promise<T>) =>
+    ipcMain.handle(channel, async (_event, payload: P): Promise<IpcResult<Awaited<T>>> => {
       try {
         return { ok: true, value: await run(payload) }
       } catch (error) {
@@ -52,22 +62,34 @@ function registerIpc({ session, app }) {
 
   // ── 렌더러 → 세션 ──
   handle('app:state', () => session.snapshot())
-  handle('team:create', (payload) => session.createTeam(payload))
-  handle('team:join', (payload) => session.joinTeam(payload))
-  handle('team:leave', (teamId) => session.leaveTeam(teamId))
-  handle('team:refresh-invite', (teamId) => session.refreshInvite(teamId))
-  handle('team:rename', ({ teamId, name }) => session.renameTeam(teamId, name))
-  handle('member:nickname', ({ teamId, nickname }) => session.setNickname(teamId, nickname))
-  handle('character:set', ({ teamId, characterKey }) => session.setCharacter(teamId, characterKey))
-  handle('team:tap', (payload) => session.tap(payload))
-  handle('settings:language', (preference) => {
+  handle('team:create', (payload: { name: string; nickname: string }) =>
+    session.createTeam(payload),
+  )
+  handle('team:join', (payload: { inviteCode: string; nickname: string }) =>
+    session.joinTeam(payload),
+  )
+  handle('team:leave', (teamId: string) => session.leaveTeam(teamId))
+  handle('team:refresh-invite', (teamId: string) => session.refreshInvite(teamId))
+  handle('team:rename', ({ teamId, name }: { teamId: string; name: string }) =>
+    session.renameTeam(teamId, name),
+  )
+  handle('member:nickname', ({ teamId, nickname }: { teamId: string; nickname: string }) =>
+    session.setNickname(teamId, nickname),
+  )
+  handle('character:set', ({ teamId, characterKey }: { teamId: string; characterKey: string }) =>
+    session.setCharacter(teamId, characterKey),
+  )
+  handle('team:tap', (payload: { teamId: string; toMemberId?: string | null }) =>
+    session.tap(payload),
+  )
+  handle('settings:language', (preference: string) => {
     // 순서가 중요하다: 저장 → 번역기 교체 → 그다음에 창들에 알린다
     session.setLanguage(preference)
     app.applyLanguage()
     session.publish()
     return session.snapshot()
   })
-  handle('settings:power', (level) => session.setPower(level))
+  handle('settings:power', (level: string) => session.setPower(level))
 
   // ── 캐릭터 창 전용 ──
   ipcMain.on('pet:tap', (_event, { teamId }) => {
@@ -93,7 +115,7 @@ function registerIpc({ session, app }) {
       { type: 'separator' },
       { label: t('app.hideAll'), click: () => app.setPetVisible(false) },
       { label: t('app.quit'), click: () => app.quit() },
-    ]).popup({ window: app.petWindow(teamId) })
+    ]).popup({ window: app.petWindow(teamId) ?? undefined })
   })
 
   ipcMain.on('window:team', () => app.openTeamWindow())
@@ -138,4 +160,4 @@ function registerIpc({ session, app }) {
   ipcMain.on('size:close', () => app.closeSizePanel())
 }
 
-module.exports = { registerIpc }
+export { registerIpc }

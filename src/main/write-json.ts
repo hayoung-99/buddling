@@ -16,15 +16,13 @@
  * 지웠거나, 개발 중에 프로필 폴더를 통째로 날린 경우다.
  */
 
-const fs = require('node:fs')
-const path = require('node:path')
+import fs from 'node:fs'
+import path from 'node:path'
 
-/**
- * @param {string} filePath
- * @param {unknown} value
- * @returns {{ ok: true } | { ok: false, error: Error }}
- */
-function writeJsonAtomically(filePath, value) {
+/** 썼는지 못 썼는지. 실패해도 던지지 않는다 — 부르는 쪽이 이어서 살 수 있어야 한다. */
+export type WriteResult = { ok: true } | { ok: false; error: unknown }
+
+function writeJsonAtomically(filePath: string, value: unknown): WriteResult {
   const temporary = `${filePath}.tmp`
   try {
     fs.mkdirSync(path.dirname(filePath), { recursive: true })
@@ -43,4 +41,4 @@ function writeJsonAtomically(filePath, value) {
   }
 }
 
-module.exports = { writeJsonAtomically }
+export { writeJsonAtomically }

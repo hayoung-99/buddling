@@ -9,12 +9,12 @@
     "url": "git+https://github.com/hayoung-99/tap-tap.git"
   },
   "homepage": "https://tap-tap-desktop.vercel.app",
-  "main": "src/main/main.js",
+  "main": "dist-main/main/main.cjs",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "build": "vite build --config vite.config.mts && vite build --config vite.preload.config.mts",
+    "build": "vite build --config vite.config.mts && vite build --config vite.preload.config.mts && vite build --config vite.main.config.mts",
     "typecheck": "tsc --noEmit",
     "start": "npm run build && electron .",
     "start:second": "npm run build && TAPTAP_PROFILE=second electron .",
@@ -26,12 +26,12 @@
     "site-images": "npm run build && electron scripts/make-site-images.js",
     "site": "node scripts/serve-site.js",
     "site:open": "node scripts/serve-site.js --open",
-    "dist": "node scripts/bake-config.js && npm run build && electron-builder",
+    "dist": "npm run build && node scripts/bake-config.js && electron-builder",
     "test": "vitest run",
     "test:watch": "vitest",
     "check:site": "node scripts/check-site.js",
-    "check": "node scripts/e2e-check.js",
-    "check:expiry": "node scripts/check-expiry.js"
+    "check": "npm run build && node scripts/e2e-check.js",
+    "check:expiry": "npm run build && node scripts/check-expiry.js"
   },
   "build": {
     "appId": "com.taptap.desktop",
@@ -40,16 +40,15 @@
       "output": "dist"
     },
     "files": [
-      "src/main/**/*",
-      "src/services/**/*",
-      "src/shared/i18n/*.json",
+      "dist-main/**/*",
       "dist-renderer/**/*",
       "!dist-renderer/preview/**",
       "!dist-renderer/icon/**",
       "!dist-renderer/site-assets/**",
       "dist-preload/**/*",
       "assets/**/*",
-      "package.json"
+      "package.json",
+      "config.generated.json"
     ],
     "publish": [
       {
@@ -120,6 +119,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@types/three": "^0.185.4",
+    "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^6.0.5",
     "electron": "^43.4.0",
     "electron-builder": "^26.15.3",

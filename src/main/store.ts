@@ -16,23 +16,55 @@
  * `flush()` 로 그 자리에서 끝낸다.
  */
 
-const fs = require('node:fs')
-const path = require('node:path')
-const { app } = require('electron')
-const { writeJsonAtomically } = require('./write-json')
+import fs from 'node:fs'
+import path from 'node:path'
+import { app } from 'electron'
+import { writeJsonAtomically } from './write-json'
+import type { Member, PetSettings, Team } from '../shared/state'
 
-const DEFAULTS = {
-  auth: {}, // Supabase 세션. 이 값이 곧 신원이다 (아래 authStorage)
-  nickname: '',
-  memberships: [], // [{ team: {id,name,inviteCode}, member: {id,nickname,characterKey} }]
-  pets: {}, // teamId → { position: {x,y}|null, scale: number }
-  petVisible: true,
-  language: null, // 아직 안 고른 상태. 처음 실행할 때 운영체제 언어를 보고 정해진다.
-  power: null, // 절전 강도. 아직 안 고르면 'balanced' 로 본다 (src/shared/power.js)
-  lastUpdateCheck: null, // 새 버전을 마지막으로 확인한 날 'YYYY-MM-DD'. 하루 한 번만 보려고 남긴다.
+/**
+ * 저장 파일에 남는 소속.
+ *
+ * 화면이 보는 `Membership`(shared/state.ts)과 다르다 — 접속 여부나 지금 연결 상태처럼
+ * 서버에서 와야 아는 것은 캐시할 이유가 없다. 뼈대만 남겨 두었다가 앱을 켜자마자
+ * 캐릭터를 띄우는 데 쓴다.
+ */
+export interface CachedMembership {
+  team: Team
+  member: Member
+  /** 옛 저장 파일에는 없다. 없으면 나 혼자인 것으로 본다. */
+  members?: Member[]
 }
 
-const DEFAULT_PET = { position: null, scale: 1 }
+/** 저장 파일 하나에 담기는 전부 */
+export interface StoredState {
+  /** Supabase 세션. 이 값이 곧 신원이다 (아래 authStorage) */
+  auth: Record<string, string>
+  nickname: string
+  memberships: CachedMembership[]
+  /** teamId → 그 팀 캐릭터를 어디에 얼마만 하게 띄울지 */
+  pets: Record<string, PetSettings>
+  petVisible: boolean
+  /** 아직 안 고른 상태는 null. 처음 실행할 때 운영체제 언어를 보고 정해진다. */
+  language: string | null
+  /** 절전 강도. 아직 안 고르면 'balanced' 로 본다 (shared/power.ts) */
+  power: string | null
+  /** 새 버전을 마지막으로 확인한 날 'YYYY-MM-DD'. 하루 한 번만 보려고 남긴다. */
+  lastUpdateCheck: string | null
+}
+
+const DEFAULTS: StoredState = {
+  auth: {},
+  nickname: '',
+  memberships: [],
+  pets: {},
+  petVisible: true,
+  language: null,
+  power: null,
+  lastUpdateCheck: null,
+}
+
+const DEFAULT_PET: PetSettings = { position: null, scale: 1 }
 
 /**
  * 쓰기를 모아서 하는 간격(ms).
@@ -42,9 +74,9 @@ const DEFAULT_PET = { position: null, scale: 1 }
  */
 const SAVE_DELAY = 250
 
-let filePath = null
-let state = { ...DEFAULTS }
-let pending = null
+let filePath: string | null = null
+let state: StoredState = { ...DEFAULTS }
+let pending: ReturnType<typeof setTimeout> | null = null
 
 function load() {
   filePath = path.join(app.getPath('userData'), 'tap-tap.json')
@@ -87,7 +119,7 @@ function save() {
 
 /** 미뤄 둔 쓰기를 지금 끝낸다 (앱을 끄기 직전처럼 미룰 수 없는 순간에) */
 function flush() {
-  clearTimeout(pending)
+  if (pending) clearTimeout(pending)
   pending = null
   write()
 }
@@ -101,14 +133,14 @@ function flush() {
  * 그래서 여기만은 모아 뒀다 쓰지 않고 그 자리에서 끝낸다.
  */
 const authStorage = {
-  getItem: (key) => state.auth?.[key] ?? null,
+  getItem: (key: string) => state.auth?.[key] ?? null,
 
-  setItem(key, value) {
+  setItem(key: string, value: string) {
     state = { ...state, auth: { ...state.auth, [key]: value } }
     flush()
   },
 
-  removeItem(key) {
+  removeItem(key: string) {
     const auth = { ...state.auth }
     delete auth[key]
     state = { ...state, auth }
@@ -116,37 +148,44 @@ const authStorage = {
   },
 }
 
-module.exports = {
+/** 팀별 화면 설정 (없으면 기본값) */
+function pet(teamId: string): PetSettings {
+  return { ...DEFAULT_PET, ...state.pets[teamId] }
+}
+
+const store = {
   load,
   flush,
   authStorage,
-  get: (key) => state[key],
+  pet,
 
-  set(patch) {
+  get: <K extends keyof StoredState>(key: K): StoredState[K] => state[key],
+
+  set(patch: Partial<StoredState>): StoredState {
     state = { ...state, ...patch }
     save()
     return state
   },
 
-  /** 팀별 화면 설정 (없으면 기본값) */
-  pet(teamId) {
-    return { ...DEFAULT_PET, ...(state.pets[teamId] ?? {}) }
-  },
-
-  setPet(teamId, patch) {
+  setPet(teamId: string, patch: Partial<PetSettings>): PetSettings {
     state = {
       ...state,
-      pets: { ...state.pets, [teamId]: { ...module.exports.pet(teamId), ...patch } },
+      pets: { ...state.pets, [teamId]: { ...pet(teamId), ...patch } },
     }
     save()
     return state.pets[teamId]
   },
 
   /** 더 이상 속하지 않는 팀의 화면 설정을 정리한다 */
-  prunePets(teamIds) {
+  prunePets(teamIds: string[]) {
     const keep = new Set(teamIds)
     const pets = Object.fromEntries(Object.entries(state.pets).filter(([id]) => keep.has(id)))
     state = { ...state, pets }
     save()
   },
 }
+
+/** 메인 프로세스 어디서나 같은 하나를 쓴다. 테스트는 `createSession` 에 흉내를 꽂는다. */
+export type Store = typeof store
+
+export default store
