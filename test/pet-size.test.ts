@@ -7,12 +7,17 @@ import {
   petSizeFor,
   nextPetBounds,
 } from '../src/main/pet-size'
+import type { Rect } from '../src/main/pet-size'
 
 /** 넉넉한 가상 모니터 하나 */
 const WIDE = { x: 0, y: 0, width: 2560, height: 1440 }
 
-const boundsFor = (scale, { x = 1000, y = 700 } = {}) => ({ x, y, ...petSizeFor(scale) })
-const bottomCenter = (b) => ({ x: b.x + b.width / 2, y: b.y + b.height })
+const boundsFor = (scale: number, { x = 1000, y = 700 } = {}) => ({
+  x,
+  y,
+  ...petSizeFor(scale),
+})
+const bottomCenter = (b: Rect) => ({ x: b.x + b.width / 2, y: b.y + b.height })
 
 describe('clampScale', () => {
   it('허용 범위를 벗어난 값을 잘라낸다', () => {
@@ -22,7 +27,10 @@ describe('clampScale', () => {
   })
 
   it('숫자가 아니면 기본 크기로 되돌린다 — 저장 파일이 깨져도 앱이 뜬다', () => {
-    for (const bad of [undefined, null, NaN, 'big']) expect(clampScale(bad)).toBe(1)
+    // 일부러 잘못된 값을 먹인다 — 저장 파일이 깨졌을 때를 흉내 내는 것이 이 검사의 요지다
+    for (const bad of [undefined, null, NaN, 'big']) {
+      expect(clampScale(bad as number)).toBe(1)
+    }
   })
 })
 

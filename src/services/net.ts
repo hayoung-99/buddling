@@ -44,15 +44,16 @@ export type NetEvents = {
 }
 
 export interface Net {
+  /** `characterKey` 를 주지 않으면 구현이 기본 캐릭터로 채운다 */
   createTeam(payload: {
     name: string
     nickname: string
-    characterKey: string
+    characterKey?: string
   }): Promise<NetMembership>
   joinTeam(payload: {
     inviteCode: string
     nickname: string
-    characterKey: string
+    characterKey?: string
   }): Promise<NetMembership>
   getMyTeams(): Promise<NetMembership[]>
 
@@ -67,8 +68,8 @@ export interface Net {
   disconnect(teamId?: string): Promise<void>
   connectedTeamIds(): string[]
 
-  /** toMemberId 가 null 이면 그 팀 전원에게 */
-  sendTap(payload: { teamId: string; toMemberId: string | null }): Promise<void>
+  /** toMemberId 가 없거나 null 이면 그 팀 전원에게 */
+  sendTap(payload: { teamId: string; toMemberId?: string | null }): Promise<void>
   announceRosterChange(teamId: string): Promise<void>
   onlineIn(teamId: string): string[]
 

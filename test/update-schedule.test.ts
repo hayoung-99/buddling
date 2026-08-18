@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { CHECK_HOUR, dayKey, isDue, startMorningSchedule } from '../src/main/update-schedule'
 
 /** 그날 그 시각의 로컬 시간 */
-const at = (day, hour, minute = 0) => new Date(2026, 7, day, hour, minute)
+const at = (day: number, hour: number, minute = 0) => new Date(2026, 7, day, hour, minute)
 
 describe('dayKey', () => {
   it('로컬 날짜를 YYYY-MM-DD 로 적는다', () => {
@@ -48,9 +48,9 @@ describe('isDue', () => {
 
 describe('startMorningSchedule', () => {
   /** 시각을 마음대로 옮길 수 있는 가짜 시계와 저장소 */
-  function harness(startAt, lastDay = null) {
+  function harness(startAt: Date, lastDay: string | null = null) {
     let clock = startAt
-    let stored = lastDay
+    let stored: string | null = lastDay
     const onDue = vi.fn()
 
     const schedule = startMorningSchedule({
@@ -69,7 +69,7 @@ describe('startMorningSchedule', () => {
       get stored() {
         return stored
       },
-      moveTo(next) {
+      moveTo(next: Date) {
         clock = next
         schedule.tick()
       },
@@ -124,8 +124,8 @@ describe('startMorningSchedule', () => {
   })
 
   it('부르기 전에 날짜를 적는다 — 확인이 실패해도 오늘은 더 조르지 않는다', () => {
-    let stored = null
-    const seen = []
+    let stored: string | null = null
+    const seen: (string | null)[] = []
     const schedule = startMorningSchedule({
       onDue: () => seen.push(stored),
       readLastDay: () => stored,

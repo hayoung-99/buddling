@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { isNewer, startUpdateCheck } from '../src/main/update-check'
+import type { UpdateCheckOptions } from '../src/main/update-check'
 import { canAutoInstall } from '../src/main/updates'
 
 describe('isNewer', () => {
@@ -36,9 +37,10 @@ describe('isNewer', () => {
   })
 
   it('읽을 수 없는 값이면 알리지 않는다 — 확실할 때만 띄운다', () => {
+    // 일부러 읽을 수 없는 값을 먹인다 — 그게 이 검사의 요지다
     for (const bad of [undefined, null, '', 'latest', '1.2.3.4', 'x.y.z', {}]) {
-      expect(isNewer('0.1.0', bad)).toBe(false)
-      expect(isNewer(bad, '9.9.9')).toBe(false)
+      expect(isNewer('0.1.0', bad as string)).toBe(false)
+      expect(isNewer(bad as string, '9.9.9')).toBe(false)
     }
   })
 })
@@ -48,9 +50,14 @@ describe('startUpdateCheck', () => {
    * 언제 볼지는 `update-schedule.js` 가 정한다. 여기서는 그 자리에
    * "부르면 본다"는 손잡이를 끼워 넣고 우리가 직접 당긴다.
    */
-  function harness({ currentVersion = '0.1.0', fetchLatest, immediate = false }) {
+  function harness({
+    currentVersion = '0.1.0',
+    fetchLatest,
+    immediate = false,
+  }: Partial<Pick<UpdateCheckOptions, 'currentVersion' | 'fetchLatest' | 'immediate'>>) {
     const onUpdate = vi.fn()
-    let due = null
+    /** `schedule` 이 넘겨준 확인 함수. 아침이 온 척할 때 이걸 당긴다. */
+    let due: (() => void) | null = null
 
     const watcher = startUpdateCheck({
       currentVersion,
@@ -63,7 +70,7 @@ describe('startUpdateCheck', () => {
       },
     })
 
-    return { onUpdate, watcher, morning: () => due() }
+    return { onUpdate, watcher, morning: () => due?.() }
   }
 
   /** check() 안의 await 들이 끝나기를 기다린다 */
@@ -151,7 +158,7 @@ describe('canAutoInstall', () => {
 
   it('모르는 플랫폼이면 알림만 한다', () => {
     for (const platform of ['linux', 'freebsd', '', undefined]) {
-      expect(canAutoInstall(platform)).toBe(false)
+      expect(canAutoInstall(platform as string)).toBe(false)
     }
   })
 })

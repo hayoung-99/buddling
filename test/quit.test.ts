@@ -43,8 +43,8 @@ describe('releaseUnclosableWindows', () => {
     ])
 
     expect(releaseUnclosableWindows(pets.values())).toBe(1)
-    expect(pets.get('team-1').window.destroy).not.toHaveBeenCalled()
-    expect(pets.get('team-2').window.destroy).toHaveBeenCalledOnce()
+    expect(pets.get('team-1')!.window.destroy).not.toHaveBeenCalled()
+    expect(pets.get('team-2')!.window.destroy).toHaveBeenCalledOnce()
 
     // 한 번 더 불러도 조용하다 (종료를 두 번 눌렀을 때)
     expect(releaseUnclosableWindows(pets.values())).toBe(0)

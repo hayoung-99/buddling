@@ -1,39 +1,79 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { createSession } from '../src/main/session'
 import { createFakeServer, createFakeNet, MAX_TEAMS_PER_USER } from '../src/services/fake-net'
+import type { Store, StoredState } from '../src/main/store'
+import type { Net } from '../src/services/net'
+import type { PetSettings, TapPayload } from '../src/shared/state'
 
-/** Electron 없이 돌아가는 저장소 흉내 */
-function memoryStore(userId = 'user-me') {
-  let state = { userId, nickname: '', memberships: [], pets: {}, petVisible: true }
+const DEFAULT_PET: PetSettings = { position: null, scale: 1 }
+
+/**
+ * Electron 없이 돌아가는 저장소 흉내.
+ *
+ * 반환값에 `Store` 를 적어 두는 것이 중요하다 — 진짜 저장소(`src/main/store.ts`)의
+ * 모양이 바뀌면 **테스트가 깨지기 전에** 여기서 컴파일러가 잡는다. 예전에는 둘이
+ * 조용히 어긋날 수 있었다.
+ */
+function memoryStore(): Store & { peek: () => StoredState } {
+  let state: StoredState = {
+    auth: {},
+    nickname: '',
+    memberships: [],
+    pets: {},
+    petVisible: true,
+    language: null,
+    power: null,
+    lastUpdateCheck: null,
+  }
+
+  const pet = (teamId: string): PetSettings => ({ ...DEFAULT_PET, ...state.pets[teamId] })
+
   return {
-    get: (key) => state[key],
-    set(patch) {
+    // 세션은 이 둘을 부르지 않는다 (진짜 저장소는 앱이 뜰 때·꺼질 때 쓴다).
+    // 그래도 `Store` 를 온전히 만족시켜 두어야 모양이 어긋날 때 여기서 걸린다.
+    load: () => state,
+    flush: () => {},
+    authStorage: {
+      getItem: (key: string) => state.auth[key] ?? null,
+      setItem(key: string, value: string) {
+        state = { ...state, auth: { ...state.auth, [key]: value } }
+      },
+      removeItem(key: string) {
+        const auth = { ...state.auth }
+        delete auth[key]
+        state = { ...state, auth }
+      },
+    },
+
+    pet,
+    get: <K extends keyof StoredState>(key: K) => state[key],
+    set(patch: Partial<StoredState>) {
       state = { ...state, ...patch }
       return state
     },
-    pet: (teamId) => ({ position: null, scale: 1, ...state.pets[teamId] }),
-    setPet(teamId, patch) {
-      state.pets = { ...state.pets, [teamId]: { ...this.pet(teamId), ...patch } }
+    setPet(teamId: string, patch: Partial<PetSettings>) {
+      state.pets = { ...state.pets, [teamId]: { ...pet(teamId), ...patch } }
       return state.pets[teamId]
     },
-    prunePets(teamIds) {
+    prunePets(teamIds: string[]) {
       const keep = new Set(teamIds)
       state.pets = Object.fromEntries(Object.entries(state.pets).filter(([id]) => keep.has(id)))
     },
+
     /** 테스트에서 들여다보기 위한 창 */
     peek: () => state,
   }
 }
 
 function makeSession({ server = createFakeServer(), userId = 'user-me' } = {}) {
-  const store = memoryStore(userId)
+  const store = memoryStore()
   const net = createFakeNet({ server, userId })
   const session = createSession({ url: 'x', anonKey: 'y', store, net })
   return { server, store, net, session }
 }
 
 describe('세션 — 팀 만들고 들어가기', () => {
-  let ctx
+  let ctx: ReturnType<typeof makeSession>
   beforeEach(() => {
     ctx = makeSession()
   })
@@ -73,7 +113,9 @@ describe('세션 — 팀 만들고 들어가기', () => {
 
     const after = await ctx.session.joinTeam({ inviteCode: code, nickname: '나영2' })
     expect(after.memberships).toHaveLength(MAX_TEAMS_PER_USER)
-    expect(after.memberships.find((m) => m.team.inviteCode === code).member.nickname).toBe('나영2')
+    expect(after.memberships.find((m) => m.team.inviteCode === code)!.member.nickname).toBe(
+      '나영2',
+    )
   })
 })
 
@@ -88,8 +130,10 @@ describe('세션 — 팀마다 따로 관리되는 것들', () => {
     await ctx.session.setCharacter(devId, 'panda')
 
     const state = ctx.session.snapshot()
-    expect(state.memberships.find((m) => m.team.id === designId).member.characterKey).toBe('bunny')
-    expect(state.memberships.find((m) => m.team.id === devId).member.characterKey).toBe('panda')
+    expect(state.memberships.find((m) => m.team.id === designId)!.member.characterKey).toBe(
+      'bunny',
+    )
+    expect(state.memberships.find((m) => m.team.id === devId)!.member.characterKey).toBe('panda')
   })
 
   it('캐릭터 창 설정(크기·위치)도 팀마다 따로다', async () => {
@@ -126,7 +170,7 @@ describe('세션 — 콕 찌르기', () => {
       nickname: '민수',
     })
 
-    const got = []
+    const got: TapPayload[] = []
     mate.session.on('tap', (payload) => got.push(payload))
 
     expect(await me.session.tap({ teamId })).toBe(true)
@@ -165,7 +209,10 @@ describe('세션 — 설정이 없을 때', () => {
     const store = memoryStore()
     store.set({
       memberships: [
-        { team: { id: 't1', name: '지난 팀' }, member: { id: 'm1', characterKey: 'duck' } },
+        {
+          team: { id: 't1', name: '지난 팀', inviteCode: 'ABCD2345', inviteExpiresAt: null },
+          member: { id: 'm1', nickname: '나영', characterKey: 'duck' },
+        },
       ],
     })
     const session = createSession({ url: '', anonKey: '', store })
@@ -177,10 +224,15 @@ describe('세션 — 설정이 없을 때', () => {
  * 다음 호출 한 번만 실패하게 만든다.
  * 인터넷이 잠깐 없는 상황을 흉내 내는 데 쓴다.
  */
-function failOnce(net, method, when = () => true) {
-  const original = net[method].bind(net)
+function failOnce<M extends keyof Net>(
+  net: Net,
+  method: M,
+  when: (...args: any[]) => boolean = () => true,
+) {
+  // 메서드를 통째로 바꿔치는 일이라 타입을 그대로 지킬 수 없다. 이 헬퍼 안에서만 느슨하게 둔다.
+  const original = (net[method] as (...args: any[]) => Promise<unknown>).bind(net)
   let used = false
-  net[method] = async (...args) => {
+  ;(net as unknown as Record<string, unknown>)[method] = async (...args: any[]) => {
     if (!used && when(...args)) {
       used = true
       throw new Error('offline')
@@ -190,7 +242,7 @@ function failOnce(net, method, when = () => true) {
 }
 
 describe('세션 — 끊긴 연결 되살리기', () => {
-  let ctx
+  let ctx: ReturnType<typeof makeSession>
   beforeEach(() => {
     ctx = makeSession()
   })
@@ -200,11 +252,11 @@ describe('세션 — 끊긴 연결 되살리기', () => {
   })
 
   /** 팀을 만들어 두고, 앱을 껐다 켠 것처럼 연결만 끊어 둔다 */
-  async function teamsThenOffline(names) {
-    const ids = []
+  async function teamsThenOffline(names: string[]) {
+    const ids: string[] = []
     for (const name of names) {
       const state = await ctx.session.createTeam({ name, nickname: '나영' })
-      ids.push(state.memberships.at(-1).team.id)
+      ids.push(state.memberships.at(-1)!.team.id)
     }
     await ctx.net.disconnect()
     return ids

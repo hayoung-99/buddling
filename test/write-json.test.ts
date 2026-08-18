@@ -4,7 +4,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { writeJsonAtomically } from '../src/main/write-json'
 
-let dir
+let dir: string
 
 beforeEach(() => {
   dir = fs.mkdtempSync(path.join(os.tmpdir(), 'taptap-write-'))
@@ -14,7 +14,7 @@ afterEach(() => {
   fs.rmSync(dir, { recursive: true, force: true })
 })
 
-const read = (file) => JSON.parse(fs.readFileSync(file, 'utf8'))
+const read = (file: string) => JSON.parse(fs.readFileSync(file, 'utf8'))
 
 describe('writeJsonAtomically', () => {
   it('적고 나면 읽을 수 있다', () => {
@@ -66,7 +66,8 @@ describe('writeJsonAtomically', () => {
     const result = writeJsonAtomically(file, { a: 1 })
 
     expect(result.ok).toBe(false)
-    expect(result.error).toBeInstanceOf(Error)
+    // 봉투가 갈라져 있어 `ok` 를 먼저 봐야 `error` 를 읽을 수 있다
+    if (!result.ok) expect(result.error).toBeInstanceOf(Error)
   })
 
   it('실패해도 예외가 새어 나가지 않는다 — 타이머 안에서 불리므로 아무도 잡지 못한다', () => {
@@ -81,7 +82,7 @@ describe('writeJsonAtomically', () => {
     writeJsonAtomically(file, { keep: 'me' })
 
     // JSON 으로 만들 수 없는 값 (순환 참조) → 임시 파일 단계에서 실패한다
-    const circular = {}
+    const circular: { self?: unknown } = {}
     circular.self = circular
     const result = writeJsonAtomically(file, circular)
 

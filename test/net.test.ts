@@ -7,6 +7,7 @@ import {
   INVITE_TTL_MS,
 } from '../src/services/fake-net'
 import { toFriendlyError } from '../src/services/net'
+import type { NetEvents } from '../src/services/net'
 
 /** 서로 다른 사람 둘을 흉내 낸다 */
 function twoDevices() {
@@ -33,7 +34,7 @@ async function connectedTeam() {
 }
 
 describe('팀 만들기', () => {
-  let net
+  let net: ReturnType<typeof twoDevices>
   beforeEach(() => {
     net = twoDevices()
   })
@@ -128,8 +129,8 @@ describe('여러 팀에 속하기', () => {
     await alice.setCharacter(dev.team.id, 'panda')
 
     const mine = await alice.getMyTeams()
-    expect(mine.find((m) => m.team.id === design.team.id).member.characterKey).toBe('bunny')
-    expect(mine.find((m) => m.team.id === dev.team.id).member.characterKey).toBe('panda')
+    expect(mine.find((m) => m.team.id === design.team.id)!.member.characterKey).toBe('bunny')
+    expect(mine.find((m) => m.team.id === dev.team.id)!.member.characterKey).toBe('panda')
   })
 
   it('팀이 없으면 빈 목록이다', async () => {
@@ -190,7 +191,7 @@ describe('초대코드로 참여하기', () => {
 describe('콕 찌르기 (실시간)', () => {
   it('내가 클릭하면 팀원에게 전달된다', async () => {
     const { alice, bob, teamId } = await connectedTeam()
-    const received = []
+    const received: NetEvents['tap'][] = []
     bob.on('tap', (payload) => received.push(payload))
 
     await alice.sendTap({ teamId })
@@ -202,7 +203,7 @@ describe('콕 찌르기 (실시간)', () => {
 
   it('보낸 사람에게는 되돌아오지 않는다 (이미 로컬에서 반응했다)', async () => {
     const { alice, teamId } = await connectedTeam()
-    const received = []
+    const received: NetEvents['tap'][] = []
     alice.on('tap', (payload) => received.push(payload))
 
     await alice.sendTap({ teamId })
@@ -216,8 +217,8 @@ describe('콕 찌르기 (실시간)', () => {
     const c = await carol.joinTeam({ inviteCode: a.team.inviteCode, nickname: '수진' })
     await carol.connect(c.team, c.member)
 
-    const bobGot = []
-    const carolGot = []
+    const bobGot: NetEvents['tap'][] = []
+    const carolGot: NetEvents['tap'][] = []
     bob.on('tap', (payload) => bobGot.push(payload))
     carol.on('tap', (payload) => carolGot.push(payload))
 
@@ -258,7 +259,7 @@ describe('콕 찌르기 (실시간)', () => {
     const other = await outsider.createTeam({ name: '남의 팀', nickname: '철수' })
     await outsider.connect(other.team, other.member)
 
-    const got = []
+    const got: NetEvents['tap'][] = []
     outsider.on('tap', (payload) => got.push(payload))
 
     await alice.sendTap({ teamId })
@@ -280,7 +281,7 @@ describe('콕 찌르기 (실시간)', () => {
     await mate.connect(inDesign.team, inDesign.member)
     await mate.connect(inDev.team, inDev.member)
 
-    const got = []
+    const got: string[] = []
     mate.on('tap', (payload) => got.push(payload.teamId))
 
     await me.sendTap({ teamId: design.team.id })
@@ -298,7 +299,7 @@ describe('콕 찌르기 (실시간)', () => {
 describe('접속 상태(presence)', () => {
   it('두 사람이 붙으면 양쪽 다 두 명으로 보인다', async () => {
     const { alice, bob, a, b, teamId } = await connectedTeam()
-    let seen = []
+    let seen: string[] = []
     alice.on('presence', (payload) => {
       if (payload.teamId === teamId) seen = payload.onlineIds
     })
@@ -310,7 +311,7 @@ describe('접속 상태(presence)', () => {
 
   it('나가면 목록에서 빠진다', async () => {
     const { alice, bob, a, teamId } = await connectedTeam()
-    let seen = []
+    let seen: string[] = []
     alice.on('presence', (payload) => {
       if (payload.teamId === teamId) seen = payload.onlineIds
     })
@@ -326,7 +327,7 @@ describe('캐릭터 바꾸기 / 팀 나가기', () => {
     await bob.setCharacter(teamId, 'panda')
 
     const [mine] = await alice.getMyTeams()
-    expect(mine.members.find((m) => m.nickname === '민수').characterKey).toBe('panda')
+    expect(mine.members.find((m) => m.nickname === '민수')!.characterKey).toBe('panda')
   })
 
   it('팀에 속하지 않은 기기는 캐릭터를 바꿀 수 없다', async () => {
@@ -419,7 +420,7 @@ describe('초대코드 유효시간', () => {
     const server = createFakeServer({ now: () => clock })
     return {
       server,
-      advance: (ms) => {
+      advance: (ms: number) => {
         clock += ms
       },
       alice: createFakeNet({ server, userId: 'user-alice' }),
@@ -430,7 +431,7 @@ describe('초대코드 유효시간', () => {
   it('만든 코드에는 만료 시각이 붙는다', async () => {
     const { alice } = timedServer()
     const { team } = await alice.createTeam({ name: '디자인팀', nickname: '나영' })
-    expect(Date.parse(team.inviteExpiresAt)).toBe(START + INVITE_TTL_MS)
+    expect(Date.parse(team.inviteExpiresAt!)).toBe(START + INVITE_TTL_MS)
   })
 
   it(`${INVITE_TTL_MS / 3600000}시간 안에는 들어갈 수 있다`, async () => {
@@ -502,7 +503,11 @@ describe('초대코드 유효시간', () => {
 
 describe('팀 정원', () => {
   /** 한 팀에 사람을 원하는 만큼 채워 넣는다 */
-  async function fillTeam(server, inviteCode, count) {
+  async function fillTeam(
+    server: ReturnType<typeof createFakeServer>,
+    inviteCode: string,
+    count: number,
+  ) {
     for (let i = 0; i < count; i += 1) {
       const net = createFakeNet({ server, userId: `filler-${i}` })
       await net.joinTeam({ inviteCode, nickname: `사람${i}` })

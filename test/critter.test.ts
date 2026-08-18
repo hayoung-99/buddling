@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { Box3, Group } from 'three'
+import type { Mesh } from 'three'
 import { CHARACTERS, getCharacter } from '../src/shared/characters'
 import {
   createCritter,
@@ -8,7 +9,7 @@ import {
   STANDARD_HEIGHT,
 } from '../src/renderer/pet/critter'
 
-const build = (key) => createCritter(getCharacter(key))
+const build = (key: string) => createCritter(getCharacter(key))
 
 describe('createCritter', () => {
   it.each(CHARACTERS)('$key 는 애니메이션에 필요한 피벗을 모두 만든다', (spec) => {
@@ -127,9 +128,9 @@ describe('볼따구 빗금', () => {
      * height 로 이름만 바꾸면서 undefined 가 되어 검사가 깨졌다. 우리가 알고 싶은 것은
      * "가운데가 더 길다"이지 그 값이 어느 이름으로 담겨 있는가가 아니다.
      */
-    const lengths = parts.cheekL.children.map((stroke) => {
+    const lengths = (parts.cheekL.children as Mesh[]).map((stroke) => {
       stroke.geometry.computeBoundingBox()
-      const box = stroke.geometry.boundingBox
+      const box = stroke.geometry.boundingBox!
       return box.max.y - box.min.y
     })
 
