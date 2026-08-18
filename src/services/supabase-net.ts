@@ -10,7 +10,6 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
-import WebSocket from 'ws'
 import { createEmitter } from './emitter'
 import { toFriendlyError } from './errors'
 import type { Net, NetConfig, NetEvents } from './net'
@@ -36,10 +35,11 @@ function createSupabaseNet({ url, anonKey, storage }: Required<Pick<NetConfig, '
       ...(storage ? { storage } : {}),
     },
     realtime: {
-      // Electron 메인 프로세스의 Node 에는 전역 WebSocket 이 없을 수 있어 직접 넘긴다.
-      // (Node 22 에는 전역이 생겼지만, 실제로 Realtime 이 붙는지 재 보기 전에는 그대로 둔다.)
-      // `ws` 의 생성자는 브라우저 WebSocket 과 모양이 미묘하게 달라 여기서 맞춰 준다.
-      transport: WebSocket as unknown as typeof globalThis.WebSocket,
+      // `transport` 를 주지 않는다. 예전에는 `ws` 꾸러미를 직접 넘겼는데, 그때는 Node 에
+      // 전역 WebSocket 이 없었기 때문이다. 지금은 Electron 43 이 Node 24 를 싣고 오고
+      // 스크립트가 도는 Node 도 22 라 양쪽 다 전역이 있으며, realtime-js 가 그걸 스스로
+      // 찾는다. 억지로 넘기면 꾸러미 하나와 브라우저 WebSocket 과의 모양 차이를 메우는
+      // 캐스팅만 떠안게 된다.
       params: { eventsPerSecond: 20 },
     },
   })
