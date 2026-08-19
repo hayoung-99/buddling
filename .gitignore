@@ -32,3 +32,4 @@ build/icon.iconset/
 # 메인 프로세스 빌드 산출물 (npm run build 로 언제든 다시 만든다)
 apps/*/dist-main/
 *.tsbuildinfo
+apps/*/.next/

@@ -71,6 +71,16 @@
         "commonjs": true,
         "es2024": true
       }
+    },
+    {
+      "files": [
+        "apps/web/**"
+      ],
+      "env": {
+        "browser": true,
+        "node": true,
+        "es2024": true
+      }
     }
   ]
 }
