@@ -161,6 +161,14 @@ TS 를 스스로 파싱하므로 그 제약을 받지 않습니다.
 
 **주소는 `lib/site.ts` 한 곳에서 나옵니다.** 도메인을 바꿀 일이 생기면 거기만 고치세요.
 
+**그림은 WebP 이고, 화면에 걸릴 크기의 두 배로 떠 둡니다.** 만드는 것은
+`apps/desktop/scripts/make-site-images.js` 입니다 (`npm run site-images`) — 앱과 같은
+캐릭터 코드로 그리므로 캐릭터가 바뀌면 다시 돌리기만 하면 됩니다. 팀 창 스크린샷만은
+진짜 앱을 띄워 찍어 옮긴 뒤 `npm run site-images -- --webp-only` 로 형식을 맞춥니다.
+**PNG 로 남는 것은 `og.png` 와 아이콘뿐입니다** — 링크 미리보기를 만드는 쪽에 WebP 를
+못 읽는 곳이 아직 있기 때문입니다. 빼꼼 캐릭터는 `<img>` 가 아니라 CSS 배경이라
+이름이 어긋나도 HTML 만 봐서는 안 걸리므로, `check-site.js` 가 스타일시트 안까지 봅니다.
+
 **정적 export 를 쓰지 않습니다.** Next 가 RSC 페이로드를 인라인 스크립트로 넣기 때문에,
 정적으로 뽑으면 CSP 의 `script-src` 에 `'unsafe-inline'` 을 열어 줘야 합니다. 대신
 `middleware.ts` 가 요청마다 nonce 를 발급합니다. **이 파일을 지우면 페이지가 하얗게 뜹니다.**

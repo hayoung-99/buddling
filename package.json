@@ -30,7 +30,7 @@
     "dev:web": "npm run dev -w @tap-tap/web",
     "dist": "npm run dist -w tap-tap",
     "preview": "npm run preview -w tap-tap",
-    "site-images": "npm run site-images -w tap-tap",
+    "site-images": "npm run site-images -w tap-tap --",
     "start": "npm run start -w tap-tap",
     "tray-icon": "npm run tray-icon -w tap-tap"
   },

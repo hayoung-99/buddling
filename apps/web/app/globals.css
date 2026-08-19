@@ -149,7 +149,7 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
 /*
  * 창 모서리를 밟고 서는 고양이. 이 한 장이 컨셉을 다 설명하므로 진짜로 넘어와야 한다.
  *
- * hero-cat.png 는 오른쪽 32%가 투명 여백이다(알파 기준 x 0.15~0.68). 그래서
+ * hero-cat.webp 는 오른쪽 32%가 투명 여백이다(알파 기준 x 0.15~0.68). 그래서
  * right 를 그냥 -70px 주면 그림 상자만 넘어가고 고양이는 창 안에 머문다.
  * 실제로 70px 넘기려면 70 + 0.32 x width 만큼 밀어야 한다.
  */
@@ -312,10 +312,11 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
  * 몸의 4분의 3쯤 보이는 상태이고, 그 정도만 되어도 세로선에 물려 있는
  * 것은 충분히 읽힌다.
  *
- * 눈은 그림마다 다른 자리에 있다 (판다 x126, 강아지 x138, 고양이 x142,
- * 340px 그림 기준). 그래서 **px 을 똑같이 주면 안 되고** 그림마다 따로
+ * 눈은 그림마다 다른 자리에 있다 (판다는 그림 폭의 0.37, 강아지 0.41,
+ * 고양이 0.42 지점). 그래서 **px 을 똑같이 주면 안 되고** 그림마다 따로
  * 역산해야 한다. 화면 폭이 아니라 걸어 둔 width 에서 나오는 값이므로,
- * width 가 같은 구간끼리는 값도 같다.
+ * width 가 같은 구간끼리는 값도 같다. 비율로 적어 둔 이유는 원본 크기가
+ * 바뀌어도 이 값은 그대로이기 때문이다.
  *
  * **그림을 다시 뜨면 이 값도 다시 재야 한다.** 눈 위치가 조금만 움직여도
  * 곧바로 눈을 밟는다. 한번은 그림만 새로 뜨고 이 값을 그대로 뒀다가
@@ -327,6 +328,12 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
  * 좁은 화면이라고 캐릭터를 줄이지는 않는다. 크기는 그대로 두고, 어느 폭에서나
  * 같은 만큼 물린다. 맥북 14"(1512px)·13"(1470px)가 이 구간이라 여기서
  * 사라지면 안 된다.
+ *
+ * **원본은 가장 크게 걸리는 폭의 두 배로 떠 있다** (아래 1900px 구간 기준으로
+ * 판다·강아지·고양이 612px, 토끼 748px, 오리 680px). 화소가 두 배인 화면에서
+ * 뭉개지지 않게 하려는 것이라, width 를 키우면 `make-site-images.js` 의 크기도
+ * 함께 키워야 한다. 형식은 WebP 다 — 두 배로 뜨면 PNG 는 넉 배로 무거워지는데,
+ * WebP 로 담으면 예전 PNG 한 장보다도 가볍다.
  */
 
 .peekers { display: none; }
@@ -363,11 +370,11 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
    * 부리 때문에 그림 안에서 차지하는 폭이 좁다. 화면에서 다섯 얼굴이 같은
    * 크기로 보이는 쪽을 택했다.
    */
-  .peek-panda { top: 120px; left: -68px; width: 240px; background-image: url('/assets/peek-panda.png'); }
-  .peek-bunny { top: 560px; right: -136px; width: 300px; background-image: url('/assets/peek-bunny.png'); }
-  .peek-dog { top: 1020px; left: -77px; width: 240px; background-image: url('/assets/peek-dog.png'); }
-  .peek-duck { top: 1600px; right: -131px; width: 270px; background-image: url('/assets/peek-duck.png'); }
-  .peek-cat { top: 2160px; left: -80px; width: 240px; background-image: url('/assets/peek-cat.png'); }
+  .peek-panda { top: 120px; left: -68px; width: 240px; background-image: url('/assets/peek-panda.webp'); }
+  .peek-bunny { top: 560px; right: -136px; width: 300px; background-image: url('/assets/peek-bunny.webp'); }
+  .peek-dog { top: 1020px; left: -77px; width: 240px; background-image: url('/assets/peek-dog.webp'); }
+  .peek-duck { top: 1600px; right: -131px; width: 270px; background-image: url('/assets/peek-duck.webp'); }
+  .peek-cat { top: 2160px; left: -80px; width: 240px; background-image: url('/assets/peek-cat.webp'); }
 }
 
 /*

@@ -82,6 +82,10 @@ async function fetchAll() {
 /**
  * 없는 그림을 가리키면 사람 눈에는 빈 자리로만 보인다. OG 이미지가 없으면
  * 링크를 공유했을 때 미리보기가 통째로 안 뜬다.
+ *
+ * **스타일시트 안까지 본다.** 빼꼼 캐릭터 다섯은 `<img>` 가 아니라 CSS 배경이라,
+ * HTML 만 훑으면 이름이 어긋나도 아무 데도 걸리지 않는다. 게다가 그 칸은 1440px
+ * 아래에서 통째로 숨으므로, 좁은 화면으로 열어 본 사람은 빈 자리마저 못 본다.
  */
 async function checkLocalFiles() {
   for (const page of PAGES) {
@@ -91,6 +95,17 @@ async function checkLocalFiles() {
     for (const match of html.matchAll(/(?:src|href)="(\/[^"#?]+)"/g)) referenced.add(match[1])
     for (const match of html.matchAll(/content="https?:\/\/[^"]*?(\/assets\/[^"]+)"/g)) {
       referenced.add(match[1])
+    }
+
+    for (const match of html.matchAll(/<link[^>]+href="([^"]+\.css[^"]*)"/g)) {
+      const href = match[1]
+      const response = await fetch(href.startsWith('http') ? href : ORIGIN + href)
+      if (!response.ok) {
+        fail(page, `스타일시트를 못 받았습니다 → ${href} (${response.status})`)
+        continue
+      }
+      const css = await response.text()
+      for (const url of css.matchAll(/url\(\s*['"]?(\/assets\/[^'")]+)/g)) referenced.add(url[1])
     }
 
     for (const url of referenced) {
