@@ -38,8 +38,9 @@ const TEXT_FILES = ['/sitemap.xml', '/robots.txt', '/llms.txt']
 const problems = []
 const fail = (file, message) => problems.push(`${file}: ${message}`)
 
-/** 받아 둔 본문. 검사마다 다시 받지 않는다. */
+/** 받아 둔 본문과 헤더. 검사마다 다시 받지 않는다. */
 const fetched = new Map()
+const headers = new Map()
 const body = (route) => fetched.get(route) ?? ''
 
 // ── 서버 띄우고 내리기 ────────────────────────────────
@@ -74,6 +75,7 @@ async function fetchAll() {
       continue
     }
     fetched.set(route, await response.text())
+    headers.set(route, response.headers)
   }
 }
 
@@ -302,6 +304,66 @@ function checkVercelJson() {
   }
 }
 
+// ── 8. CSP 가 자기 페이지의 스크립트를 막지 않는가 ───
+
+/**
+ * CSP 가 이 페이지 자신의 스크립트를 막고 있지 않은가.
+ *
+ * **실제로 그런 상태로 나간 적이 있다.** 미들웨어가 요청마다 nonce 를 만들어 CSP 에
+ * 실었는데, 페이지는 빌드 때 구워 둔 것이라 그 nonce 가 HTML 에는 붙지 않았다. 그래서
+ * 랜딩의 자바스크립트가 하나도 돌지 않았다 — 빼꼼 캐릭터가 영영 나오지 않고 받기 단추도
+ * 갱신되지 않았다. **그런데 페이지는 멀쩡해 보였다.** 없어도 페이지가 굴러가도록 만들어
+ * 둔 덕에 빈 자리조차 나지 않았고, 어긋난 사실은 브라우저 콘솔에만 남았다.
+ *
+ * 그래서 브라우저가 판정하는 규칙을 여기서 그대로 밟아 본다. 어떤 방식으로 허용하든
+ * (nonce·해시·`'unsafe-inline'`) 상관없이 **"내 스크립트가 내 정책을 통과하는가"** 하나만
+ * 본다. 정책을 바꾸는 날에도 이 검사는 그대로 값을 한다.
+ */
+function checkOwnScriptsAllowed() {
+  for (const route of PAGES) {
+    const csp = headers.get(route)?.get('content-security-policy')
+    if (!csp) {
+      fail(route, '보안 헤더(CSP)가 없습니다')
+      continue
+    }
+
+    const directive = csp.split(';').map((part) => part.trim())
+    const scriptSrc = directive.find((part) => part.startsWith('script-src'))
+    if (!scriptSrc) continue // script-src 가 없으면 default-src 로 내려가는데, 그건 아래 default 검사가 본다
+
+    const sources = scriptSrc.split(/\s+/).slice(1)
+    const nonce = sources.find((source) => source.startsWith("'nonce-"))
+    const inlineOk = sources.includes("'unsafe-inline'")
+    // `'strict-dynamic'` 이 있으면 호스트 허용이 통째로 무시된다. 즉 `<script src>` 도
+    // nonce 를 달고 있어야 한다.
+    const strictDynamic = sources.includes("'strict-dynamic'")
+
+    const html = body(route)
+
+    /*
+     * 실행되는 인라인 스크립트만 센다. `type="application/ld+json"` 같은 데이터 덩어리는
+     * 브라우저가 script-src 로 재지 않는다.
+     */
+    for (const match of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)) {
+      const attributes = match[1]
+      if (/\ssrc=/.test(attributes)) continue
+      const type = attributes.match(/\stype="([^"]+)"/)?.[1]
+      if (type && !/^(text\/javascript|module|application\/javascript)$/.test(type)) continue
+      if (inlineOk) continue
+      if (nonce && attributes.includes('nonce=')) continue
+      fail(route, `CSP 가 이 페이지의 인라인 스크립트를 막습니다 (${scriptSrc})`)
+      break
+    }
+
+    if (!strictDynamic) continue
+    for (const match of html.matchAll(/<script([^>]*\ssrc=[^>]*)>/g)) {
+      if (match[1].includes('nonce=')) continue
+      fail(route, `'strict-dynamic' 이 있는데 <script src> 에 nonce 가 없습니다 (${scriptSrc})`)
+      break
+    }
+  }
+}
+
 // ── 실행 ──────────────────────────────────────────────
 
 async function main() {
@@ -322,6 +384,7 @@ async function main() {
     checkStructuredData()
     checkLanguageLinks()
     checkSitemap()
+    checkOwnScriptsAllowed()
     await checkScriptBudget()
   } finally {
     server.kill()
@@ -335,7 +398,7 @@ async function main() {
   }
 
   console.log(
-    '랜딩페이지 이상 없음 (파일 참조 · 주소 일치 · 구조화 데이터 · hreflang · sitemap · JS 예산 · vercel.json)',
+    '랜딩페이지 이상 없음 (파일 참조 · 주소 일치 · 구조화 데이터 · hreflang · sitemap · CSP · JS 예산 · vercel.json)',
   )
 }
 
