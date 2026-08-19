@@ -17,22 +17,22 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w tap-tap",
+    "build": "npm run build -w tap-tap && npm run build -w @tap-tap/web",
+    "build:web": "npm run build -w @tap-tap/web",
     "test": "npm run test -w tap-tap",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint --type-aware",
-    "start": "npm run start -w tap-tap",
-    "dev": "npm run dev -w tap-tap",
-    "dist": "npm run dist -w tap-tap",
+    "app-icon": "npm run app-icon -w tap-tap",
     "check": "npm run check -w tap-tap",
     "check:expiry": "npm run check:expiry -w tap-tap",
+    "check:site": "npm run build:web && node scripts/check-site.js",
+    "dev": "npm run dev -w tap-tap",
+    "dev:web": "npm run dev -w @tap-tap/web",
+    "dist": "npm run dist -w tap-tap",
     "preview": "npm run preview -w tap-tap",
-    "tray-icon": "npm run tray-icon -w tap-tap",
-    "app-icon": "npm run app-icon -w tap-tap",
     "site-images": "npm run site-images -w tap-tap",
-    "site": "node scripts/serve-site.js",
-    "site:open": "node scripts/serve-site.js --open",
-    "check:site": "node scripts/check-site.js"
+    "start": "npm run start -w tap-tap",
+    "tray-icon": "npm run tray-icon -w tap-tap"
   },
   "devDependencies": {
     "oxlint": "^1.78.0",

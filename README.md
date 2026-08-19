@@ -210,12 +210,19 @@ apps/
     ├── build/         앱 아이콘 산출물 (icns · ico · png)
     └── dist-main/ · dist-renderer/ · dist-preload/   빌드 산출물. 실제로 도는 것은 이쪽이다
 
+apps/
+└── web/               랜딩페이지 (Next.js · Vercel 로 올라간다)
+    ├── app/           (ko) 는 `/`, (en) 은 `/en` — 나라말마다 루트 레이아웃이 하나씩
+    ├── components/    마크업 한 벌. 나라말은 밖에서 들어온다
+    ├── lib/           문구(copy.*.tsx) · 주소(site.ts) · 구조화 데이터(jsonld.ts)
+    ├── public/        그림 · robots.txt · llms.txt
+    └── middleware.ts  요청마다 nonce 를 발급해 CSP 에 싣는다
+
 packages/
 └── shared/            앱·랜딩·어드민이 함께 보는 것
     └── src/           characters · power · i18n/ · state · ipc
 
-site/               랜딩페이지 (Vercel 로 올라간다)
-scripts/            랜딩에 딸린 도구 (로컬 서버 · 점검)
+scripts/            랜딩 점검 (빌드한 결과를 띄워서 본다)
 supabase/           schema.sql — 테이블과 RPC
 ```
 

@@ -10,6 +10,11 @@
     "apps/desktop/test",
     "apps/desktop/vite.config.mts",
     "apps/desktop/vite.main.config.mts",
-    "apps/desktop/vite.preload.config.mts"
+    "apps/desktop/vite.preload.config.mts",
+    "apps/web/app",
+    "apps/web/components",
+    "apps/web/lib",
+    "apps/web/middleware.ts",
+    "apps/web/next.config.ts"
   ]
 }

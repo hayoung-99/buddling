@@ -1,0 +1,10 @@
+{
+  "//": "편집기용. 검사는 루트 tsconfig 가 한다.",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "jsx": "preserve",
+    "plugins": [{ "name": "next" }]
+  },
+  "include": ["app", "components", "lib", "middleware.ts", "next.config.ts", "next-env.d.ts"]
+}
