@@ -252,6 +252,41 @@ async function checkScriptBudget() {
   }
 }
 
+// ── 7. vercel.json 이 스키마를 지키는가 ───────────────
+
+/**
+ * `vercel.json` 은 **주석을 받지 않는다.** 스키마가 `additionalProperties: false` 라
+ * 허용된 키 밖의 것이 하나라도 있으면 빌드가 시작조차 못 하고 설정 오류로 끝난다.
+ *
+ * 이 저장소는 `.oxlintrc.json`·`tsconfig.json` 에 `"//"` 로 설명을 다는 습관이 있어서
+ * 손이 그리 간다. 실제로 그렇게 운영 배포를 한 번 떨어뜨렸다 — **미리보기는 통과했는데
+ * 운영만 실패**해서 알아채기도 늦었다. 그래서 여기서 먼저 잡는다.
+ */
+const VERCEL_JSON_KEYS = new Set([
+  '$schema', 'buildCommand', 'cleanUrls', 'crons', 'devCommand', 'framework',
+  'functions', 'git', 'headers', 'ignoreCommand', 'images', 'installCommand',
+  'outputDirectory', 'public', 'redirects', 'regions', 'rewrites', 'trailingSlash',
+])
+
+function checkVercelJson() {
+  const file = path.join(WEB, 'vercel.json')
+  if (!fs.existsSync(file)) return
+
+  let parsed
+  try {
+    parsed = JSON.parse(fs.readFileSync(file, 'utf8'))
+  } catch (error) {
+    fail('vercel.json', `읽을 수 없습니다 → ${error.message}`)
+    return
+  }
+
+  for (const key of Object.keys(parsed)) {
+    if (!VERCEL_JSON_KEYS.has(key)) {
+      fail('vercel.json', `"${key}" 는 허용되지 않는 키입니다 (주석도 넣을 수 없습니다)`)
+    }
+  }
+}
+
 // ── 실행 ──────────────────────────────────────────────
 
 async function main() {
@@ -259,6 +294,8 @@ async function main() {
     console.error('\n먼저 빌드해야 합니다: npm run build:web\n')
     process.exit(1)
   }
+
+  checkVercelJson()
 
   const server = startServer()
   try {
@@ -283,7 +320,7 @@ async function main() {
   }
 
   console.log(
-    '랜딩페이지 이상 없음 (파일 참조 · 주소 일치 · 구조화 데이터 · hreflang · sitemap · JS 예산)',
+    '랜딩페이지 이상 없음 (파일 참조 · 주소 일치 · 구조화 데이터 · hreflang · sitemap · JS 예산 · vercel.json)',
   )
 }
 
