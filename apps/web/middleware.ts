@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 /**
  * 보안 헤더를 붙인다.
@@ -33,15 +34,28 @@ import { NextResponse } from 'next/server'
  * 나머지 지시는 그대로 좁게 남는다 — `default-src 'none'` 에서 시작해서 필요한 것만
  * 하나씩 연다.
  */
-export function middleware() {
+export function middleware(request: NextRequest) {
+  const isAdmin = request.nextUrl.pathname.startsWith('/admin')
+
+  /*
+   * 어드민은 Supabase 와 이야기해야 한다. 랜딩에는 그 구멍을 내지 않는다 — 열어 둘 이유가
+   * 없는 곳을 열어 두면 나중에 누가 열었는지 아무도 모르게 된다.
+   *
+   * 주소가 없으면 아무것도 더하지 않는다. 그러면 어드민은 "설정이 필요합니다" 화면만
+   * 뜨고, 랜딩은 어차피 영향이 없다.
+   */
+  const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const connect = ['https://api.github.com']
+  if (isAdmin && supabaseOrigin) connect.push(supabaseOrigin, supabaseOrigin.replace(/^https/, 'wss'))
+
   const csp = [
     "default-src 'none'",
     "img-src 'self'",
     "style-src 'self'",
     // 구워 둔 HTML 안의 인라인 스크립트(Next 의 RSC 페이로드)를 허용한다. 위 주석 참고.
     "script-src 'self' 'unsafe-inline'",
-    // 받기 버튼이 최신 릴리스를 물어보는 곳
-    'connect-src https://api.github.com',
+    // 받기 버튼이 최신 릴리스를 물어보는 곳 (어드민에서는 Supabase 도)
+    `connect-src ${connect.join(' ')}`,
     "base-uri 'none'",
     "form-action 'none'",
     "frame-ancestors 'none'",
@@ -51,6 +65,14 @@ export function middleware() {
   response.headers.set('Content-Security-Policy', csp)
   response.headers.set('X-Content-Type-Options', 'nosniff')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+
+  /*
+   * 어드민은 검색에 잡히지 않는다. 페이지의 메타와 `robots.txt` 에도 같은 뜻을 적어
+   * 두었다 — 셋 중 하나만으로도 대개 되지만, 빠뜨렸을 때 조용히 색인되는 쪽이 되돌리기
+   * 어렵다. 헤더는 그중 크롤러가 가장 확실하게 보는 자리다.
+   */
+  if (isAdmin) response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+
   return response
 }
 

@@ -552,6 +552,215 @@ on realtime.messages for insert to authenticated
 with check (public.can_join_topic(realtime.topic()));
 
 -- ────────────────────────────────────────────────────────────
+-- 흔적 남기기 (얼마나 쓰이는지 재는 유일한 근거)
+-- ────────────────────────────────────────────────────────────
+--
+-- `get_my_teams()` 도 `last_seen_at` 을 갱신하지만 그건 앱을 켤 때와 다시 붙을 때뿐이다.
+-- **이 앱은 컴퓨터를 켜 두는 동안 계속 떠 있는 앱이라**, 껐다 켜지 않는 사람은 며칠이고
+-- 갱신되지 않는다. 그러면 가장 오래 쓰는 사람이 가장 활동 없어 보이는, 방향이 거꾸로인
+-- 오차가 생긴다. 그래서 앱이 하루에 한 번 이 함수를 부른다.
+create or replace function public.touch_member()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user uuid := auth.uid();
+begin
+  if v_user is null then raise exception 'NOT_SIGNED_IN'; end if;
+  update members set last_seen_at = now() where user_id = v_user;
+end;
+$$;
+
+-- ────────────────────────────────────────────────────────────
+-- 어드민 (읽기 전용 집계)
+-- ────────────────────────────────────────────────────────────
+--
+-- 표와 함수를 한 절에 모아 둔다. 이 셋은 서로만 보고, 앱은 전혀 부르지 않는다.
+--
+-- **집계만 돌려준다.** 팀 이름·닉네임·초대코드는 어드민에도 나가지 않는다. 사용률을
+-- 보는 데 필요하지 않고, 필요 없는 것을 볼 수 있게 만들면 그 화면이 유출 경로가 된다.
+
+-- 어드민은 이메일로 정한다. **계정이 생기기 전에 미리 넣어 둘 수 있다** — 매직링크로
+-- 처음 로그인하는 순간 그 계정이 이 표와 이어진다.
+--
+--   insert into public.admins (email) values ('you@example.com');
+--
+-- 정책을 하나도 만들지 않으므로 anon 키로는 이 표를 읽지도 쓰지도 못한다.
+-- 비워 두면 아무도 못 들어간다. 그게 맞는 기본값이다.
+create table if not exists public.admins (
+  email      text primary key check (email = lower(email) and email like '%@%'),
+  created_at timestamptz not null default now()
+);
+alter table public.admins enable row level security;
+
+/**
+ * 지금 부르는 사람이 어드민인가.
+ *
+ * 익명 계정과 메일 확인이 안 된 계정은 거른다. 매직링크로 들어오면 그 순간
+ * `email_confirmed_at` 이 채워지므로, 남의 주소를 적어 넣어도 그 메일함을 못 열면
+ * 통과하지 못한다.
+ */
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, auth
+as $$
+  select exists (
+    select 1
+      from auth.users u
+      join public.admins a on a.email = lower(u.email)
+     where u.id = auth.uid()
+       and coalesce(u.is_anonymous, false) = false
+       and u.email_confirmed_at is not null
+  )
+$$;
+
+/**
+ * 지금 이 순간의 총계.
+ *
+ * `people` 과 `accounts` 는 다른 숫자다. 익명 계정은 앱을 다시 깔거나 세션을 잃을
+ * 때마다 하나씩 늘어나므로 사람 수가 아니다 (그래서 `cleanup_anonymous_users` 가
+ * 떠도는 것을 7일마다 지운다). **사람 수로 읽어야 하는 것은 `people` 이다.**
+ *
+ * `solo` 는 혼자만 있는 팀이다. 이 앱은 팀원 화면에 캐릭터가 뜨는 것이 전부라
+ * 1인팀 비율이 높으면 핵심 가치가 전달되지 않고 있다는 뜻이다.
+ */
+create or replace function public.admin_overview()
+returns json
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+declare
+  v_result json;
+begin
+  if not public.is_admin() then raise exception 'FORBIDDEN'; end if;
+
+  select json_build_object(
+    'teams',   (select count(*) from teams),
+    'members', (select count(*) from members),
+    'people',  (select count(distinct user_id) from members),
+    'accounts', json_build_object(
+      'total',     (select count(*) from auth.users),
+      'anonymous', (select count(*) from auth.users where coalesce(is_anonymous, false))
+    ),
+    -- 마지막 흔적이 얼마나 최근인가. 앱이 하루 한 번 흔적을 남기므로 d1 이 곧 어제오늘 쓴 사람이다.
+    'active', json_build_object(
+      'd1',  (select count(distinct user_id) from members where last_seen_at > now() - interval '1 day'),
+      'd7',  (select count(distinct user_id) from members where last_seen_at > now() - interval '7 days'),
+      'd30', (select count(distinct user_id) from members where last_seen_at > now() - interval '30 days')
+    ),
+    'solo', (select count(*) from (
+      select team_id from members group by team_id having count(*) = 1
+    ) s),
+    'recent', json_build_object(
+      'teams7',    (select count(*) from teams   where created_at > now() - interval '7 days'),
+      'members7',  (select count(*) from members where created_at > now() - interval '7 days'),
+      'teams30',   (select count(*) from teams   where created_at > now() - interval '30 days'),
+      'members30', (select count(*) from members where created_at > now() - interval '30 days')
+    ),
+    'generatedAt', now()
+  ) into v_result;
+
+  return v_result;
+end;
+$$;
+
+/**
+ * 날짜별로 새로 생긴 팀과 멤버.
+ *
+ * **일별 활동자 이력은 여기서 만들 수 없다.** `last_seen_at` 은 마지막 한 번만 남는
+ * 값이라 과거 어느 날 누가 왔는지는 기록이 없다. 있지도 않은 숫자를 그럴듯하게 짓느니
+ * 만들 수 있는 것만 돌려준다. "지금 활동자"는 `admin_overview`, "언제 마지막으로
+ * 왔나"는 `admin_distribution` 이 각각 답한다.
+ *
+ * 날짜 경계는 한국 시간이다. UTC 로 자르면 저녁에 만든 팀이 다음 날로 넘어간다.
+ */
+create or replace function public.admin_daily(p_days int default 30)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_days   int := least(greatest(coalesce(p_days, 30), 1), 180);
+  v_result json;
+begin
+  if not public.is_admin() then raise exception 'FORBIDDEN'; end if;
+
+  select coalesce(json_agg(json_build_object(
+           'date',       to_char(d.day, 'YYYY-MM-DD'),
+           'newTeams',   coalesce(t.n, 0),
+           'newMembers', coalesce(m.n, 0)
+         ) order by d.day), '[]'::json)
+    into v_result
+    from (
+      select generate_series(
+               (now() at time zone 'Asia/Seoul')::date - (v_days - 1),
+               (now() at time zone 'Asia/Seoul')::date,
+               interval '1 day'
+             )::date as day
+    ) d
+    left join (
+      select (created_at at time zone 'Asia/Seoul')::date as day, count(*) as n
+        from teams group by 1
+    ) t on t.day = d.day
+    left join (
+      select (created_at at time zone 'Asia/Seoul')::date as day, count(*) as n
+        from members group by 1
+    ) m on m.day = d.day;
+
+  return v_result;
+end;
+$$;
+
+/**
+ * 세 가지 분포 — 팀 크기, 캐릭터, 마지막 흔적.
+ *
+ * 마지막 흔적 분포가 유지율 대신이다. 앱이 하루 한 번 흔적을 남기므로 `today` 는 지금
+ * 쓰는 사람이고, 뒤로 갈수록 떠난 사람이다.
+ */
+create or replace function public.admin_distribution()
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_result json;
+begin
+  if not public.is_admin() then raise exception 'FORBIDDEN'; end if;
+
+  select json_build_object(
+    'teamSizes', coalesce((
+      select json_agg(json_build_object('size', size, 'teams', teams) order by size)
+        from (
+          select size, count(*) as teams
+            from (select team_id, count(*) as size from members group by team_id) per_team
+           group by size
+        ) s
+    ), '[]'::json),
+    'characters', coalesce((
+      select json_agg(json_build_object('key', character_key, 'members', n) order by n desc, character_key)
+        from (select character_key, count(*) as n from members group by character_key) c
+    ), '[]'::json),
+    'lastSeen', json_build_object(
+      'today',  (select count(distinct user_id) from members where last_seen_at > now() - interval '1 day'),
+      'week',   (select count(distinct user_id) from members where last_seen_at <= now() - interval '1 day'  and last_seen_at > now() - interval '7 days'),
+      'month',  (select count(distinct user_id) from members where last_seen_at <= now() - interval '7 days' and last_seen_at > now() - interval '30 days'),
+      'older',  (select count(distinct user_id) from members where last_seen_at <= now() - interval '30 days')
+    )
+  ) into v_result;
+
+  return v_result;
+end;
+$$;
+
+-- ────────────────────────────────────────────────────────────
 -- 로그인한 사람이 호출할 수 있는 함수 목록
 -- ────────────────────────────────────────────────────────────
 --
@@ -574,6 +783,16 @@ grant execute on function public.rename_team(uuid, text)        to authenticated
 grant execute on function public.invite_ttl()                   to authenticated;
 grant execute on function public.max_teams_per_user()           to authenticated;
 grant execute on function public.max_members_per_team()         to authenticated;
+grant execute on function public.touch_member()                 to authenticated;
+
+-- 어드민용. 셋 다 첫 줄에서 is_admin() 을 확인하고 아니면 FORBIDDEN 으로 끝난다.
+-- 그래서 anon 키가 브라우저에 그대로 실려 있어도 집계가 새지 않는다.
+-- is_admin() 자체는 열어 둔다 — 알려 주는 것은 "내가 어드민인가" 하나뿐이고, 어드민
+-- 화면이 "로그인은 됐지만 권한 없음"을 구별해 안내하려면 이게 필요하다.
+grant execute on function public.is_admin()                     to authenticated;
+grant execute on function public.admin_overview()               to authenticated;
+grant execute on function public.admin_daily(int)               to authenticated;
+grant execute on function public.admin_distribution()           to authenticated;
 
 -- 실시간 정책이 접속자 권한으로 부르는 함수라 여기 있어야 한다. 빠뜨리면 정책이
 -- 함수를 실행하지 못해 팀원까지 전부 채널에서 막힌다.

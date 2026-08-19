@@ -201,6 +201,10 @@ function createSupabaseNet({ url, anonKey, storage }: Required<Pick<NetConfig, '
       return (await rpc('get_my_teams', {})) ?? []
     },
 
+    async touch() {
+      await rpc('touch_member', {})
+    },
+
     async setCharacter(teamId, characterKey) {
       const member = await rpc('set_character', {
         p_team_id: teamId,

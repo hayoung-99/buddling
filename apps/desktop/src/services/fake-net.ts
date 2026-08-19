@@ -327,6 +327,13 @@ function createFakeNet({
     async getMyTeams() {
       return server.getMyTeams({ userId })
     },
+
+    /*
+     * 진짜 쪽은 `last_seen_at` 을 갱신한다. 여기서 흉내 낼 것이 없는 이유는 그 값을
+     * 읽는 곳이 어드민뿐이고, 어드민은 이 가짜 서버를 쓰지 않기 때문이다. 그래도
+     * 자리는 있어야 한다 — 없으면 앱이 하루 한 번 부를 때 없는 함수를 부르게 된다.
+     */
+    async touch() {},
     async setCharacter(teamId, characterKey) {
       const member = server.setCharacter({ userId, teamId, characterKey })
       const room = rooms.get(teamId)

@@ -364,6 +364,61 @@ function checkOwnScriptsAllowed() {
   }
 }
 
+// ── 9. 어드민이 새어 나가지 않는가 ────────────────────
+
+/**
+ * 어드민은 검색에 잡히면 안 된다.
+ *
+ * 막는 일 자체는 DB 가 한다(집계 함수가 전부 `is_admin()` 을 확인한다). 여기서 보는 것은
+ * **색인**이다. 한번 색인되면 지우는 데 시간이 걸리고, 그 사이 주소가 알려진다.
+ *
+ * 세 곳을 다 본다 — 응답 헤더 · 페이지의 메타 · `robots.txt`. 하나만으로도 대개 되지만,
+ * 하나를 빠뜨렸다는 사실은 색인된 뒤에야 알게 된다. `robots.txt` 는 그룹이 둘이라
+ * (`*` 와 이름을 부른 크롤러들) **양쪽 모두에** 적혀 있어야 한다.
+ */
+async function checkAdminHidden() {
+  const route = '/admin/'
+  const response = await fetch(ORIGIN + route)
+  if (!response.ok) {
+    fail(route, `서버가 ${response.status} 로 답했습니다`)
+    return
+  }
+
+  const tag = response.headers.get('x-robots-tag') ?? ''
+  if (!/noindex/i.test(tag)) fail(route, `X-Robots-Tag 에 noindex 가 없습니다 (${tag || '없음'})`)
+
+  const html = await response.text()
+  const meta = html.match(/<meta name="robots" content="([^"]*)"/)?.[1] ?? ''
+  if (!/noindex/i.test(meta)) fail(route, `<meta name="robots"> 에 noindex 가 없습니다 (${meta || '없음'})`)
+
+  // Supabase 에 닿을 수 있어야 한다. 랜딩과 같은 CSP 를 쓰면 로그인부터 막힌다.
+  const csp = response.headers.get('content-security-policy') ?? ''
+  const connect = csp.split(';').map((part) => part.trim()).find((part) => part.startsWith('connect-src'))
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL && !connect?.includes(process.env.NEXT_PUBLIC_SUPABASE_URL)) {
+    fail(route, `CSP 의 connect-src 에 Supabase 주소가 없습니다 (${connect})`)
+  }
+
+  if (body('/sitemap.xml').includes('/admin')) fail('sitemap.xml', '어드민이 실려 있습니다')
+
+  /*
+   * 주석을 먼저 걷어낸다. 이 파일의 주석에 `User-agent: *` 라는 말이 그대로 들어 있어서,
+   * 그냥 읽으면 어느 그룹이 잘못됐는지 이름을 엉뚱하게 짚는다.
+   */
+  const robots = body('/robots.txt')
+    .split('\n')
+    .filter((line) => !line.trimStart().startsWith('#'))
+    .join('\n')
+
+  const groups = robots.split(/\n\s*\n/).filter((group) => /^user-agent:/im.test(group))
+  if (!groups.length) fail('robots.txt', 'User-agent 그룹이 하나도 없습니다')
+  for (const group of groups) {
+    if (!/^disallow:\s*\/admin/im.test(group)) {
+      const name = group.match(/^user-agent:\s*(\S+)/im)?.[1] ?? '?'
+      fail('robots.txt', `"${name}" 그룹에 Disallow: /admin/ 이 없습니다`)
+    }
+  }
+}
+
 // ── 실행 ──────────────────────────────────────────────
 
 async function main() {
@@ -385,6 +440,7 @@ async function main() {
     checkLanguageLinks()
     checkSitemap()
     checkOwnScriptsAllowed()
+    await checkAdminHidden()
     await checkScriptBudget()
   } finally {
     server.kill()
@@ -398,7 +454,7 @@ async function main() {
   }
 
   console.log(
-    '랜딩페이지 이상 없음 (파일 참조 · 주소 일치 · 구조화 데이터 · hreflang · sitemap · CSP · JS 예산 · vercel.json)',
+    '랜딩페이지 이상 없음 (파일 참조 · 주소 일치 · 구조화 데이터 · hreflang · sitemap · CSP · JS 예산 · 어드민 숨김 · vercel.json)',
   )
 }
 

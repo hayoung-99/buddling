@@ -57,6 +57,15 @@ export interface Net {
   }): Promise<NetMembership>
   getMyTeams(): Promise<NetMembership[]>
 
+  /**
+   * "아직 쓰고 있다" 는 흔적만 남긴다.
+   *
+   * `getMyTeams()` 도 같은 일을 하지만 그건 앱을 켤 때와 다시 붙을 때뿐이라, 켜 두고
+   * 쓰는 사람은 며칠이고 흔적이 갱신되지 않는다. 어드민의 활동자 수가 거꾸로 기울지
+   * 않게 하려고 따로 둔다.
+   */
+  touch(): Promise<void>
+
   setCharacter(teamId: string, characterKey: string): Promise<Member>
   setNickname(teamId: string, nickname: string): Promise<Member>
   renameTeam(teamId: string, name: string): Promise<Team>
