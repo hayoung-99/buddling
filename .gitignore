@@ -1,8 +1,9 @@
 node_modules/
 dist/
+apps/*/dist/
 # 렌더러·preload 빌드 산출물 (npm run build 로 언제든 다시 만든다)
-dist-renderer/
-dist-preload/
+apps/*/dist-renderer/
+apps/*/dist-preload/
 .DS_Store
 *.log
 
@@ -29,4 +30,5 @@ build/icon.iconset/
 .claude/reports/
 
 # 메인 프로세스 빌드 산출물 (npm run build 로 언제든 다시 만든다)
-dist-main/
+apps/*/dist-main/
+*.tsbuildinfo

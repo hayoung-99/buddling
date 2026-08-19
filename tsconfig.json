@@ -1,29 +1,15 @@
 {
+  "//": "루트에서 한 번에 본다. `npm run typecheck` 가 이걸 쓴다. 워크스페이스별 tsconfig 는 편집기가 파일 하나를 열었을 때 쓰라고 두는 것이고, 검사의 기준은 여기다.",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "jsx": "react-jsx",
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "skipLibCheck": true,
-    "noEmit": true,
     "types": ["vite/client", "node"]
   },
   "include": [
-    "src/main",
-    "src/services",
-    "src/preload",
-    "src/renderer",
-    "src/shared",
-    "test",
-    "vite.config.mts",
-    "vite.main.config.mts",
-    "vite.preload.config.mts"
+    "packages/shared/src",
+    "apps/desktop/src",
+    "apps/desktop/test",
+    "apps/desktop/vite.config.mts",
+    "apps/desktop/vite.main.config.mts",
+    "apps/desktop/vite.preload.config.mts"
   ]
 }

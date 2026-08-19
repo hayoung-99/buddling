@@ -1,0 +1,21 @@
+{
+  "//": "워크스페이스가 함께 쓰는 바탕. `paths` 는 이 파일이 있는 곳(저장소 루트) 기준으로 풀린다 — 물려받는 쪽에서 다시 적을 필요가 없다. TypeScript 7 은 `baseUrl` 을 없앴으므로 상대경로로 적는다.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "paths": {
+      "@tap-tap/shared/*": ["./packages/shared/src/*"]
+    }
+  }
+}

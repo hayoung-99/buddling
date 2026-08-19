@@ -8,6 +8,30 @@
 
 ---
 
+## 저장소는 워크스페이스로 나뉘어 있습니다
+
+```
+apps/desktop      Electron 앱 (예전의 저장소 루트가 통째로 여기)
+packages/shared   앱·랜딩·어드민이 함께 보는 것 — @tap-tap/shared
+site/ · scripts/  랜딩페이지와 거기 딸린 도구
+supabase/         schema.sql
+```
+
+**명령은 루트에서 부릅니다.** 루트 `package.json` 이 알맞은 워크스페이스로 넘겨줍니다
+(`npm test` → `npm run test -w tap-tap`). 설치도 루트에서 `npm ci` 한 번이면 됩니다 —
+workspaces 가 의존성을 루트 `node_modules` 로 올려 두기 때문입니다.
+
+**공유 코드는 `@tap-tap/shared/…` 로 부릅니다.** 상대경로로 넘나들지 마세요.
+이 패키지는 **빌드하지 않고 소스를 그대로 내보냅니다** — 부르는 쪽이 전부 번들러라
+트랜스파일은 그쪽이 합니다. 그래서 산출물이 어긋날 일이 없습니다. `tsc` 가 이걸 찾는
+길은 `tsconfig.base.json` 의 `paths` 하나뿐이니, 새 하위 경로를 만들면
+`packages/shared/package.json` 의 `exports` 와 함께 봐 주세요.
+
+타입 검사는 **루트 `tsconfig.json` 이 워크스페이스 전부를 한 번에** 봅니다.
+워크스페이스마다 있는 `tsconfig.json` 은 편집기가 파일 하나를 열었을 때 쓰라고 둔
+것이지 검사의 기준이 아닙니다. (TypeScript 7 은 `baseUrl` 을 없앴고 `compilerOptions`
+안의 주석 키도 거부하므로, 흉내 내어 넣지 마세요.)
+
 ## 자주 쓰는 명령
 
 ```bash
@@ -110,9 +134,9 @@ TS 를 스스로 파싱하므로 그 제약을 받지 않습니다.
 창이 여는 화면은 `dist-renderer/`, preload 는 `dist-preload/*.cjs` 입니다. 소스만 고치고
 빌드하지 않으면 **아무것도 안 바뀐 것처럼 보입니다.** `npm start` 는 알아서 먼저 빌드합니다.
 
-빌드는 Vite 설정 **세 벌**입니다 — 화면(`vite.config.mts`) · preload
-(`vite.preload.config.mts`) · 메인(`vite.main.config.mts`). 메인 설정은 `src/main` 과
-`src/services` 를 훑어 **파일 하나를 파일 하나로** 떨어뜨립니다. 한 덩어리로 묶으면
+빌드는 Vite 설정 **세 벌**입니다 — 화면(`apps/desktop/vite.config.mts`) · preload
+(`apps/desktop/vite.preload.config.mts`) · 메인(`apps/desktop/vite.main.config.mts`). 메인 설정은 `apps/desktop/src/main` 과
+`apps/desktop/src/services` 를 훑어 **파일 하나를 파일 하나로** 떨어뜨립니다. 한 덩어리로 묶으면
 `__dirname` 의 깊이가 달라져 `config.ts`·`windows.ts`·`tray.ts` 가 저장소 루트를 찾지
 못하는데, 그게 **배포본에서만** 드러납니다.
 
@@ -224,10 +248,10 @@ Electron 도 브라우저도 없이 돌릴 수 있는 계산은 별도 모듈로
 
 ### 2. 네 언어 사전은 항상 함께 고친다
 
-문구를 하나 추가하면 `src/shared/i18n/{ko,en,ja,zh}.json` **네 개 모두** 고쳐야 합니다.
-빠진 열쇠·남는 열쇠·`{빈칸}` 불일치·빈 문장을 `test/i18n.test.ts` 가 잡아냅니다.
+문구를 하나 추가하면 `packages/shared/src/i18n/{ko,en,ja,zh}.json` **네 개 모두** 고쳐야 합니다.
+빠진 열쇠·남는 열쇠·`{빈칸}` 불일치·빈 문장을 `apps/desktop/test/i18n.test.ts` 가 잡아냅니다.
 
-로직은 `src/shared/i18n/index.ts` **한 곳에만** 있습니다. `src/main/i18n.ts` 는 그 위의
+로직은 `packages/shared/src/i18n/index.ts` **한 곳에만** 있습니다. `apps/desktop/src/main/i18n.ts` 는 그 위의
 얇은 껍데기로, "앱이 지금 쓰는 언어" 하나만 들고 있습니다. 예전에는 메인이 CommonJS 라
 ESM 인 shared 를 부를 수 없어서 같은 로직이 두 벌이었고 한쪽만 고치면 조용히 어긋났는데,
 메인도 ESM 이 된 뒤로 그 함정이 없어졌습니다. **문장을 만드는 규칙을 바꿀 일이 생기면
@@ -279,8 +303,8 @@ preload 의 `call()` 이 봉투를 풀어 다시 던집니다 — 새 창을 만
 | 곳 | 무엇 |
 |---|---|
 | `supabase/schema.sql` | `max_teams_per_user()` · `max_members_per_team()` · `invite_ttl()` |
-| `src/main/session.ts` | `MAX_TEAMS` · `MAX_MEMBERS` |
-| `src/services/fake-net.ts` | `MAX_TEAMS_PER_USER` · `MAX_MEMBERS_PER_TEAM` · `INVITE_TTL_MS` |
+| `apps/desktop/src/main/session.ts` | `MAX_TEAMS` · `MAX_MEMBERS` |
+| `apps/desktop/src/services/fake-net.ts` | `MAX_TEAMS_PER_USER` · `MAX_MEMBERS_PER_TEAM` · `INVITE_TTL_MS` |
 
 DB 는 `security definer` RPC 로만 접근합니다. 테이블은 RLS 로 잠겨 있어서
 클라이언트에서 직접 select/insert 하면 아무것도 안 됩니다. 새 기능이 DB 를 건드린다면
@@ -290,16 +314,24 @@ DB 는 `security definer` RPC 로만 접근합니다. 테이블은 RLS 로 잠�
 
 ## 밟기 쉬운 함정
 
+- **`apps/desktop/package.json` 의 `electron` 은 캐럿 없이 정확한 버전입니다.**
+  workspaces 가 `electron` 을 루트 `node_modules` 로 올려 버리는데, electron-builder 는
+  앱 폴더에서 그것을 찾다 실패하고 **범위 표기(`^43.4.0`)로는 어느 바이너리를 받을지
+  정하지 못합니다.** 캐럿을 도로 붙이면 `npm run dist` 가 통째로 멈춥니다
+  (`Cannot compute electron version`). dependabot 은 정확한 버전도 잘 올려 줍니다.
+- **`@tap-tap/shared` 는 `devDependencies` 에 있습니다.** 빌드할 때 번들에 녹아들어
+  런타임에는 부르지 않기 때문입니다. `dependencies` 로 옮기면 타입스크립트 소스가
+  배포본 asar 안에 그대로 실립니다.
 - **preload 는 CommonJS 여야 합니다.** 창들이 `sandbox` 를 끄지 않아서, ESM 으로
   내보내면 preload 가 통째로 뜨지 않습니다. 그러면 `window.teamApi` 가 없어 **화면이
   빈 채로** 뜨는데, 오류는 눈에 잘 안 띄는 곳에만 남습니다
-  (`vite.preload.config.mts` 참고).
+  (`apps/desktop/vite.preload.config.mts` 참고).
 - **Vite 설정의 `base: './'` 를 건드리지 마세요.** 창은 `file://` 로 열리므로 절대경로면
   자산을 못 찾습니다. 개발 중에는 멀쩡해 보이고 **배포본에서만** 깨집니다.
 - **`.env` 를 Bash 로 읽으려 하면 훅이 막습니다.** 필요하면 사용자에게 부탁하세요.
 - **저장소 루트에 `config.generated.json` 이 있으면 `SUPABASE_URL=` 로 비워도 소용없습니다.**
   `main/config.ts` 가 환경변수 → `.env` → 구운 값 순으로 찾기 때문입니다. (예전에는
-  `src/main/` 안에 있었는데, 그 자리가 빌드 산출물 폴더가 되면서 루트로 옮겼습니다 —
+  `apps/desktop/src/main/` 안에 있었는데, 그 자리가 빌드 산출물 폴더가 되면서 루트로 옮겼습니다 —
   `emptyOutDir` 가 지워 버리기 때문입니다.) 오프라인
   상황을 흉내 내려면 닿지 않는 주소(`https://127.0.0.1:9`)를 주는 편이 확실합니다.
 - **앱이 이미 떠 있으면 두 번째 실행은 조용히 죽습니다** (단일 인스턴스 잠금).
@@ -328,7 +360,7 @@ DB 는 `security definer` RPC 로만 접근합니다. 테이블은 RLS 로 잠�
 
 ## 눈으로 확인하기
 
-화면을 고쳤으면 스크린샷을 찍어 직접 보세요. `src/main/dev-capture.js` 가
+화면을 고쳤으면 스크린샷을 찍어 직접 보세요. `apps/desktop/src/main/dev-capture.ts` 가
 환경변수로 상황을 만들어 주고 PNG 를 남긴 뒤 앱을 끕니다.
 
 ```bash

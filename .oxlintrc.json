@@ -1,29 +1,76 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["eslint", "unicorn", "oxc", "import", "typescript"],
-  "categories": { "correctness": "error" },
+  "plugins": [
+    "eslint",
+    "unicorn",
+    "oxc",
+    "import",
+    "typescript"
+  ],
+  "categories": {
+    "correctness": "error"
+  },
   "rules": {
     "no-undef": "error",
-    "eqeqeq": ["error", "always", { "null": "ignore" }],
+    "eqeqeq": [
+      "error",
+      "always",
+      {
+        "null": "ignore"
+      }
+    ],
     "no-shadow": "error",
     "import/no-cycle": "error",
-
     "typescript/unbound-method": "off",
     "typescript/require-array-sort-compare": "off",
     "typescript/no-base-to-string": "off"
   },
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/dist-main/**",
+    "**/dist-renderer/**",
+    "**/dist-preload/**",
+    "**/.next/**",
+    "**/node_modules/**"
+  ],
   "overrides": [
     {
-      "files": ["src/main/**", "src/services/**", "scripts/**", "test/**", "*.mts"],
-      "env": { "node": true, "commonjs": true, "es2024": true }
+      "files": [
+        "apps/desktop/src/main/**",
+        "apps/desktop/src/services/**",
+        "apps/desktop/scripts/**",
+        "apps/desktop/test/**",
+        "*.mts",
+        "scripts/**",
+        "apps/*/*.mts"
+      ],
+      "env": {
+        "node": true,
+        "commonjs": true,
+        "es2024": true
+      }
     },
     {
-      "files": ["src/renderer/**", "src/shared/**", "site/**"],
-      "env": { "browser": true, "es2024": true }
+      "files": [
+        "apps/desktop/src/renderer/**",
+        "packages/shared/src/**",
+        "site/**"
+      ],
+      "env": {
+        "browser": true,
+        "es2024": true
+      }
     },
     {
-      "files": ["src/preload/**"],
-      "env": { "browser": true, "node": true, "commonjs": true, "es2024": true }
+      "files": [
+        "apps/desktop/src/preload/**"
+      ],
+      "env": {
+        "browser": true,
+        "node": true,
+        "commonjs": true,
+        "es2024": true
+      }
     }
   ]
 }
