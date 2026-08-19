@@ -80,7 +80,7 @@ export function Landing({ copy }: { copy: Copy }) {
             {/* 창 모서리를 밟고 선다. 이 한 장이 컨셉을 다 설명한다. */}
             <img
               className="escapee"
-              src="/assets/hero-cat.png"
+              src="/assets/hero-cat.webp"
               alt={copy.hero.imageAlt}
               width={760}
               height={900}
@@ -96,7 +96,7 @@ export function Landing({ copy }: { copy: Copy }) {
               <div className="app-frame">
                 <img
                   className="app-shot"
-                  src={copy.locale === 'en' ? '/assets/team-window-en.png' : '/assets/team-window.png'}
+                  src={copy.locale === 'en' ? '/assets/team-window-en.webp' : '/assets/team-window.webp'}
                   alt={copy.shot.imageAlt}
                   width={800}
                   height={1560}
@@ -121,7 +121,7 @@ export function Landing({ copy }: { copy: Copy }) {
               <p className="sub">{copy.characters.sub}</p>
               <img
                 className="strip"
-                src="/assets/characters.png"
+                src="/assets/characters.webp"
                 alt={copy.characters.imageAlt}
                 width={1760}
                 height={460}

@@ -102,8 +102,8 @@ export function buildJsonLd(copy: Copy) {
         url: `${SITE_URL}/`,
         image: { '@id': id('og-image') },
         screenshot: [
-          absolute('/assets/team-window.png'),
-          absolute('/assets/characters.png'),
+          absolute('/assets/team-window.webp'),
+          absolute('/assets/characters.webp'),
         ],
         applicationCategory: 'CommunicationApplication',
         applicationSubCategory: copy.app.subCategory,
