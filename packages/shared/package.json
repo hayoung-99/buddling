@@ -1,0 +1,15 @@
+{
+  "name": "@tap-tap/shared",
+  "version": "0.0.0",
+  "private": true,
+  "description": "데스크톱 앱·랜딩·어드민이 함께 보는 것 (캐릭터 스펙 · 네 언어 사전 · 화면 상태 타입)",
+  "type": "module",
+  "exports": {
+    "./characters": "./src/characters.ts",
+    "./i18n": "./src/i18n/index.ts",
+    "./i18n/*.json": "./src/i18n/*.json",
+    "./ipc": "./src/ipc.ts",
+    "./power": "./src/power.ts",
+    "./state": "./src/state.ts"
+  }
+}

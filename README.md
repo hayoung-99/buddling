@@ -167,45 +167,56 @@ TAPTAP_FAKE_NET=1 npm start
 
 ## 구조
 
-**화면은 빌드해서 씁니다.** `npm start` 가 알아서 먼저 빌드하지만, 소스를 고친 뒤에는
-`npm run build` (또는 `npm run dev`) 를 거쳐야 창에 반영됩니다.
+저장소는 **npm workspaces 모노레포**입니다. 명령은 루트에서 부르면 되고, 루트 명령이
+알맞은 워크스페이스로 넘겨줍니다.
+
+**소스가 아니라 빌드 산출물이 돕니다.** `npm start` 가 알아서 먼저 빌드하지만, 소스를
+고친 뒤에는 `npm run build` (또는 `npm run dev`) 를 거쳐야 창에 반영됩니다.
 
 ```
-src/
-├── main/          Electron 메인 프로세스 (자바스크립트 · CommonJS)
-│   ├── main.js         진입점 · 팀 수에 맞춰 캐릭터 창을 만들고 지운다
-│   ├── windows.js      투명 캐릭터 창 / 팀 창 / 크기 조절 패널
-│   ├── session.js      저장소 · 네트워크 · 창을 잇는 상태 한 곳 (팀별 소속·연결)
-│   ├── pet-size.js     캐릭터 창 크기 계산 (Electron 없이 테스트 가능)
-│   ├── click-through.js  캐릭터 위에서만 마우스를 받는 처리, 끌어서 옮기기
-│   ├── ipc.js          렌더러와의 유일한 통로
-│   ├── tray.js         메뉴바 아이콘
-│   ├── i18n.js         메뉴·오류 문구 번역 (렌더러와 같은 사전을 읽는다)
-│   ├── updates.js      새 버전을 어떻게 가져다줄지 플랫폼 보고 정한다
-│   ├── update-schedule.js  언제 확인할지 (아침에 하루 한 번)
-│   ├── auto-update.js  받아서 설치까지 (Windows)
-│   ├── update-check.js 나왔다고 알리기만 (그 밖 · 내려받기 실패 시)
-│   └── config.js       Supabase 접속 정보 (개발용 파일 / 빌드에 구운 값)
-│   ├── store.js        userData 안 JSON 한 개
-├── preload/       렌더러에 노출할 좁은 API (TS → CommonJS 로 빌드된다)
-├── shared/        characters · power · i18n/ · state·ipc (창들이 함께 쓰는 타입)
-├── renderer/      React + 타입스크립트 + Tailwind
-│   ├── theme.css       색·모서리 토큰과 Tailwind 바탕
-│   ├── ui.ts           여러 창이 되풀이해 쓰는 유틸리티 묶음
-│   ├── pet/            Three.js 캐릭터. 렌더 루프는 명령형이고 React 는 껍데기만이다
-│   ├── team/           팀 목록 창(TeamList) + 팀 상세 창(TeamDetail)
-│   ├── settings/       절전 강도·언어를 고르는 창
-│   ├── size/           캐릭터 크기 조절 패널
-│   ├── preview/        개발용 캐릭터 미리보기
-│   ├── icon/           앱 아이콘을 그리는 화면 (배포본에는 안 들어간다)
-│   └── site-assets/    랜딩페이지 그림을 그리는 화면 (배포본에는 안 들어간다)
-└── services/      net.ts 인터페이스 · supabase-net · 테스트용 fake-net
+apps/
+└── desktop/           Electron 앱. 이 폴더가 통째로 하나의 앱이다
+    ├── src/
+    │   ├── main/          메인 프로세스 (타입스크립트 → CommonJS 로 빌드된다)
+    │   │   ├── main.ts         진입점 · 팀 수에 맞춰 캐릭터 창을 만들고 지운다
+    │   │   ├── windows.ts      투명 캐릭터 창 / 팀 창 / 크기 조절 패널
+    │   │   ├── session.ts      저장소 · 네트워크 · 창을 잇는 상태 한 곳
+    │   │   ├── store.ts        userData 안 JSON 한 개
+    │   │   ├── ipc.ts          렌더러와의 유일한 통로
+    │   │   ├── click-through.ts  캐릭터 위에서만 마우스를 받기, 끌어서 옮기기
+    │   │   ├── pet-size.ts     창 크기 계산 (Electron 없이 테스트 가능)
+    │   │   ├── tray.ts         메뉴바 아이콘
+    │   │   ├── i18n.ts         지금 쓰는 언어 하나를 들고 있는 얇은 껍데기
+    │   │   ├── updates.ts      새 버전을 어떻게 가져다줄지 플랫폼 보고 정한다
+    │   │   ├── update-schedule.ts  언제 확인할지 (아침에 하루 한 번)
+    │   │   ├── auto-update.ts  받아서 설치까지 (Windows)
+    │   │   ├── update-check.ts 나왔다고 알리기만 (그 밖 · 내려받기 실패 시)
+    │   │   └── config.ts       Supabase 접속 정보 (개발용 파일 / 빌드에 구운 값)
+    │   ├── preload/       렌더러에 노출할 좁은 API (CommonJS 로 빌드된다)
+    │   ├── renderer/      React + 타입스크립트 + Tailwind
+    │   │   ├── theme.css       색·모서리 토큰과 Tailwind 바탕
+    │   │   ├── ui.ts           여러 창이 되풀이해 쓰는 유틸리티 묶음
+    │   │   ├── pet/            Three.js 캐릭터. 렌더 루프는 명령형이고 React 는 껍데기만
+    │   │   ├── team/           팀 목록 창(TeamList) + 팀 상세 창(TeamDetail)
+    │   │   ├── settings/       절전 강도·언어를 고르는 창
+    │   │   ├── size/           캐릭터 크기 조절 패널
+    │   │   ├── preview/        개발용 캐릭터 미리보기
+    │   │   ├── icon/           앱 아이콘을 그리는 화면 (배포본에는 안 들어간다)
+    │   │   └── site-assets/    랜딩페이지 그림을 그리는 화면 (배포본에는 안 들어간다)
+    │   └── services/      net.ts 인터페이스 · supabase-net · 테스트용 fake-net
+    ├── test/          단위 테스트 (Electron 없이 돈다)
+    ├── scripts/       앱에 딸린 도구 (아이콘 · 접속 정보 굽기 · e2e 점검)
+    ├── assets/        트레이 아이콘
+    ├── build/         앱 아이콘 산출물 (icns · ico · png)
+    └── dist-main/ · dist-renderer/ · dist-preload/   빌드 산출물. 실제로 도는 것은 이쪽이다
 
-dist-main/         빌드된 메인 프로세스 (Electron 이 여는 것은 이쪽이다)
-dist-renderer/     빌드된 화면 (창이 여는 것은 이쪽이다)
-dist-preload/      빌드된 preload
-site/              랜딩페이지 (빌드 도구 없는 HTML·CSS, Vercel 로 올라간다)
-build/             앱 아이콘 산출물 (icns · ico · png)
+packages/
+└── shared/            앱·랜딩·어드민이 함께 보는 것
+    └── src/           characters · power · i18n/ · state · ipc
+
+site/               랜딩페이지 (Vercel 로 올라간다)
+scripts/            랜딩에 딸린 도구 (로컬 서버 · 점검)
+supabase/           schema.sql — 테이블과 RPC
 ```
 
 아이콘도 랜딩페이지 그림도 **앱과 같은 캐릭터 코드로 그립니다.** 캐릭터 스펙을
@@ -213,7 +224,7 @@ build/             앱 아이콘 산출물 (icns · ico · png)
 
 ### 여러 나라 말
 
-문자열은 [`src/shared/i18n/`](src/shared/i18n/) 안에 언어별 JSON 한 벌씩 있습니다.
+문자열은 [`packages/shared/src/i18n/`](packages/shared/src/i18n/) 안에 언어별 JSON 한 벌씩 있습니다.
 열쇠(key)는 네 언어가 똑같아야 하고, 하나라도 어긋나면 테스트가 잡아냅니다 —
 빠진 열쇠·남는 열쇠·`{빈칸}` 불일치·빈 문장까지 검사합니다.
 
@@ -226,7 +237,7 @@ build/             앱 아이콘 산출물 (icns · ico · png)
 ### 캐릭터는 코드로 그립니다
 
 모델 파일(.glb 등)이 하나도 없습니다. `createCritter(spec)` 이 구·캡슐·원뿔을 조합해
-5종을 만들고, 색·비율·귀 모양·꼬리 모양은 [`src/shared/characters.js`](src/shared/characters.js)
+5종을 만들고, 색·비율·귀 모양·꼬리 모양은 [`packages/shared/src/characters.ts`](packages/shared/src/characters.ts)
 한 곳에서 정합니다. 새 동물을 추가하려면 그 배열에 항목 하나를 더하면 됩니다.
 
 ### 동작은 여러 겹이 겹쳐서 만들어집니다
