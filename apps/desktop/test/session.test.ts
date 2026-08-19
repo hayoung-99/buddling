@@ -329,3 +329,55 @@ describe('세션 — 팀을 떠난 뒤 흔적 지우기', () => {
     expect(await ctx.session.tap({ teamId: again.memberships[0].team.id })).toBe(true)
   })
 })
+
+describe('세션 — 아직 쓰고 있다는 흔적', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  /*
+   * 이 앱은 컴퓨터를 켜 두는 동안 계속 떠 있어서, 앱을 켤 때 한 번 남기는 것만으로는
+   * 오래 쓰는 사람일수록 활동이 없어 보이게 된다. 그래서 주기적으로 남긴다.
+   */
+  it('앱이 떠 있는 동안 열두 시간마다 흔적을 남긴다', async () => {
+    vi.useFakeTimers()
+    const ctx = makeSession()
+    const touch = vi.spyOn(ctx.net, 'touch')
+
+    await ctx.session.restore()
+    expect(touch).not.toHaveBeenCalled()
+
+    await vi.advanceTimersByTimeAsync(12 * 60 * 60 * 1000)
+    expect(touch).toHaveBeenCalledTimes(1)
+
+    await vi.advanceTimersByTimeAsync(12 * 60 * 60 * 1000)
+    expect(touch).toHaveBeenCalledTimes(2)
+  })
+
+  it('앱을 끄면 흔적 남기기도 멈춘다', async () => {
+    vi.useFakeTimers()
+    const ctx = makeSession()
+    const touch = vi.spyOn(ctx.net, 'touch')
+
+    await ctx.session.restore()
+    await ctx.session.dispose()
+    await vi.advanceTimersByTimeAsync(24 * 60 * 60 * 1000)
+
+    expect(touch).not.toHaveBeenCalled()
+  })
+
+  /* 인터넷이 없다고 사용자에게 말을 걸 일이 아니다. 다음 차례에 다시 남기면 된다. */
+  it('흔적을 못 남겨도 조용히 넘어가고 다음 차례에 다시 시도한다', async () => {
+    vi.useFakeTimers()
+    const ctx = makeSession()
+    const errors: string[] = []
+    ctx.session.on('error', (message) => errors.push(message))
+    const touch = vi.spyOn(ctx.net, 'touch').mockRejectedValue(new Error('OFFLINE'))
+
+    await ctx.session.restore()
+    await vi.advanceTimersByTimeAsync(24 * 60 * 60 * 1000)
+
+    expect(touch).toHaveBeenCalledTimes(2)
+    expect(errors).toEqual([])
+  })
+})

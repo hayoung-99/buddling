@@ -28,6 +28,19 @@ const TAP_THROTTLE_MS = 300
  */
 const RETRY_DELAYS = [5000, 15000, 30000, 60000]
 
+/**
+ * "아직 쓰고 있다" 는 흔적을 남기는 주기(ms).
+ *
+ * 흔적은 앱을 켤 때 `getMyTeams()` 가 이미 한 번 남긴다. 그런데 **이 앱은 컴퓨터를 켜
+ * 두는 동안 계속 떠 있는 앱이라**, 껐다 켜지 않는 사람은 그 뒤로 며칠이고 흔적이
+ * 갱신되지 않는다. 그러면 가장 오래 쓰는 사람이 가장 활동 없어 보이는, 방향이 거꾸로인
+ * 오차가 남는다.
+ *
+ * 하루가 아니라 열두 시간인 이유는 어드민이 "최근 24시간" 으로 세기 때문이다. 딱 하루
+ * 간격으로 남기면 마지막 흔적이 24시간 경계에 걸려 있는 사람이 셀 때마다 들락날락한다.
+ */
+const TOUCH_INTERVAL_MS = 12 * 60 * 60 * 1000
+
 /** 한 기기가 동시에 속할 수 있는 팀 수 (supabase/schema.sql 과 맞춘다) */
 const MAX_TEAMS = 3
 
@@ -72,6 +85,7 @@ function createSession({
   /** 다시 붙어 보기까지의 대기. 성공하면 처음으로 되돌린다. */
   let retryStep = 0
   let retryTimer: ReturnType<typeof setTimeout> | null = null
+  let touchTimer: ReturnType<typeof setInterval> | null = null
   let disposed = false
 
   try {
@@ -182,6 +196,21 @@ function createSession({
     }
   }
 
+  /**
+   * 흔적 남기기를 시작한다. 두 번 불러도 타이머는 하나다.
+   *
+   * 실패해도 아무것도 하지 않는다 — 인터넷이 없으면 다음 차례에 다시 남기면 되고,
+   * 이것 때문에 사용자에게 말을 걸 이유는 없다.
+   */
+  function startTouching() {
+    if (touchTimer || !net) return
+    touchTimer = setInterval(() => {
+      void net?.touch().catch(() => {})
+    }, TOUCH_INTERVAL_MS)
+    // 이 타이머 때문에 앱이 종료되지 못하는 일이 없게 한다
+    touchTimer.unref?.()
+  }
+
   function cancelRetry() {
     if (retryTimer) clearTimeout(retryTimer)
     retryTimer = null
@@ -261,6 +290,7 @@ function createSession({
         publish()
         return
       }
+      startTouching()
       await syncConnections()
     },
 
@@ -410,6 +440,8 @@ function createSession({
     async dispose() {
       disposed = true
       cancelRetry()
+      if (touchTimer) clearInterval(touchTimer)
+      touchTimer = null
       await net?.disconnect()
       emitter.clear()
     },
