@@ -279,10 +279,26 @@ async function checkScriptBudget() {
  * 손이 그리 간다. 실제로 그렇게 운영 배포를 한 번 떨어뜨렸다 — **미리보기는 통과했는데
  * 운영만 실패**해서 알아채기도 늦었다. 그래서 여기서 먼저 잡는다.
  */
+/*
+ * 스키마가 허용하는 키 전부(40개). **손으로 줄여 적지 말 것.**
+ *
+ * 처음에는 눈에 익은 것 18개만 적어 두었는데, 그러면 검사가 스키마보다 엄격해져서
+ * `github` · `env` · `routes` 처럼 멀쩡한 키를 "허용되지 않는 키" 로 막는다. 반대로
+ * 목록에는 있지만 스키마에는 없는 `public` 을 통과시키기도 했다 — 잡으라고 만든 것을
+ * 그대로 지나 보내는 셈이다.
+ *
+ * 새 키가 필요해졌는데 여기서 막히면, 목록을 늘리기 전에 스키마부터 확인한다.
+ *
+ *   curl -s https://openapi.vercel.sh/vercel.json | jq -r '.properties | keys[]'
+ */
 const VERCEL_JSON_KEYS = new Set([
-  '$schema', 'buildCommand', 'cleanUrls', 'crons', 'devCommand', 'framework',
-  'functions', 'git', 'headers', 'ignoreCommand', 'images', 'installCommand',
-  'outputDirectory', 'public', 'redirects', 'regions', 'rewrites', 'trailingSlash',
+  '$schema', 'alias', 'build', 'buildCommand', 'builds', 'bulkRedirectsPath',
+  'bunVersion', 'cleanUrls', 'crons', 'devCommand', 'env', 'experimentalBYOC',
+  'experimentalEnvironmentVariables', 'experimentalServiceGroups', 'experimentalServices',
+  'experimentalServicesV2', 'fluid', 'framework', 'functionFailoverRegions', 'functions',
+  'git', 'github', 'headers', 'ignoreCommand', 'images', 'installCommand', 'name',
+  'outputDirectory', 'passiveRegions', 'proxy', 'redirects', 'regions', 'relatedProjects',
+  'rewrites', 'routes', 'scope', 'services', 'trailingSlash', 'version', 'wildcard',
 ])
 
 function checkVercelJson() {
