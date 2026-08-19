@@ -49,14 +49,17 @@ npm run preview       # 캐릭터 5종을 나란히 놓고 눈으로 확인
 
 CI(`.github/workflows/ci.yml`)가 미는 것마다 돌리는 것은 `npm test` ·
 `npm run typecheck` · `npm run lint` · `npm run build` · `npm run check:site`
-다섯입니다. **이 다섯이 통과하지 않으면 끝난 게 아닙니다.** (Electron 앱을 포장하는 것은
-여전히 태그를 밀 때만 합니다 — 10분이 넘고 러너를 셋 잡아먹습니다.)
+다섯입니다. **이 다섯이 통과하지 않으면 끝난 게 아닙니다** — 말뿐인 규칙이 아니라,
+이 잡(`check`)이 `main` 규칙셋의 필수 검사라 **빨가면 머지 자체가 막힙니다.**
+(Electron 앱을 포장하는 것은 여전히 태그를 밀 때만 합니다 — 10분이 넘고 러너를
+셋 잡아먹습니다.)
 
 ### 일을 시작하기 전에 의존성부터 맞춘다
 
-**dependabot 이 올린 의존성 갱신 PR 은 사람이 머지하고, 그 일은 세션과 세션 사이에
-일어납니다.** 그래서 마지막으로 본 `main` 과 지금의 `package.json`·`package-lock.json`
-이 어긋나 있을 수 있습니다. 고치기 시작하기 전에 **지나쳐 온 dependabot 커밋이 있는지
+**dependabot 이 올린 의존성 갱신 PR 은 세션과 세션 사이에 머지됩니다.** 사람이 누르기도
+하고, 아래 "머지" 절의 기준에 따라 에이전트가 `--auto` 를 걸어 둔 것을 CI 가 초록이 되는
+순간 GitHub 이 누르기도 합니다. 그래서 마지막으로 본 `main` 과 지금의
+`package.json`·`package-lock.json` 이 어긋나 있을 수 있습니다. 고치기 시작하기 전에 **지나쳐 온 dependabot 커밋이 있는지
 보고, 있으면 설치부터 맞추고 들어갑니다.**
 
 ```bash
