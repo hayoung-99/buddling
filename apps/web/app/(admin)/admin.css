@@ -91,7 +91,25 @@
   padding: 20px;
   margin-top: 18px;
 }
-.admin-panel h2 { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; }
+.admin-panel h3 { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; }
+
+/*
+ * 마디 제목.
+ *
+ * 카드가 왜 그 순서로 놓여 있는지 알려 주는 유일한 단서라, 카드보다 앞서 눈에 걸려야
+ * 한다. 그렇다고 크게 키우면 정작 봐야 할 숫자와 다투므로, 작고 옅은 대문자 꼬리표로
+ * 둔다 — 있는 줄 알면 되고 읽을 것은 아래다.
+ */
+.admin-heading {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-top: 32px;
+  margin-bottom: 10px;
+}
+.admin-heading:first-of-type { margin-top: 0; }
 
 .admin-two {
   display: grid;
@@ -103,7 +121,13 @@
 
 /* ── 날짜별 막대 ──────────────────────────────────────── */
 
-/* 하루가 두 칸(팀·사람)이고, 값이 0 이어도 자리는 남긴다 — 빈 날도 날이다. */
+/*
+ * 하루가 두 칸(팀·사람)이고, 값이 0 이어도 자리는 남긴다 — 빈 날도 날이다.
+ *
+ * 막대 높이는 인라인 `style` 로 준다. **그래서 CSP 의 `style-src` 가 어드민에서만
+ * 열려 있다** (`middleware.ts`). 그게 막히면 화면이 깨지는 대신 막대가 전부
+ * `min-height` 인 2px 짜리 선이 되어, 눈으로는 잘 안 걸린 채 지나간다.
+ */
 .admin-bars {
   display: flex;
   align-items: flex-end;

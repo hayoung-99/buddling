@@ -8,24 +8,62 @@ import { supabase } from './supabase'
  * 이음매라, 함수 이름과 열쇠를 그대로 옮겨 적어 두었다.
  */
 
+/** 기간별로 하나씩. `today` 의 날짜 경계는 한국 시간이다 */
+interface Spread {
+  today: number
+  d7: number
+  d30: number
+}
+
 export interface Overview {
-  teams: number
-  members: number
-  /** 팀에 속한 **사람** 수. 아래 accounts 와 다르다 */
-  people: number
-  accounts: { total: number; anonymous: number }
+  /**
+   * 지금 켜 둔 사람과 팀 (최근 1시간 안에 흔적).
+   *
+   * 앱이 30분마다 흔적을 남기므로 켜 둔 사람은 이 창 안에 반드시 들어온다.
+   * **다만 새 버전을 받기 전의 앱은 아직 12시간짜리라, 배포 직후 한동안은 실제보다
+   * 적게 나온다.**
+   */
+  now: { people: number; teams: number }
+  /** 실제로 쓰는 사람 — 최근 30일 안에 흔적이 있는 사람 */
+  live: { people: number }
+  /**
+   * 누적 전체.
+   *
+   * **`total.teams` 가 곧 "쓰는 팀" 이다.** 마지막 사람이 나가면 `leave_team()` 이
+   * 팀도 함께 지우므로, 남아 있는 팀은 반드시 사람이 있는 팀이다.
+   */
+  total: {
+    teams: number
+    /** 팀 자리 수. 한 사람이 두 팀에 들면 둘로 센다 */
+    members: number
+    /** 팀에 속한 **사람** 수. 아래 accounts 와 다르다 */
+    people: number
+  }
+  accounts: {
+    total: number
+    anonymous: number
+    /**
+     * 깔았지만 팀까지 가지 못한 사람 = 온보딩 이탈.
+     *
+     * **누적이 아니라 최근 일주일치다** — 팀 없는 익명 계정은 7일이 지나면
+     * `cleanup_anonymous_users()` 가 매일 새벽 3시에 지운다.
+     */
+    stranded: number
+  }
   /** 마지막 흔적이 얼마나 최근인가 */
   active: { d1: number; d7: number; d30: number }
+  /** 새로 생긴 팀과, 처음 팀에 들어온 사람 */
+  fresh: { teams: Spread; people: Spread }
   /** 혼자만 있는 팀 */
   solo: number
-  recent: { teams7: number; members7: number; teams30: number; members30: number }
   generatedAt: string
 }
 
 export interface DailyRow {
   date: string
   newTeams: number
-  newMembers: number
+  /** `members` 줄 수가 아니라 **그날 처음 팀에 들어온 사람** 수 */
+  newPeople: number
 }
 
 export interface Distribution {

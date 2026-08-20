@@ -558,7 +558,13 @@ with check (public.can_join_topic(realtime.topic()));
 -- `get_my_teams()` 도 `last_seen_at` 을 갱신하지만 그건 앱을 켤 때와 다시 붙을 때뿐이다.
 -- **이 앱은 컴퓨터를 켜 두는 동안 계속 떠 있는 앱이라**, 껐다 켜지 않는 사람은 며칠이고
 -- 갱신되지 않는다. 그러면 가장 오래 쓰는 사람이 가장 활동 없어 보이는, 방향이 거꾸로인
--- 오차가 생긴다. 그래서 앱이 하루에 한 번 이 함수를 부른다.
+-- 오차가 생긴다. 그래서 앱이 **30분마다** 이 함수를 부른다
+-- (`apps/desktop/src/main/session.ts` 의 `TOUCH_INTERVAL_MS`).
+--
+-- **그 주기와 어드민의 측정 창은 1:2 로 묶인 짝이다.** 어드민이 "지금 켜 둔 사람"을
+-- 최근 1시간으로 세므로 주기가 그 절반이어야 켜 둔 사람의 흔적이 반드시 창 안에
+-- 하나는 들어온다. 창과 같은 간격으로 남기면 경계에 걸린 사람이 셀 때마다 들락날락한다.
+-- 한쪽만 고치면 숫자가 조용히 틀어지니 반드시 함께 본다.
 create or replace function public.touch_member()
 returns void
 language plpgsql
@@ -678,6 +684,14 @@ $$;
 /**
  * 지금 이 순간의 총계.
  *
+ * 어드민 화면이 묻는 세 가지를 그대로 세 묶음으로 내보낸다 — `now`(지금 켜 두고 있나) ·
+ * `live`·`total`(실제로 얼마나 쓰이나) · `fresh`(얼마나 새로 들어오나). 화면이 숫자를
+ * 다시 짜맞추지 않아도 되도록 여기서 모양을 맞춰 준다.
+ *
+ * **사람과 팀은 세는 자가 다르다.** 사람은 흔적으로 세고(`last_seen_at`), 팀은 존재로
+ * 센다. `leave_team()` 이 마지막 사람이 나갈 때 팀도 함께 지우므로 **남아 있는 팀이
+ * 곧 쓰는 팀**이라, 팀에는 "살아 있는 팀" 을 따로 셀 것이 없다.
+ *
  * `people` 과 `accounts` 는 다른 숫자다. 익명 계정은 앱을 다시 깔거나 세션을 잃을
  * 때마다 하나씩 늘어나므로 사람 수가 아니다 (그래서 `cleanup_anonymous_users` 가
  * 떠도는 것을 7일마다 지운다). **사람 수로 읽어야 하는 것은 `people` 이다.**
@@ -692,33 +706,70 @@ security definer
 set search_path = public, auth
 as $$
 declare
+  v_today date := (now() at time zone 'Asia/Seoul')::date;
   v_result json;
 begin
   if not public.is_admin() then raise exception 'FORBIDDEN'; end if;
 
+  -- 한 사람이 처음 팀에 들어온 때. "신규 유입"은 members 줄 수가 아니라 이것으로 센다 —
+  -- 한 사람이 두 팀에 들면 줄은 둘이지만 새로 들어온 사람은 하나다.
+  with firsts as (
+    select user_id, min(created_at) as first_join from members group by user_id
+  )
   select json_build_object(
-    'teams',   (select count(*) from teams),
-    'members', (select count(*) from members),
-    'people',  (select count(distinct user_id) from members),
-    'accounts', json_build_object(
-      'total',     (select count(*) from auth.users),
-      'anonymous', (select count(*) from auth.users where coalesce(is_anonymous, false))
+    -- ① 지금. 앱이 30분마다 흔적을 남기므로(session.ts 의 TOUCH_INTERVAL_MS) 1시간
+    -- 창이면 켜 둔 사람의 흔적이 반드시 하나는 들어온다. **이 둘은 짝이다** — 한쪽을
+    -- 좁히면 다른 쪽도 좁혀야 하고, 안 그러면 켜 둔 사람이 셀 때마다 들락날락한다.
+    'now', json_build_object(
+      'people', (select count(distinct user_id) from members where last_seen_at > now() - interval '1 hour'),
+      'teams',  (select count(distinct team_id) from members where last_seen_at > now() - interval '1 hour')
     ),
-    -- 마지막 흔적이 얼마나 최근인가. 앱이 하루 한 번 흔적을 남기므로 d1 이 곧 어제오늘 쓴 사람이다.
+
+    -- ② 실제 사용
+    'live', json_build_object(
+      'people', (select count(distinct user_id) from members where last_seen_at > now() - interval '30 days')
+    ),
+    'total', json_build_object(
+      'teams',   (select count(*) from teams),
+      'members', (select count(*) from members),
+      'people',  (select count(distinct user_id) from members)
+    ),
+
+    -- 마지막 흔적이 얼마나 최근인가
     'active', json_build_object(
       'd1',  (select count(distinct user_id) from members where last_seen_at > now() - interval '1 day'),
       'd7',  (select count(distinct user_id) from members where last_seen_at > now() - interval '7 days'),
       'd30', (select count(distinct user_id) from members where last_seen_at > now() - interval '30 days')
     ),
+
+    -- ③ 신규 유입. `today` 의 날짜 경계는 한국 시간이다 — `admin_daily` 의 막대와 같은
+    -- 자로 재야 카드와 막대가 서로 다른 말을 하지 않는다.
+    'fresh', json_build_object(
+      'teams', json_build_object(
+        'today', (select count(*) from teams where (created_at at time zone 'Asia/Seoul')::date = v_today),
+        'd7',    (select count(*) from teams where created_at > now() - interval '7 days'),
+        'd30',   (select count(*) from teams where created_at > now() - interval '30 days')
+      ),
+      'people', json_build_object(
+        'today', (select count(*) from firsts where (first_join at time zone 'Asia/Seoul')::date = v_today),
+        'd7',    (select count(*) from firsts where first_join > now() - interval '7 days'),
+        'd30',   (select count(*) from firsts where first_join > now() - interval '30 days')
+      )
+    ),
+
+    'accounts', json_build_object(
+      'total',     (select count(*) from auth.users),
+      'anonymous', (select count(*) from auth.users where coalesce(is_anonymous, false)),
+      -- 깔았지만 팀까지 가지 못한 사람 = 온보딩 이탈. **누적이 아니라 최근 일주일치다** —
+      -- 팀 없는 익명 계정은 7일이 지나면 cleanup_anonymous_users() 가 지우기 때문이다.
+      'stranded',  (select count(*) from auth.users u
+                     where coalesce(u.is_anonymous, false)
+                       and not exists (select 1 from members m where m.user_id = u.id))
+    ),
+
     'solo', (select count(*) from (
       select team_id from members group by team_id having count(*) = 1
     ) s),
-    'recent', json_build_object(
-      'teams7',    (select count(*) from teams   where created_at > now() - interval '7 days'),
-      'members7',  (select count(*) from members where created_at > now() - interval '7 days'),
-      'teams30',   (select count(*) from teams   where created_at > now() - interval '30 days'),
-      'members30', (select count(*) from members where created_at > now() - interval '30 days')
-    ),
     'generatedAt', now()
   ) into v_result;
 
@@ -727,7 +778,11 @@ end;
 $$;
 
 /**
- * 날짜별로 새로 생긴 팀과 멤버.
+ * 날짜별로 새로 생긴 팀과, 그날 처음 팀에 들어온 사람.
+ *
+ * **`newPeople` 은 `members` 줄 수가 아니다.** 한 사람이 두 팀에 들면 줄은 둘이지만
+ * 새로 들어온 사람은 하나다. `admin_overview` 의 `fresh.people` 과 **같은 자로 재야**
+ * 카드의 "30일 신규" 와 이 막대의 30일 합계가 서로 다른 말을 하지 않는다.
  *
  * **일별 활동자 이력은 여기서 만들 수 없다.** `last_seen_at` 은 마지막 한 번만 남는
  * 값이라 과거 어느 날 누가 왔는지는 기록이 없다. 있지도 않은 숫자를 그럴듯하게 짓느니
@@ -748,10 +803,13 @@ declare
 begin
   if not public.is_admin() then raise exception 'FORBIDDEN'; end if;
 
+  with firsts as (
+    select user_id, min(created_at) as first_join from members group by user_id
+  )
   select coalesce(json_agg(json_build_object(
-           'date',       to_char(d.day, 'YYYY-MM-DD'),
-           'newTeams',   coalesce(t.n, 0),
-           'newMembers', coalesce(m.n, 0)
+           'date',      to_char(d.day, 'YYYY-MM-DD'),
+           'newTeams',  coalesce(t.n, 0),
+           'newPeople', coalesce(p.n, 0)
          ) order by d.day), '[]'::json)
     into v_result
     from (
@@ -766,9 +824,9 @@ begin
         from teams group by 1
     ) t on t.day = d.day
     left join (
-      select (created_at at time zone 'Asia/Seoul')::date as day, count(*) as n
-        from members group by 1
-    ) m on m.day = d.day;
+      select (first_join at time zone 'Asia/Seoul')::date as day, count(*) as n
+        from firsts group by 1
+    ) p on p.day = d.day;
 
   return v_result;
 end;
@@ -777,7 +835,7 @@ $$;
 /**
  * 세 가지 분포 — 팀 크기, 캐릭터, 마지막 흔적.
  *
- * 마지막 흔적 분포가 유지율 대신이다. 앱이 하루 한 번 흔적을 남기므로 `today` 는 지금
+ * 마지막 흔적 분포가 유지율 대신이다. 앱이 30분마다 흔적을 남기므로 `today` 는 지금
  * 쓰는 사람이고, 뒤로 갈수록 떠난 사람이다.
  */
 create or replace function public.admin_distribution()

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { createSession } from '../src/main/session'
+import { createSession, TOUCH_INTERVAL_MS } from '../src/main/session'
 import { createFakeServer, createFakeNet, MAX_TEAMS_PER_USER } from '../src/services/fake-net'
 import type { Store, StoredState } from '../src/main/store'
 import type { Net } from '../src/services/net'
@@ -339,7 +339,7 @@ describe('세션 — 아직 쓰고 있다는 흔적', () => {
    * 이 앱은 컴퓨터를 켜 두는 동안 계속 떠 있어서, 앱을 켤 때 한 번 남기는 것만으로는
    * 오래 쓰는 사람일수록 활동이 없어 보이게 된다. 그래서 주기적으로 남긴다.
    */
-  it('앱이 떠 있는 동안 열두 시간마다 흔적을 남긴다', async () => {
+  it('앱이 떠 있는 동안 주기마다 흔적을 남긴다', async () => {
     vi.useFakeTimers()
     const ctx = makeSession()
     const touch = vi.spyOn(ctx.net, 'touch')
@@ -347,10 +347,10 @@ describe('세션 — 아직 쓰고 있다는 흔적', () => {
     await ctx.session.restore()
     expect(touch).not.toHaveBeenCalled()
 
-    await vi.advanceTimersByTimeAsync(12 * 60 * 60 * 1000)
+    await vi.advanceTimersByTimeAsync(TOUCH_INTERVAL_MS)
     expect(touch).toHaveBeenCalledTimes(1)
 
-    await vi.advanceTimersByTimeAsync(12 * 60 * 60 * 1000)
+    await vi.advanceTimersByTimeAsync(TOUCH_INTERVAL_MS)
     expect(touch).toHaveBeenCalledTimes(2)
   })
 
@@ -361,7 +361,7 @@ describe('세션 — 아직 쓰고 있다는 흔적', () => {
 
     await ctx.session.restore()
     await ctx.session.dispose()
-    await vi.advanceTimersByTimeAsync(24 * 60 * 60 * 1000)
+    await vi.advanceTimersByTimeAsync(TOUCH_INTERVAL_MS * 2)
 
     expect(touch).not.toHaveBeenCalled()
   })
@@ -375,9 +375,18 @@ describe('세션 — 아직 쓰고 있다는 흔적', () => {
     const touch = vi.spyOn(ctx.net, 'touch').mockRejectedValue(new Error('OFFLINE'))
 
     await ctx.session.restore()
-    await vi.advanceTimersByTimeAsync(24 * 60 * 60 * 1000)
+    await vi.advanceTimersByTimeAsync(TOUCH_INTERVAL_MS * 2)
 
     expect(touch).toHaveBeenCalledTimes(2)
     expect(errors).toEqual([])
+  })
+
+  /*
+   * 이 주기는 어드민이 "지금 켜 둔 사람"을 세는 창(1시간)의 절반이어야 한다. 창과 같은
+   * 간격이면 마지막 흔적이 경계에 걸린 사람이 셀 때마다 들락날락한다. 그 짝이 깨지는
+   * 것을 여기서 잡는다 — 상수만 조용히 늘려 놓고 넘어가는 일이 실제로 있었다.
+   */
+  it('흔적 주기가 어드민의 1시간 창보다 촘촘하다', () => {
+    expect(TOUCH_INTERVAL_MS).toBeLessThanOrEqual(60 * 60 * 1000 / 2)
   })
 })
