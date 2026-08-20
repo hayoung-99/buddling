@@ -5,6 +5,7 @@ import type { Session } from '@supabase/supabase-js'
 import { isConfigured, supabase } from '../../lib/supabase'
 import { fetchIsAdmin } from '../../lib/admin'
 import { Dashboard } from './Dashboard'
+import { TeamList } from './TeamList'
 
 /**
  * 어드민의 문지기.
@@ -75,7 +76,16 @@ export function AdminApp() {
           <code>admins</code> 표에 이 주소를 넣어 주세요.
         </p>
       )}
-      {gate === 'admin' && <Dashboard />}
+      {/*
+        숫자판과 팀 목록을 여기서 나란히 얹는다. 서로 아무것도 주고받지 않고 각자
+        자기 것을 받아 오므로, 한쪽이 실패해도 다른 쪽은 그대로 보인다.
+      */}
+      {gate === 'admin' && (
+        <>
+          <Dashboard />
+          <TeamList />
+        </>
+      )}
     </main>
   )
 }

@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import ko from '@tap-tap/shared/i18n/ko.json'
 import { fetchDaily, fetchDistribution, fetchOverview } from '../../lib/admin'
 import type { DailyRow, Distribution, Overview } from '../../lib/admin'
+import { characterName } from './character-name'
 
 /**
  * 숫자판.
@@ -20,16 +20,6 @@ import type { DailyRow, Distribution, Overview } from '../../lib/admin'
  */
 
 const DAYS = 30
-
-/**
- * 캐릭터 이름은 앱이 쓰는 사전에서 그대로 가져온다.
- *
- * `cat`·`panda` 같은 열쇠를 그대로 보여 주면 앱 화면과 다른 말이 되어, 어느 캐릭터
- * 이야기인지 한 번 더 옮겨 생각해야 한다. 사전에 없는 열쇠가 오면 열쇠를 그대로 쓴다 —
- * 캐릭터가 늘었는데 어드민만 안 고친 경우가 그렇고, 그때 빈칸이 되는 것보다 낫다.
- */
-const characterName = (key: string) =>
-  (ko as Record<string, string>)[`character.${key}`] ?? key
 
 export function Dashboard() {
   const [overview, setOverview] = useState<Overview | null>(null)
