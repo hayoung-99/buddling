@@ -12,6 +12,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { createEmitter } from './emitter'
 import { toFriendlyError } from './errors'
+import { withSessionRecovery } from './session-recovery'
 import type { Net, NetConfig, NetEvents } from './net'
 import type { Member, Team } from '@tap-tap/shared/state'
 import type { RealtimeChannel } from '@supabase/supabase-js'
@@ -82,11 +83,24 @@ function createSupabaseNet({ url, anonKey, storage }: Required<Pick<NetConfig, '
     return created.session
   }
 
+  /**
+   * 쓸모없어진 세션을 버린다.
+   *
+   * `scope: 'local'` 인 이유 — 서버에 로그아웃을 알릴 상대가 이미 없다. 계정이 지워져서
+   * 여기까지 온 것이라, 서버를 부르면 헛걸음이거나 오류로 끝난다. 저장된 것만 지우면
+   * 다음 `ensureSession()` 이 새 익명 계정을 만든다.
+   */
+  async function forgetSession() {
+    await client.auth.signOut({ scope: 'local' })
+  }
+
   async function rpc(name: string, args?: Record<string, unknown>) {
-    await ensureSession()
-    const { data, error } = await client.rpc(name, args)
-    if (error) throw toFriendlyError(error)
-    return data
+    return withSessionRecovery(async () => {
+      await ensureSession()
+      const { data, error } = await client.rpc(name, args)
+      if (error) throw toFriendlyError(error)
+      return data
+    }, forgetSession)
   }
 
   function onlineIn(teamId: string): string[] {

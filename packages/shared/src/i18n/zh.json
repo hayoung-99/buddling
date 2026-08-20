@@ -110,6 +110,7 @@
   "error.NICKNAME_REQUIRED": "请输入昵称。",
   "error.TEAM_NAME_REQUIRED": "请输入团队名称。",
   "error.NOT_SIGNED_IN": "连接尚未就绪，请稍后再试。",
+  "error.SESSION_EXPIRED": "需要重新建立连接，请退出应用后再打开。",
   "error.NOT_A_MEMBER": "你还不在这个团队里。",
   "error.TEAM_LIMIT_REACHED": "最多只能加入 {maxTeams} 个团队。请先退出一个再试。",
   "error.TEAM_FULL": "该团队人数已满（{maxMembers} 人）。",

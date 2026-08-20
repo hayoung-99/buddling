@@ -110,6 +110,7 @@
   "error.NICKNAME_REQUIRED": "닉네임을 입력해 주세요.",
   "error.TEAM_NAME_REQUIRED": "팀 이름을 입력해 주세요.",
   "error.NOT_SIGNED_IN": "아직 연결이 준비되지 않았어요. 잠시 뒤에 다시 시도해 주세요.",
+  "error.SESSION_EXPIRED": "연결이 오래 끊겨 있어서 다시 이어야 해요. 앱을 껐다 켜 주세요.",
   "error.NOT_A_MEMBER": "아직 그 팀에 속해 있지 않아요.",
   "error.TEAM_LIMIT_REACHED": "팀은 최대 {maxTeams}개까지만 만들거나 참여할 수 있어요. 하나를 나가고 다시 시도해 주세요.",
   "error.TEAM_FULL": "그 팀은 정원({maxMembers}명)이 다 찼어요.",
