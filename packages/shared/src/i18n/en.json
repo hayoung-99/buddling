@@ -110,6 +110,7 @@
   "error.NICKNAME_REQUIRED": "Please enter a nickname.",
   "error.TEAM_NAME_REQUIRED": "Please enter a team name.",
   "error.NOT_SIGNED_IN": "The connection is not ready yet. Please try again in a moment.",
+  "error.SESSION_EXPIRED": "This device needs to reconnect. Please quit the app and open it again.",
   "error.NOT_A_MEMBER": "You are not in that team.",
   "error.TEAM_LIMIT_REACHED": "You can only be in {maxTeams} teams. Leave one and try again.",
   "error.TEAM_FULL": "That team is full ({maxMembers} members).",

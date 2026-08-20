@@ -15,6 +15,9 @@ const ERROR_KEYS = [
   'NICKNAME_REQUIRED',
   'TEAM_NAME_REQUIRED',
   'NOT_SIGNED_IN',
+  // 이 계정이 서버에서 사라졌다. 앱이 스스로 회복하므로 사람이 볼 일은 드물다
+  // (`session-recovery.ts`) — 회복까지 실패했을 때만 문장이 된다.
+  'SESSION_EXPIRED',
   'NOT_A_MEMBER',
   'TEAM_LIMIT_REACHED',
   'TEAM_FULL',

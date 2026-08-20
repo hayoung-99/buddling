@@ -189,6 +189,31 @@ drop function if exists public.refresh_invite(text, uuid);
 drop function if exists public.leave_team(text, uuid);
 
 -- ────────────────────────────────────────────────────────────
+-- 지워진 계정으로 들어오는 요청
+-- ────────────────────────────────────────────────────────────
+--
+-- `cleanup_anonymous_users()` 가 지운 계정의 JWT 는 **서명이 그대로 유효하다.** 계정이
+-- 사라져도 이미 발급된 토큰은 만료 전까지(최대 한 시간) 서버를 통과하고, `auth.uid()`
+-- 는 이제 없는 UUID 를 돌려준다.
+--
+-- 그 상태로 `members` 에 줄을 넣으려 하면 `user_id` 외래키에 걸려 넘어지는데, 사람에게는
+-- **이유를 알 수 없는 오류**로 보인다. 그래서 넣기 전에 미리 보고 열쇠로 바꾼다.
+-- 앱은 그 열쇠를 받으면 세션을 버리고 다시 로그인한 뒤 한 번 다시 시도한다
+-- (`services/session-recovery.ts`).
+--
+-- **외래키 오류를 통째로 잡아 이 열쇠로 바꾸지 않는 이유가 있다.** `members` 에는
+-- `team_id` 외래키도 걸려 있어서, 팀이 그 사이 지워진 경우까지 "세션이 죽었다"로
+-- 읽히게 된다. 그러면 앱이 멀쩡한 세션을 버리고 **그 사람의 팀 소속을 통째로 잃는다.**
+-- 무엇이 없는지 정확히 짚어야 한다.
+create or replace function public.account_exists(p_user uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public, auth
+as $$ select exists (select 1 from auth.users where id = p_user) $$;
+
+-- ────────────────────────────────────────────────────────────
 -- RPC: 팀 만들기
 -- ────────────────────────────────────────────────────────────
 
@@ -209,6 +234,7 @@ declare
   v_try    int := 0;
 begin
   if v_user is null then raise exception 'NOT_SIGNED_IN'; end if;
+  if not account_exists(v_user) then raise exception 'SESSION_EXPIRED'; end if;
   if coalesce(trim(p_nickname), '') = '' then raise exception 'NICKNAME_REQUIRED'; end if;
 
   if (select count(*) from members where user_id = v_user) >= max_teams_per_user() then
@@ -254,6 +280,7 @@ declare
   v_nickname text := trim(p_nickname);
 begin
   if v_user is null then raise exception 'NOT_SIGNED_IN'; end if;
+  if not account_exists(v_user) then raise exception 'SESSION_EXPIRED'; end if;
   if coalesce(v_nickname, '') = '' then raise exception 'NICKNAME_REQUIRED'; end if;
 
   select * into v_team from teams where invite_code = upper(trim(p_invite_code));
@@ -1023,6 +1050,10 @@ grant execute on function public.invite_ttl()                   to authenticated
 grant execute on function public.max_teams_per_user()           to authenticated;
 grant execute on function public.max_members_per_team()         to authenticated;
 grant execute on function public.touch_member()                 to authenticated;
+
+-- account_exists 는 **일부러 주지 않는다.** 위 함수들이 자기 안에서 부르는 것이고,
+-- 그 호출은 security definer 권한으로 도므로 grant 가 필요 없다. 열어 두면 남의 계정
+-- UUID 를 넣어 "그 계정이 있나"를 물어볼 수 있게 되는데, 알려 줄 이유가 없는 것이다.
 
 -- 어드민용. 넷 다 첫 줄에서 is_admin() 을 확인하고 아니면 FORBIDDEN 으로 끝난다.
 -- 그래서 anon 키가 브라우저에 그대로 실려 있어도 아무것도 새지 않는다.
