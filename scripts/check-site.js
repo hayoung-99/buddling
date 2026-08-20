@@ -409,9 +409,36 @@ async function checkAdminHidden() {
 
   // Supabase 에 닿을 수 있어야 한다. 랜딩과 같은 CSP 를 쓰면 로그인부터 막힌다.
   const csp = response.headers.get('content-security-policy') ?? ''
-  const connect = csp.split(';').map((part) => part.trim()).find((part) => part.startsWith('connect-src'))
+  const directive = (name) =>
+    csp.split(';').map((part) => part.trim()).find((part) => part.startsWith(name + ' '))
+
+  const connect = directive('connect-src')
   if (process.env.NEXT_PUBLIC_SUPABASE_URL && !connect?.includes(process.env.NEXT_PUBLIC_SUPABASE_URL)) {
     fail(route, `CSP 의 connect-src 에 Supabase 주소가 없습니다 (${connect})`)
+  }
+
+  /*
+   * 숫자판의 막대는 높이와 너비를 인라인 `style` 로 준다. 이걸 막으면 화면이 통째로
+   * 깨지는 게 아니라 **그려지다 만다** — 막대는 min-height 인 2px 짜리 선이 되고 줄
+   * 채움은 값과 무관하게 같은 길이가 된다. 눈으로는 잘 안 걸리고 콘솔에만 남는다.
+   * 실제로 숫자판이 나간 뒤로 줄곧 그 상태였다.
+   *
+   * `style` **속성**에는 nonce 를 달 수 없고(nonce 는 `<style>`·`<link>` 전용) 값이
+   * 매번 달라져 해시도 못 쓰므로, 어드민에서는 `'unsafe-inline'` 이 유일한 길이다.
+   */
+  const adminStyle = directive('style-src')
+  if (!adminStyle?.includes("'unsafe-inline'")) {
+    fail(route, `CSP 가 숫자판의 인라인 스타일을 막습니다 — 막대가 안 그려집니다 (${adminStyle})`)
+  }
+
+  /*
+   * 그리고 그 구멍이 랜딩으로 새지 않았는지 본다. 랜딩은 인라인 스타일을 하나도 쓰지
+   * 않으므로 열어 둘 이유가 없고, 열어 둔 곳은 나중에 누가 왜 열었는지 아무도 모르게 된다.
+   */
+  const landingStyle = ((await fetch(ORIGIN + '/')).headers.get('content-security-policy') ?? '')
+    .split(';').map((part) => part.trim()).find((part) => part.startsWith('style-src '))
+  if (landingStyle?.includes("'unsafe-inline'")) {
+    fail('/', `랜딩의 style-src 까지 열려 있습니다 — 어드민에서만 열어야 합니다 (${landingStyle})`)
   }
 
   if (body('/sitemap.xml').includes('/admin')) fail('sitemap.xml', '어드민이 실려 있습니다')

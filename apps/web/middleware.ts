@@ -48,10 +48,28 @@ export function middleware(request: NextRequest) {
   const connect = ['https://api.github.com']
   if (isAdmin && supabaseOrigin) connect.push(supabaseOrigin, supabaseOrigin.replace(/^https/, 'wss'))
 
+  /*
+   * 어드민의 막대 그래프는 높이와 너비를 인라인 `style` 로 준다. 그래서 어드민에서만
+   * `style-src` 를 연다.
+   *
+   * **다른 길이 없어서다.** nonce 는 `<style>`·`<link>` 에만 붙고 `style` **속성**에는
+   * 붙지 않는다. `'unsafe-hashes'` 로 속성을 허용하는 길이 있지만 값마다 해시가
+   * 하나씩 필요한데, 여기 값은 그날그날의 숫자에서 나오므로 미리 적어 둘 수가 없다.
+   *
+   * 실제로 이걸 몰라서 **숫자판이 나간 뒤로 줄곧 그래프가 안 그려지고 있었다** —
+   * 막대는 전부 `min-height` 인 2px 짜리 선이 되고 줄 채움은 값과 무관하게 같은
+   * 길이가 됐다. 화면이 통째로 깨지는 게 아니라 *그려지다 만* 모양이라 눈으로는
+   * 잘 안 걸리고, 콘솔에만 남는다. `script-src` 때와 똑같은 일이 한 번 더 일어났다.
+   *
+   * 랜딩에는 열지 않는다. 랜딩은 인라인 스타일을 하나도 쓰지 않는다.
+   */
+  const style = ["'self'"]
+  if (isAdmin) style.push("'unsafe-inline'")
+
   const csp = [
     "default-src 'none'",
     "img-src 'self'",
-    "style-src 'self'",
+    `style-src ${style.join(' ')}`,
     // 구워 둔 HTML 안의 인라인 스크립트(Next 의 RSC 페이로드)를 허용한다. 위 주석 참고.
     "script-src 'self' 'unsafe-inline'",
     // 받기 버튼이 최신 릴리스를 물어보는 곳 (어드민에서는 Supabase 도)
