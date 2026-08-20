@@ -34,6 +34,38 @@ export interface Distribution {
   lastSeen: { today: number; week: number; month: number; older: number }
 }
 
+export interface AdminTeamMember {
+  nickname: string
+  character: string
+  joinedAt: string
+  lastSeen: string
+}
+
+export interface AdminTeam {
+  /** 화면에서 줄을 구별하는 열쇠. 팀 이름은 유일하지 않다 */
+  id: string
+  name: string
+  createdAt: string
+  /** 팀원 중 가장 최근 흔적. 아무도 온 적이 없으면 null */
+  lastSeen: string | null
+  members: AdminTeamMember[]
+}
+
+/**
+ * 팀 목록.
+ *
+ * **여기에는 초대코드가 없다.** 그건 이름이 아니라 팀에 들어가는 열쇠라서, 팀 이름과
+ * 함께 새면 남의 팀에 그대로 들어갈 수 있다. `supabase/schema.sql` 의 `admin_teams`
+ * 가 애초에 내보내지 않으므로 화면에서 감추는 것이 아니라 오지를 않는다.
+ */
+export interface AdminTeams {
+  /** 실제 팀 수. `teams.length` 와 다르면 잘린 것이다 */
+  total: number
+  /** 서버가 담아 준 최대 개수 */
+  limit: number
+  teams: AdminTeam[]
+}
+
 /**
  * RPC 하나를 부른다.
  *
@@ -49,4 +81,5 @@ async function call<T>(name: string, args: Record<string, unknown> = {}): Promis
 export const fetchOverview = () => call<Overview>('admin_overview')
 export const fetchDaily = (days: number) => call<DailyRow[]>('admin_daily', { p_days: days })
 export const fetchDistribution = () => call<Distribution>('admin_distribution')
+export const fetchTeams = (limit: number) => call<AdminTeams>('admin_teams', { p_limit: limit })
 export const fetchIsAdmin = () => call<boolean>('is_admin')

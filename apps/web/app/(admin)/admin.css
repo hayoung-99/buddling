@@ -128,3 +128,67 @@
 .admin-row-track { background: var(--sunk); border-radius: 3px; height: 8px; }
 .admin-row-fill { display: block; background: var(--ink); border-radius: 3px; height: 100%; min-width: 2px; }
 .admin-row-value { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ── 팀 목록 ──────────────────────────────────────────── */
+
+/*
+ * 판 제목을 요소가 아니라 이름으로 고른다. `.admin-panel h2` 같은 요소 선택자에
+ * 기대면 제목의 단계를 바꿀 때마다 스타일이 조용히 떨어져 나간다.
+ */
+.admin-panel-title { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; }
+
+.admin-filter {
+  font: inherit;
+  font-size: 0.85rem;
+  width: min(320px, 100%);
+  margin-top: 12px;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--sunk);
+  color: var(--ink);
+}
+
+.admin-teams { list-style: none; margin-top: 12px; }
+.admin-teams > li { border-top: 1px solid var(--line); }
+.admin-teams > li:first-child { border-top: 0; }
+
+.admin-teams summary {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 2px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/*
+ * 화살표를 직접 그린다.
+ *
+ * **`summary` 에 `display: flex` 를 걸면 브라우저가 그려 주는 마커가 사라진다.**
+ * 목록 항목이 아니게 되기 때문이다. 그러면 펼칠 수 있다는 단서가 화면에서 통째로
+ * 없어져, 눌러 볼 생각조차 못 하게 된다. 방향은 `[open]` 일 때 돌리는 것으로 맞춘다.
+ */
+.admin-teams summary { list-style: none; }
+.admin-teams summary::-webkit-details-marker { display: none; }
+.admin-teams summary::before {
+  content: '';
+  flex: none;
+  align-self: center;
+  border-left: 5px solid var(--ink-soft);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 0.12s ease;
+}
+.admin-teams details[open] > summary::before { transform: rotate(90deg); }
+
+.admin-team-name { font-weight: 700; }
+.admin-team-meta { font-size: 0.78rem; color: var(--ink-soft); }
+/* 인원은 이름 바로 뒤에, 마지막 흔적은 오른쪽 끝에. 눈이 훑는 것은 그 둘이다 */
+.admin-team-when { margin-left: auto; }
+
+.admin-members { list-style: none; display: grid; gap: 6px; padding: 4px 0 10px 1.55rem; }
+.admin-members li { display: flex; align-items: baseline; gap: 10px; font-size: 0.85rem; }
+.admin-member-name { font-weight: 600; }
+
+.admin-team-made { font-size: 0.78rem; color: var(--ink-soft); padding: 0 0 12px 1.55rem; }

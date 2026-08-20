@@ -574,13 +574,19 @@ end;
 $$;
 
 -- ────────────────────────────────────────────────────────────
--- 어드민 (읽기 전용 집계)
+-- 어드민 (읽기 전용)
 -- ────────────────────────────────────────────────────────────
 --
--- 표와 함수를 한 절에 모아 둔다. 이 셋은 서로만 보고, 앱은 전혀 부르지 않는다.
+-- 표와 함수를 한 절에 모아 둔다. 이것들은 서로만 보고, 앱은 전혀 부르지 않는다.
 --
--- **집계만 돌려준다.** 팀 이름·닉네임·초대코드는 어드민에도 나가지 않는다. 사용률을
--- 보는 데 필요하지 않고, 필요 없는 것을 볼 수 있게 만들면 그 화면이 유출 경로가 된다.
+-- **경계는 "이름은 나가고 열쇠는 나가지 않는다" 이다.**
+--
+-- 한동안은 집계만 내보냈다. 지금은 팀 이름과 닉네임까지 나간다 — 어느 팀이 활발한지
+-- 숫자만으로는 알 수 없어서 그렇게 정했다. 대신 **초대코드는 여전히 나가지 않는다.**
+-- 그것은 이름이 아니라 팀에 들어가는 열쇠라서, 새면 남의 팀에 그대로 들어갈 수 있다.
+-- 계정 식별자(`user_id`)도 화면에서 쓸 일이 없으므로 내보내지 않는다.
+--
+-- **고치거나 지우는 함수는 여기 없다.** 읽기 전용이라는 것은 그대로다.
 
 -- 어드민은 이메일로 정한다. **계정이 생기기 전에 미리 넣어 둘 수 있다** — 매직링크로
 -- 처음 로그인하는 순간 그 계정이 이 표와 이어진다.
@@ -816,6 +822,76 @@ begin
 end;
 $$;
 
+/**
+ * 팀 목록 — 이름과 팀원 닉네임까지.
+ *
+ * **이 함수는 이 파일의 다른 어드민 함수와 성격이 다르다.** 나머지 셋은 집계만
+ * 돌려주지만 이것은 **사람이 손으로 적은 이름**을 그대로 내보낸다. 팀 이름과 닉네임에는
+ * 본명·회사·부서가 들어 있을 수 있다.
+ *
+ * 그래서 무엇을 빼는지가 무엇을 넣는지만큼 중요하다.
+ *
+ *   - `invite_code` 를 넣지 않는다. **이것은 이름이 아니라 열쇠다** — 팀 이름과 함께
+ *     새어 나가면 `join_team()` 으로 남의 팀에 그대로 들어갈 수 있다
+ *   - `user_id` 를 넣지 않는다. 화면에서 쓸 일이 없다
+ *
+ * 팀 UUID(`id`)는 내보낸다. 화면에서 줄을 구별하는 데 필요하고(팀 이름은 유일하지
+ * 않다), 표는 RLS 로 잠겨 있어 이 값만으로는 아무것도 열지 못한다. 팀에 들어가는
+ * 문은 초대코드 하나뿐이다.
+ *
+ * 막는 일은 여전히 `is_admin()` 이 한다. 이 변경으로 넓어지는 것은 어드민에게뿐이고,
+ * 대신 **어드민 계정이 뚫렸을 때 잃는 것이 커진다.** 그 계정의 메일함이 이 데이터의
+ * 자물쇠라는 뜻이다.
+ *
+ * 정렬은 마지막 흔적이 최근인 순이다. 어드민이 열었을 때 먼저 보고 싶은 것은 지금
+ * 쓰고 있는 팀이다.
+ */
+create or replace function public.admin_teams(p_limit int default 200)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_limit  int := least(greatest(coalesce(p_limit, 200), 1), 1000);
+  v_result json;
+begin
+  if not public.is_admin() then raise exception 'FORBIDDEN'; end if;
+
+  select json_build_object(
+    'total', (select count(*) from teams),
+    -- 몇 개까지 담았는지 함께 알려 준다. 말없이 자르면 화면이 "이게 전부"로 읽힌다.
+    'limit', v_limit,
+    'teams', coalesce((
+      select json_agg(t order by t.last_seen desc nulls last)
+        from (
+          select json_build_object(
+                   'id',        tm.id,
+                   'name',      tm.name,
+                   'createdAt', tm.created_at,
+                   'lastSeen',  (select max(m.last_seen_at) from members m where m.team_id = tm.id),
+                   'members',   coalesce((
+                     select json_agg(json_build_object(
+                              'nickname',  m.nickname,
+                              'character', m.character_key,
+                              'joinedAt',  m.created_at,
+                              'lastSeen',  m.last_seen_at
+                            ) order by m.created_at)
+                       from members m where m.team_id = tm.id
+                   ), '[]'::json)
+                 ) as t,
+                 (select max(m.last_seen_at) from members m where m.team_id = tm.id) as last_seen
+            from teams tm
+           order by last_seen desc nulls last
+           limit v_limit
+        ) rows
+    ), '[]'::json)
+  ) into v_result;
+
+  return v_result;
+end;
+$$;
+
 -- ────────────────────────────────────────────────────────────
 -- 로그인한 사람이 호출할 수 있는 함수 목록
 -- ────────────────────────────────────────────────────────────
@@ -841,14 +917,18 @@ grant execute on function public.max_teams_per_user()           to authenticated
 grant execute on function public.max_members_per_team()         to authenticated;
 grant execute on function public.touch_member()                 to authenticated;
 
--- 어드민용. 셋 다 첫 줄에서 is_admin() 을 확인하고 아니면 FORBIDDEN 으로 끝난다.
--- 그래서 anon 키가 브라우저에 그대로 실려 있어도 집계가 새지 않는다.
+-- 어드민용. 넷 다 첫 줄에서 is_admin() 을 확인하고 아니면 FORBIDDEN 으로 끝난다.
+-- 그래서 anon 키가 브라우저에 그대로 실려 있어도 아무것도 새지 않는다.
 -- is_admin() 자체는 열어 둔다 — 알려 주는 것은 "내가 어드민인가" 하나뿐이고, 어드민
 -- 화면이 "로그인은 됐지만 권한 없음"을 구별해 안내하려면 이게 필요하다.
+--
+-- **admin_teams 는 이름을 내보낸다.** 나머지 셋과 달리 집계가 아니므로, 이 줄을
+-- 더할 때는 무엇이 나가는지 함수 주석을 먼저 읽으세요.
 grant execute on function public.is_admin()                     to authenticated;
 grant execute on function public.admin_overview()               to authenticated;
 grant execute on function public.admin_daily(int)               to authenticated;
 grant execute on function public.admin_distribution()           to authenticated;
+grant execute on function public.admin_teams(int)               to authenticated;
 
 -- 가입 제한 훅. **부르는 것은 Supabase Auth 이지 앱이 아니다.**
 -- 이 두 줄이 없으면 훅을 대시보드에 걸어도 실행되지 않는다.
