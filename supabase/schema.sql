@@ -596,6 +596,62 @@ create table if not exists public.admins (
 alter table public.admins enable row level security;
 
 /**
+ * 어드민이 아닌 주소로는 **계정이 아예 만들어지지 않게** 한다.
+ *
+ * Supabase Auth 의 `Before User Created` 훅으로 걸어 두는 함수다. 대시보드에서
+ * **Authentication → Hooks → Before User Created** 에 이 함수를 지정해야 동작한다
+ * (지정하지 않으면 아무 일도 하지 않는다).
+ *
+ * 이건 **벽이 아니라 소음 차단기다.** 진짜 벽은 `is_admin()` 이고, 훅이 없어도 남의
+ * 계정으로는 숫자를 한 글자도 못 봅니다. 이 훅이 막는 것은 그 앞단이다 — 모르는 사람이
+ * 어드민 화면에서 아무 주소나 넣어 링크를 요청하면, 그때마다 계정이 하나씩 생기고
+ * **시간당 두 통뿐인 메일 한도를 남이 써 버린다.** 그걸 막는다.
+ *
+ * ## 반드시 지켜야 하는 두 가지
+ *
+ * **하나, 익명 로그인을 막으면 안 된다.** 이 훅은 이 프로젝트의 *모든* 계정 생성에
+ * 걸리고, 앱은 익명 로그인으로 돌아간다. 익명 계정에는 메일이 없으므로 그때는 무조건
+ * 통과시킨다. 여기를 잘못 건드리면 **앱 전체가 로그인하지 못한다.**
+ *
+ * **둘, 어떤 오류가 나도 통과시킨다.** 훅이 오류를 내면 Supabase 는 그 로그인 요청을
+ * 실패로 끝낸다. 즉 여기서 실수하면 아무도 앱을 못 쓴다. 그래서 예외를 잡아 무조건
+ * 통과로 떨어뜨린다 — **막지 못하는 것보다 못 들어가게 하는 것이 훨씬 나쁘다.**
+ * 안전하게 이렇게 둘 수 있는 이유가 위의 "벽이 아니다" 이다.
+ *
+ * `admins` 가 비어 있을 때도 통과시킨다. 훅을 먼저 켜고 주소를 나중에 넣는 순서로 하면
+ * 자기 계정조차 만들 수 없게 되는데, 그 상태는 원인을 짐작하기가 아주 어렵다.
+ */
+create or replace function public.restrict_admin_signup(event jsonb)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_email text;
+begin
+  v_email := lower(nullif(trim(event -> 'user' ->> 'email'), ''));
+
+  -- 앱의 익명 로그인. 메일이 없다.
+  if v_email is null then return '{}'::jsonb; end if;
+
+  -- 아직 아무도 등록하지 않았다 (위 주석 참고)
+  if not exists (select 1 from public.admins) then return '{}'::jsonb; end if;
+
+  if exists (select 1 from public.admins a where a.email = v_email) then
+    return '{}'::jsonb;
+  end if;
+
+  return jsonb_build_object(
+    'error', jsonb_build_object('http_code', 403, 'message', '등록된 어드민 주소가 아니에요.')
+  );
+exception
+  when others then
+    return '{}'::jsonb;
+end;
+$$;
+
+/**
  * 지금 부르는 사람이 어드민인가.
  *
  * 익명 계정과 메일 확인이 안 된 계정은 거른다. 매직링크로 들어오면 그 순간
@@ -793,6 +849,12 @@ grant execute on function public.is_admin()                     to authenticated
 grant execute on function public.admin_overview()               to authenticated;
 grant execute on function public.admin_daily(int)               to authenticated;
 grant execute on function public.admin_distribution()           to authenticated;
+
+-- 가입 제한 훅. **부르는 것은 Supabase Auth 이지 앱이 아니다.**
+-- 이 두 줄이 없으면 훅을 대시보드에 걸어도 실행되지 않는다.
+grant usage on schema public to supabase_auth_admin;
+grant execute on function public.restrict_admin_signup(jsonb) to supabase_auth_admin;
+revoke execute on function public.restrict_admin_signup(jsonb) from authenticated, anon, public;
 
 -- 실시간 정책이 접속자 권한으로 부르는 함수라 여기 있어야 한다. 빠뜨리면 정책이
 -- 함수를 실행하지 못해 팀원까지 전부 채널에서 막힌다.
