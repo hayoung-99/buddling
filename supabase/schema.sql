@@ -56,10 +56,32 @@ create unique index if not exists members_team_user_idx on public.members (team_
 create index if not exists members_team_id_idx on public.members (team_id);
 create index if not exists members_user_id_idx on public.members (user_id);
 
+-- 계정이 마지막으로 팀에서 나온 때.
+--
+-- **팀을 나가면 흔적이 통째로 사라진다.** `leave_team()` 이 `members` 줄을 지우고,
+-- 마지막 사람이었으면 팀까지 지운다. 그래서 "언제 나갔나" 를 물어볼 곳이 없었다.
+--
+-- 그 한 가지를 알아야 하는 곳이 `cleanup_anonymous_users()` 다. 예전에는 유예 7일을
+-- **계정을 만든 때**에서 쟀는데, 그러면 오래된 계정이 마지막 팀을 나가는 순간 두 번째
+-- 조건이 진작에 참이라 **그날 밤 바로 지워졌다.** 유예가 하루도 없었던 셈이다.
+--
+-- `members` 에 `left_at` 을 더해 소프트 삭제하는 길은 택하지 않았다. 그러면 지금
+-- `members` 를 세는 모든 곳(팀 인원 제한 · 팀 크기 · 활동자 집계 · 닉네임 유일성)이
+-- "살아 있는 줄만" 을 따로 걸러야 하고, **한 곳만 빠뜨려도 조용히 틀린다.** 표를 따로
+-- 두면 기존 질의를 하나도 건드리지 않는다.
+--
+-- `on delete cascade` 를 다는 이유는 계정이 지워질 때 이 줄도 함께 사라지게 하기
+-- 위해서다. 안 달면 주인 없는 줄이 영영 쌓인다.
+create table if not exists public.account_traces (
+  user_id      uuid primary key references auth.users(id) on delete cascade,
+  last_left_at timestamptz not null default now()
+);
+
 -- 정책을 하나도 만들지 않는다 = anon 키로 테이블에 직접 접근 불가.
 -- 모든 읽기/쓰기는 아래 security definer 함수를 통해서만 이루어진다.
-alter table public.teams   enable row level security;
-alter table public.members enable row level security;
+alter table public.teams           enable row level security;
+alter table public.members         enable row level security;
+alter table public.account_traces  enable row level security;
 
 -- ────────────────────────────────────────────────────────────
 -- 공통
@@ -451,6 +473,18 @@ begin
 
   delete from members where user_id = v_user and team_id = p_team_id;
 
+  /*
+   * 나온 시각을 남긴다. 이 줄이 없으면 `cleanup_anonymous_users()` 가 유예를 잴
+   * 곳이 없어, 오래된 계정이 나가는 순간 그날 밤 바로 지워진다.
+   *
+   * 나갈 때마다 덮어쓴다. 여러 팀에 속한 사람이 그중 하나만 나가도 갱신되지만,
+   * `members` 에 다른 줄이 남아 있으면 청소 대상이 아니라 아무 영향이 없다. 결국
+   * **마지막 팀을 나가는 순간의 값**이 판단에 쓰인다.
+   */
+  insert into account_traces (user_id, last_left_at)
+  values (v_user, now())
+  on conflict (user_id) do update set last_left_at = excluded.last_left_at;
+
   -- 마지막 사람이 나갔으면 빈 팀은 남겨둘 이유가 없다.
   -- (초대코드도 함께 사라져 다시 쓸 수 없게 된다)
   if not exists (select 1 from members where team_id = p_team_id) then
@@ -474,11 +508,23 @@ delete from public.teams t
 -- 사람을 잘못 지우면 그 사람의 팀 소속까지 함께 사라진다. 그래서 두 겹으로 막는다.
 --
 --   1) 어느 팀에도 속하지 않은 계정만  → 쓰는 사람은 반드시 members 에 줄이 있다
---   2) 만든 지 유예기간이 지난 계정만  → 지금 막 로그인하고 팀을 만드는 중인 사람을
---                                        쓸어가지 않기 위해서다
+--   2) 마지막으로 팀에서 나온 지 유예기간이 지난 계정만
+--      (팀에 한 번도 들어간 적이 없으면 계정을 만든 때부터 잰다)
 --
 -- 1번만으로도 데이터를 잃지는 않지만(팀이 없으면 잃을 것도 없다), 2번이 없으면
 -- 가입과 팀 생성 사이의 짧은 틈에 걸려 "팀 만들기"가 이유 없이 실패할 수 있다.
+--
+-- **2번을 나온 때에서 재는 이유.** 예전에는 계정을 만든 때에서만 쟀다. 그러면 오래된
+-- 계정이 마지막 팀을 나가는 순간 두 번째 조건은 진작에 참이라 **유예 없이 그날 밤
+-- 바로 지워졌다.** 나가자마자 지우는 것과 다르지 않았던 셈이다. 데이터를 잃지는
+-- 않지만(나갈 때 members 줄이 이미 사라졌다) 돌아올 사람에게 줄 여유가 없었다.
+-- 그 시각을 `account_traces` 가 들고 있다 — `leave_team()` 이 남긴다.
+--
+-- 없는 사람에게는 `greatest(created_at, last_sign_in_at)` 으로 되돌아간다. 계정을
+-- 만든 때보다 뒤로 미루기만 하는 값이라, 실수로 일찍 지우는 쪽으로는 기울지 않는다.
+--
+-- **소급 적용되지 않는다.** 이 표는 오늘부터 쌓이므로, 이미 나가 있는 계정들은
+-- 여전히 만든 때로 판정되어 다음 청소에 지워진다. 새 기준은 앞으로 나가는 사람부터다.
 create or replace function public.cleanup_anonymous_users(
   p_grace interval default interval '7 days'
 ) returns int
@@ -491,8 +537,11 @@ declare
 begin
   delete from auth.users u
    where u.is_anonymous
-     and greatest(u.created_at, coalesce(u.last_sign_in_at, u.created_at)) < now() - p_grace
-     and not exists (select 1 from public.members m where m.user_id = u.id);
+     and not exists (select 1 from public.members m where m.user_id = u.id)
+     and coalesce(
+           (select t.last_left_at from public.account_traces t where t.user_id = u.id),
+           greatest(u.created_at, coalesce(u.last_sign_in_at, u.created_at))
+         ) < now() - p_grace;
 
   get diagnostics v_deleted = row_count;
   return v_deleted;
