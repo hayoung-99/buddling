@@ -85,7 +85,28 @@ export function AdminApp() {
  *
  * 비밀번호를 두지 않는 이유는 하나 더 관리할 것이 늘기 때문이다. 메일함을 못 열면
  * 들어올 수 없다는 점에서 확인 절차 노릇도 함께 한다.
+ *
+ * **어드민이 아닌 주소에는 메일이 아예 나가지 않는다.** 그 판단은 여기가 아니라 서버가
+ * 한다 — `supabase/schema.sql` 의 `restrict_admin_signup` 훅이 계정 생성 단계에서
+ * 막고, 그 사정이 아래 오류로 돌아온다. 화면에서 미리 걸러 보려 해도 브라우저는
+ * 어드민 목록을 읽을 수 없다 (그래야 목록이 새지 않는다).
  */
+
+/**
+ * Supabase 가 돌려주는 말을 일상어로 옮긴다.
+ *
+ * 그대로 보여 주면 영어 기술 문장이 뜬다. 자주 만날 둘만 손으로 옮기고 나머지는
+ * 원문을 남긴다 — 모르는 오류를 "알 수 없는 오류" 로 뭉개면 알아볼 방법이 없어진다.
+ */
+function friendly(message: string): string {
+  if (/rate limit/i.test(message)) {
+    return '메일을 너무 자주 보냈어요. 잠시 뒤에 다시 해 주세요 (시간당 두 통까지예요).'
+  }
+  if (/not allowed|signups? not allowed|403/i.test(message)) {
+    return '등록된 어드민 주소가 아니에요.'
+  }
+  return message
+}
 function SignIn() {
   const [email, setEmail] = useState('')
   const [state, setState] = useState<'idle' | 'sending' | 'sent'>('idle')
@@ -100,7 +121,7 @@ function SignIn() {
       options: { emailRedirectTo: `${location.origin}/admin/` },
     })
     if (failed) {
-      setError(failed.message)
+      setError(friendly(failed.message))
       setState('idle')
       return
     }
