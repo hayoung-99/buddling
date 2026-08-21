@@ -53,7 +53,7 @@ export function buildJsonLd(copy: Copy) {
         '@type': 'WebSite',
         '@id': id('website'),
         url: `${SITE_URL}/`,
-        name: 'tap-tap',
+        name: 'Doran Doran',
         inLanguage: ['ko', 'en'],
         publisher: { '@id': id('author') },
       },
@@ -97,7 +97,7 @@ export function buildJsonLd(copy: Copy) {
       {
         '@type': 'SoftwareApplication',
         '@id': id('app'),
-        name: 'tap-tap',
+        name: 'Doran Doran',
         description: copy.app.description,
         url: `${SITE_URL}/`,
         image: { '@id': id('og-image') },

@@ -5,8 +5,8 @@ import {
   DEFAULT_LANGUAGE,
   resolveLanguage,
   createTranslator,
-} from '@tap-tap/shared/i18n'
-import { CHARACTER_KEYS } from '@tap-tap/shared/characters'
+} from '@doran-doran/shared/i18n'
+import { CHARACTER_KEYS } from '@doran-doran/shared/characters'
 
 const CODES = Object.keys(DICTIONARIES)
 

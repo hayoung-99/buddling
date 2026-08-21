@@ -4,7 +4,7 @@
  */
 
 import * as THREE from 'three'
-import { CHARACTERS } from '@tap-tap/shared/characters'
+import { CHARACTERS } from '@doran-doran/shared/characters'
 import { createCritter, scaleToStandardHeight } from '../pet/critter'
 import { addLighting, createShadowCatcher } from '../pet/scene'
 import { createAnimator } from '../pet/animations'

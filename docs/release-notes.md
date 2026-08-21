@@ -4,9 +4,9 @@
 
 | 쓰는 컴퓨터 | 받을 파일 |
 |---|---|
-| Mac (M1·M2·M3·M4) | `tap-tap-{version}-arm64.dmg` |
-| Mac (2020년 이전 인텔) | `tap-tap-{version}-x64.dmg` |
-| Windows | `tap-tap-{version}-setup.exe` |
+| Mac (M1·M2·M3·M4) | `doran-doran-{version}-arm64.dmg` |
+| Mac (2020년 이전 인텔) | `doran-doran-{version}-x64.dmg` |
+| Windows | `doran-doran-{version}-setup.exe` |
 
 내 맥이 어느 쪽인지 모르겠다면 **  → 이 Mac에 관하여**를 열어 보세요.
 "칩"이라고 적혀 있으면 arm64, "프로세서"라고 적혀 있으면 x64 입니다.
@@ -22,7 +22,7 @@
 1. 받은 앱을 **응용 프로그램** 폴더로 옮깁니다
 2. 두 번 눌러 엽니다. 경고가 뜨면 **완료**를 누릅니다
 3. **시스템 설정 → 개인 정보 보호 및 보안** 을 엽니다
-4. 아래쪽으로 내려가면 tap-tap 이야기가 있습니다. **"확인 없이 열기"** 를 누르고
+4. 아래쪽으로 내려가면 도란도란 이야기가 있습니다. **"확인 없이 열기"** 를 누르고
    한 번 더 **열기** 를 누르면 다음부터는 그냥 열립니다
 
 예전 안내에 흔히 나오는 **"우클릭 → 열기"는 이제 통하지 않습니다.** 애플이
@@ -31,7 +31,7 @@ macOS 15 부터 그 방법을 없앴습니다.
 그래도 막히면 터미널에서 아래를 한 번 실행하세요.
 
 ```bash
-xattr -cr /Applications/tap-tap.app
+xattr -cr "/Applications/Doran Doran.app"
 ```
 
 ### Windows
@@ -53,4 +53,4 @@ macOS 는 코드 서명이 없으면 자동 설치가 불가능해서, 새 버�
 
 ---
 
-전체 코드와 문서: https://github.com/hayoung-99/tap-tap
+전체 코드와 문서: https://github.com/hayoung-99/doran-doran-desktop

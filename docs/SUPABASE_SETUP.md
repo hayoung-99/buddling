@@ -1,6 +1,6 @@
 # Supabase 세팅 가이드
 
-tap-tap은 팀 정보 저장과 실시간 "콕 찌르기" 전달에 Supabase를 씁니다.
+도란도란은 방 정보 저장과 실시간 "콕 찌르기" 전달에 Supabase를 씁니다.
 아래 5단계면 끝나고, 무료 플랜으로 충분합니다. **약 5분** 걸립니다.
 
 ---
@@ -10,7 +10,7 @@ tap-tap은 팀 정보 저장과 실시간 "콕 찌르기" 전달에 Supabase를 
 1. https://supabase.com 에 접속해 GitHub 계정 등으로 로그인합니다.
 2. **New project** 를 누릅니다.
 3. 입력값:
-   - **Name**: `tap-tap` (아무 이름이나 괜찮습니다)
+   - **Name**: `doran-doran` (아무 이름이나 괜찮습니다)
    - **Database Password**: 아무거나 생성해 두세요. 이 앱에서는 쓰지 않지만 나중에 필요할 수 있으니 저장해 두면 좋습니다.
    - **Region**: `Northeast Asia (Seoul)` — 팀원이 한국에 있다면 반응 속도가 가장 빠릅니다.
 4. **Create new project** 를 누르고 프로비저닝이 끝날 때까지 1~2분 기다립니다.
@@ -139,5 +139,7 @@ Supabase 대시보드의 **Table Editor → teams** 에서도 방금 만든 팀�
 ```sql
 select public.cleanup_anonymous_users();                 -- 기본 7일, 지운 개수를 돌려준다
 select public.cleanup_anonymous_users(interval '30 days');
+-- 작업 이름은 예전 이름 그대로다. 바꾸면 이미 걸려 있는 작업과 짝이 어긋나
+-- 정리가 둘로 늘거나 사라질 수 있어서, 이름 대신 하는 일만 그대로 둔다.
 select * from cron.job where jobname = 'tap-tap-cleanup-anonymous';
 ```

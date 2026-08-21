@@ -1,4 +1,4 @@
--- tap-tap 데이터베이스 스키마
+-- 도란도란 데이터베이스 스키마
 -- Supabase 대시보드 → SQL Editor 에 이 파일 전체를 붙여넣고 실행하세요.
 -- 여러 번 실행해도 안전하고, 이미 만든 팀·멤버는 그대로 유지됩니다.
 
@@ -253,7 +253,7 @@ begin
   -- 아닌 것으로 둔다. 예전에는 이 자리에 한국어가 박혀 있어서, 일본어를 쓰는
   -- 사람이 이름 없이 만들면 한국어 이름이 나왔다.
   insert into teams (name, invite_code, invite_expires_at)
-  values (coalesce(nullif(trim(p_name), ''), 'tap-tap'), v_code, now() + invite_ttl())
+  values (coalesce(nullif(trim(p_name), ''), 'doran-doran'), v_code, now() + invite_ttl())
   returning * into v_team;
 
   insert into members (team_id, nickname, character_key, user_id)
@@ -1101,7 +1101,7 @@ begin
   begin
     execute 'create extension if not exists pg_cron';
   exception when others then
-    raise notice '[tap-tap] pg_cron 을 켜지 못해 자동 정리를 걸지 않았습니다 (%). 대시보드 Database → Extensions 에서 켠 뒤 이 파일을 다시 실행하세요. 나머지 설정은 모두 적용됐습니다.', sqlerrm;
+    raise notice '[doran-doran] pg_cron 을 켜지 못해 자동 정리를 걸지 않았습니다 (%). 대시보드 Database → Extensions 에서 켠 뒤 이 파일을 다시 실행하세요. 나머지 설정은 모두 적용됐습니다.', sqlerrm;
     return;
   end;
 
@@ -1116,6 +1116,6 @@ begin
     $cron$select public.cleanup_anonymous_users()$cron$
   );
 
-  raise notice '[tap-tap] 익명 계정 자동 정리를 매일 UTC 18시에 걸었습니다.';
+  raise notice '[doran-doran] 익명 계정 자동 정리를 매일 UTC 18시에 걸었습니다.';
 end;
 $$;

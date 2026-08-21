@@ -14,7 +14,7 @@ import { BrowserWindow, screen } from 'electron'
 import store from './store'
 import { clampScale, petSizeFor, nextPetBounds, PET_BASE_SIZE } from './pet-size'
 import type { Size } from './pet-size'
-import type { PetSettings } from '@tap-tap/shared/state'
+import type { PetSettings } from '@doran-doran/shared/state'
 
 const ROOT = path.join(__dirname, '..', '..')
 
@@ -35,11 +35,11 @@ const SIZE_PANEL = { width: 244, height: 56 }
  * 화면 오른쪽 아래부터 왼쪽으로 차례차례.
  *
  * 팀이 여러 개면 캐릭터도 여러 마리라 같은 자리에 겹치면 안 된다.
- * 혼자서 두 명인 척 테스트할 때(TAPTAP_PROFILE)도 한 칸 더 비켜 세운다.
+ * 혼자서 두 명인 척 테스트할 때(DORAN_PROFILE)도 한 칸 더 비켜 세운다.
  */
 function defaultPetPosition(size: Size, index = 0) {
   const { workArea } = screen.getPrimaryDisplay()
-  const slot = index + (process.env.TAPTAP_PROFILE ? 1 : 0)
+  const slot = index + (process.env.DORAN_PROFILE ? 1 : 0)
   const shift = slot * (PET_BASE_SIZE.width + 40)
   return {
     x: Math.round(workArea.x + workArea.width - size.width - 40 - shift),
@@ -86,7 +86,7 @@ function createPetWindow({ teamId, index = 0 }: { teamId: string; index?: number
     // 캐릭터를 없애는 길은 트레이의 "숨기기"와 팀 나가기뿐이다.
     // 이걸 열어 두면 맥에서 ⌘W 로 캐릭터가 닫혀 버린다.
     closable: false,
-    title: 'tap-tap',
+    title: 'Doran Doran',
     webPreferences: {
       preload: preloadScript('pet'),
       contextIsolation: true,
@@ -133,7 +133,7 @@ function createSizeWindow() {
     maximizable: false,
     minimizable: false,
     show: false,
-    title: 'tap-tap 크기',
+    title: '도란도란 크기',
     webPreferences: {
       preload: preloadScript('size'),
       contextIsolation: true,
@@ -174,7 +174,7 @@ function createSettingsWindow() {
     height: 560,
     minWidth: 380,
     minHeight: 440,
-    title: 'tap-tap',
+    title: 'Doran Doran',
     backgroundColor: '#f5efe1',
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     show: false,
@@ -197,7 +197,7 @@ function createTeamWindow() {
     height: 700,
     minWidth: 360,
     minHeight: 520,
-    title: 'tap-tap',
+    title: 'Doran Doran',
     backgroundColor: '#f5efe1',
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     show: false,
@@ -224,7 +224,7 @@ function createTeamDetailWindow(teamId: string, index = 0) {
     height: 820,
     minWidth: 380,
     minHeight: 520,
-    title: 'tap-tap',
+    title: 'Doran Doran',
     backgroundColor: '#f5efe1',
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     show: false,

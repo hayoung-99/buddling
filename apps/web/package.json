@@ -1,8 +1,8 @@
 {
-  "name": "@tap-tap/web",
+  "name": "@doran-doran/web",
   "version": "0.0.0",
   "private": true,
-  "description": "tap-tap 랜딩페이지와 어드민 (Next.js, Vercel 로 올라간다)",
+  "description": "도란도란 랜딩페이지와 어드민 (Next.js, Vercel 로 올라간다)",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -15,7 +15,7 @@
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
-    "@tap-tap/shared": "*",
+    "@doran-doran/shared": "*",
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",

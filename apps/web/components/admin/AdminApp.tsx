@@ -56,7 +56,7 @@ export function AdminApp() {
   return (
     <main className="admin">
       <header className="admin-top">
-        <h1>tap-tap 어드민</h1>
+        <h1>도란도란 어드민</h1>
         {session && (
           <button
             type="button"
@@ -173,7 +173,7 @@ function SignIn() {
 function NotConfigured() {
   return (
     <main className="admin">
-      <h1>tap-tap 어드민</h1>
+      <h1>도란도란 어드민</h1>
       <p className="admin-note">
         Supabase 접속 정보가 없습니다. Vercel 프로젝트에{' '}
         <code>NEXT_PUBLIC_SUPABASE_URL</code> 과 <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> 를

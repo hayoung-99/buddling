@@ -5,8 +5,8 @@
  * 중요하다. 그래서 한 줄씩 이어 찍어 두고 나중에 앞뒤를 견준다. 메모리가 우상향하면
  * 새는 것이고, CPU 가 가만히 있을 때도 높으면 절전이 안 듣는 것이다.
  *
- *   TAPTAP_METRICS=1    30초마다
- *   TAPTAP_METRICS=5    5초마다 (절전 단계를 바꿔가며 견줄 때)
+ *   DORAN_METRICS=1    30초마다
+ *   DORAN_METRICS=5    5초마다 (절전 단계를 바꿔가며 견줄 때)
  */
 
 import { BrowserWindow } from 'electron'
@@ -14,7 +14,7 @@ import { BrowserWindow } from 'electron'
 const DEFAULT_SECONDS = 30
 
 function startMetrics(electronApp: Electron.App) {
-  const seconds = Number(process.env.TAPTAP_METRICS) || DEFAULT_SECONDS
+  const seconds = Number(process.env.DORAN_METRICS) || DEFAULT_SECONDS
   const startedAt = Date.now()
 
   const timer = setInterval(() => {

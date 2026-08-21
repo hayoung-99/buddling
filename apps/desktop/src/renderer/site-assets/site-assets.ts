@@ -13,10 +13,10 @@
  */
 
 import * as THREE from 'three'
-import { CHARACTERS, getCharacter } from '@tap-tap/shared/characters'
+import { CHARACTERS, getCharacter } from '@doran-doran/shared/characters'
 import { createCritter, scaleToStandardHeight } from '../pet/critter'
 import { addLighting, createShadowCatcher } from '../pet/scene'
-import type { CharacterSpec } from '@tap-tap/shared/characters'
+import type { CharacterSpec } from '@doran-doran/shared/characters'
 
 /** 한 장면을 어떻게 세우고 어디서 볼지 (아래 주석에 항목별 뜻이 있다) */
 interface ShotLayout {

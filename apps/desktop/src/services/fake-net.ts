@@ -7,7 +7,7 @@
  *
  * 하는 일이 셋이다 — `npm test` 를 Supabase 없이 돌리는 것, **여러 클라이언트가 같은
  * 서버를 보는 상황**을 한 프로세스 안에 만드는 것(`createFakeServer` 하나에
- * `createFakeNet` 을 여럿 꽂는다), 그리고 `TAPTAP_FAKE_NET=1` 로 UI 를 눌러 보게
+ * `createFakeNet` 을 여럿 꽂는다), 그리고 `DORAN_FAKE_NET=1` 로 UI 를 눌러 보게
  * 하는 것(`net.ts`).
  *
  * ## 무엇을 흉내 내고 무엇을 안 하나
@@ -35,7 +35,7 @@
 
 import { createEmitter } from './emitter'
 import type { Net, NetEvents, NetMembership } from './net'
-import type { Member, Team } from '@tap-tap/shared/state'
+import type { Member, Team } from '@doran-doran/shared/state'
 
 /** 서버 안에서만 쓰는 팀. 밖으로 나갈 때는 `publicTeam` 이 `Team` 모양으로 깎는다. */
 interface StoredTeam {
@@ -165,7 +165,7 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
       const team = {
         id: nextId(),
         // 진짜 쪽과 같다 — 이름은 앱이 채워 보내고, 이건 옛 앱을 위한 안전망이다
-        name: name?.trim() || 'tap-tap',
+        name: name?.trim() || 'doran-doran',
         inviteCode: generateInviteCode(),
         inviteExpiresAt: now() + INVITE_TTL_MS,
       }

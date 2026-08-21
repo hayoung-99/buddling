@@ -8,7 +8,7 @@
  * 같은 화면에 이런 창이 팀 수만큼 뜨고, 각자 자기 팀 신호에만 반응한다.
  *
  * 화면에 나타나는 신호는 서로 다르다.
- *   내가 클릭  → 움찔 + "TAP TAP!" 말풍선 (그리고 팀에 신호를 보낸다)
+ *   내가 클릭  → 움찔 + "콕콕!" 말풍선 (그리고 같은 방 사람들에게 신호를 보낸다)
  *   팀원이 찌름 → 좌우로 흔드는 춤 + 떠오르는 음표 + 발밑에 찌른 사람 이름표
  *   둘이 겹치면 → 춤추면서 움찔하고 말풍선·이름이 다 보인다
  *
@@ -27,10 +27,11 @@
  */
 
 import * as THREE from 'three'
-import { getCharacter } from '@tap-tap/shared/characters'
-import { powerProfile } from '@tap-tap/shared/power'
-import type { PowerProfile } from '@tap-tap/shared/power'
-import type { AppState, Membership, TapPayload } from '@tap-tap/shared/state'
+import { getCharacter } from '@doran-doran/shared/characters'
+import { createTranslator } from '@doran-doran/shared/i18n'
+import { powerProfile } from '@doran-doran/shared/power'
+import type { PowerProfile } from '@doran-doran/shared/power'
+import type { AppState, Membership, TapPayload } from '@doran-doran/shared/state'
 import { createCritter, disposeCritter, scaleToStandardHeight } from './critter'
 import type { Critter } from './critter'
 import { createStage } from './scene'
@@ -40,8 +41,15 @@ import { createNameplate } from './nameplate'
 import { createNotes } from './notes'
 import { createPacer } from './pacer'
 
-/** 내가 눌렀을 때 뜨는 말풍선 문구 */
-const TAP_TEXT = 'TAP TAP!'
+/**
+ * 내가 눌렀을 때 뜨는 말풍선 문구.
+ *
+ * 서비스 이름과는 따로 간다 — 이름을 바꿔도 이 말풍선은 "콕 찔렀다"는 몸짓 그대로여야
+ * 하기 때문이다. 사람마다 고른 말이 다르므로 사전에서 꺼내 쓰고, 언어가 정해지기 전
+ * 첫 프레임에는 기본 언어로 둔다.
+ */
+const bubbleText = (language: string | null | undefined) =>
+  createTranslator(language)('pet.bubble')
 
 /** 클릭으로 인정할 최대 이동 거리(px). 이보다 많이 움직이면 "옮기기"다. */
 const DRAG_THRESHOLD = 4
@@ -84,6 +92,8 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
   let notes: ReturnType<typeof createNotes> | null = null
   /** 지금 쓰는 절전 프로필. 설정 창에서 바꾸면 갈아끼운다. */
   let profile: PowerProfile = powerProfile(null)
+  /** 말풍선 문구. 설정 창에서 말을 바꾸면 다음 상태와 함께 갈아끼운다. */
+  let tapText = bubbleText(null)
 
   /** 창 크기로부터 지금 캐릭터 배율을 구해 말풍선·이름표에 알려준다 */
   function syncOverlayScale() {
@@ -215,7 +225,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
   /** 내 캐릭터를 클릭했을 때 — 움찔하며 말풍선을 띄우고, 팀원들에게 신호를 보낸다 */
   function tapSelf() {
     animator?.twitch()
-    bubble.show(TAP_TEXT)
+    bubble.show(tapText)
     window.petApi.tap()
   }
 
@@ -263,6 +273,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
 
   function applyState(state: AppState | null) {
     setPower(state?.power ?? null)
+    tapText = bubbleText(state?.language)
     const mine = myMembership(state)
     if (mine) setCharacter(mine.member.characterKey)
   }

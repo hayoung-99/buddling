@@ -15,12 +15,12 @@
  * 예시 방 이름은 언어마다 그 나라에서 자연스러운 것으로 둔다. 음차한 이름을 넣으면
  * 읽는 사람이 그 이름부터 해석하느라 정작 보여주려던 화면이 눈에 안 들어온다.
  *
- *   TAPTAP_FAKE_NET=1 TAPTAP_PROFILE=shot TAPTAP_CAPTURE=.preview/ko \
- *     TAPTAP_SEED="나오리와 친구들:나영" TAPTAP_LANG=ko npm start
+ *   DORAN_FAKE_NET=1 DORAN_PROFILE=shot DORAN_CAPTURE=.preview/ko \
+ *     DORAN_SEED="나오리와 친구들:나영" DORAN_LANG=ko npm start
  *   cp .preview/ko/team.png apps/web/public/assets/team-window.png
  *
- *   TAPTAP_FAKE_NET=1 TAPTAP_PROFILE=shot TAPTAP_CAPTURE=.preview/en \
- *     TAPTAP_SEED="Naori & friends:Nayoung" TAPTAP_LANG=en npm start
+ *   DORAN_FAKE_NET=1 DORAN_PROFILE=shot DORAN_CAPTURE=.preview/en \
+ *     DORAN_SEED="Naori & friends:Nayoung" DORAN_LANG=en npm start
  *   cp .preview/en/team.png apps/web/public/assets/team-window-en.png
  *
  * **그렇게 옮겨 둔 뒤 `-- --webp-only` 를 한 번 돌린다.** 랜딩이 거는 것은 WebP 라,

@@ -38,7 +38,7 @@ export function Landing({ copy }: { copy: Copy }) {
               <circle cx="26" cy="6" r="6" fill="#febc2e" />
               <circle cx="46" cy="6" r="6" fill="#28c840" />
             </svg>
-            <span className="title">tap-tap</span>
+            <span className="title">{copy.brand}</span>
             <nav>
               <a href="#characters">{copy.nav.characters}</a>
               <a href="#download">{copy.nav.download}</a>
@@ -217,7 +217,7 @@ export function Landing({ copy }: { copy: Copy }) {
           <footer>
             <span>{copy.footer.tagline}</span>
             <nav>
-              <a href="https://github.com/hayoung-99/tap-tap">{copy.footer.github}</a>
+              <a href="https://github.com/hayoung-99/doran-doran-desktop">{copy.footer.github}</a>
               <a href={RELEASES_PAGE}>{copy.footer.releases}</a>
               <a href={copy.other.href} hrefLang={copy.other.lang} lang={copy.other.lang}>
                 {copy.other.long}

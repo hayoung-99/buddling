@@ -3,7 +3,7 @@ import { createSession, TOUCH_INTERVAL_MS } from '../src/main/session'
 import { createFakeServer, createFakeNet, MAX_TEAMS_PER_USER } from '../src/services/fake-net'
 import type { Store, StoredState } from '../src/main/store'
 import type { Net } from '../src/services/net'
-import type { PetSettings, TapPayload } from '@tap-tap/shared/state'
+import type { PetSettings, TapPayload } from '@doran-doran/shared/state'
 
 const DEFAULT_PET: PetSettings = { position: null, scale: 1 }
 

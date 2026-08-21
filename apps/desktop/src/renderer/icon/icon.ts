@@ -10,7 +10,7 @@
  */
 
 import * as THREE from 'three'
-import { getCharacter } from '@tap-tap/shared/characters'
+import { getCharacter } from '@doran-doran/shared/characters'
 import { createCritter, scaleToStandardHeight } from '../pet/critter'
 import { addLighting } from '../pet/scene'
 

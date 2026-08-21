@@ -51,6 +51,14 @@ export interface Question {
 
 export interface Copy {
   locale: Locale
+  /**
+   * 화면에 보이는 서비스 이름.
+   *
+   * 한국어판은 `도란도란`, 영어판은 `Doran Doran` 이다. 구조화 데이터(`jsonld.ts`)와
+   * `og:site_name` 은 나라말과 무관하게 `Doran Doran` 하나로 두는데, 같은 것을
+   * 가리키는 이름이 페이지마다 다르면 검색엔진이 둘로 잡기 때문이다.
+   */
+  brand: string
   /** 다른 언어로 건너가는 곳 */
   other: { href: string; lang: Locale; short: string; long: string }
 

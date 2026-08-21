@@ -45,7 +45,7 @@ export function buildMetadata(copy: Copy): Metadata {
 
     openGraph: {
       type: 'website',
-      siteName: 'tap-tap',
+      siteName: 'Doran Doran',
       locale: copy.locale === 'ko' ? 'ko_KR' : 'en_US',
       alternateLocale: copy.locale === 'ko' ? 'en_US' : 'ko_KR',
       url,

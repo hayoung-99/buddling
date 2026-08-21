@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { PetApi, IpcResult } from '@tap-tap/shared/ipc'
-import type { AppState, TapPayload } from '@tap-tap/shared/state'
+import type { PetApi, IpcResult } from '@doran-doran/shared/ipc'
+import type { AppState, TapPayload } from '@doran-doran/shared/state'
 
 /**
  * 캐릭터 창은 팀마다 하나씩 뜬다.

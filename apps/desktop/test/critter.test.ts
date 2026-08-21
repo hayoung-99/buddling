@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { Box3, Group } from 'three'
 import type { Mesh } from 'three'
-import { CHARACTERS, getCharacter } from '@tap-tap/shared/characters'
+import { CHARACTERS, getCharacter } from '@doran-doran/shared/characters'
 import {
   createCritter,
   disposeCritter,
