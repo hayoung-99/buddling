@@ -12,11 +12,12 @@ const { app, BrowserWindow } = require('electron')
 const CAPTURE = process.argv.includes('--shot')
 const HOP = process.argv.includes('--hop')
 const DANCE = process.argv.includes('--dance')
+const WAVE = process.argv.includes('--wave')
 const OUTPUT = path.join(
   __dirname,
   '..',
   '.preview',
-  DANCE ? 'dance.png' : HOP ? 'hop.png' : 'characters.png',
+  WAVE ? 'wave.png' : DANCE ? 'dance.png' : HOP ? 'hop.png' : 'characters.png',
 )
 
 void app.whenReady().then(async () => {
@@ -34,11 +35,15 @@ void app.whenReady().then(async () => {
   // 첫 프레임이 그려지고 idle 애니메이션이 자리를 잡을 때까지 잠시 기다린다
   await new Promise((resolve) => setTimeout(resolve, 1500))
 
-  if (HOP || DANCE) {
+  if (HOP || DANCE || WAVE) {
     // 시간차로 움직이게 한 뒤 한 장에 동작의 여러 단계를 담는다
-    const call = DANCE ? 'window.__danceAll(140)' : 'window.__hopAll(130)'
+    const call = WAVE
+      ? 'window.__waveAll(150)'
+      : DANCE
+        ? 'window.__danceAll(140)'
+        : 'window.__hopAll(130)'
     await window.webContents.executeJavaScript(call)
-    await new Promise((resolve) => setTimeout(resolve, DANCE ? 760 : 620))
+    await new Promise((resolve) => setTimeout(resolve, WAVE ? 820 : DANCE ? 760 : 620))
   }
   const image = await window.capturePage()
   fs.mkdirSync(path.dirname(OUTPUT), { recursive: true })

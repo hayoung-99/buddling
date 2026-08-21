@@ -9,6 +9,7 @@
  *   dance  — 팀원이 콕 찔렀을 때. 좌우로 흔들며 춤춘다.
  *   twitch — 내가 눌렀을 때. 제자리에서 움찔한다.
  *   hop    — 폴짝 뛰기. 지금 앱에서는 쓰지 않고 미리보기에서 비교용으로 남겨 두었다.
+ *   wave   — 손 흔들기. 아직 신호로 연결되지 않아 미리보기에서만 돈다.
  *
  * 살아있어 보이게 만드는 장치:
  *   1) squash & stretch — 웅크렸다 늘어나고 딛을 때 찌부러진다
@@ -67,6 +68,32 @@ const DANCE_UNIT: Keyframe[] = [
 ]
 
 /**
+ * 손 흔들기(1.3초) — 한쪽 팔만 든다.
+ *
+ *   armOne   그 팔만 더 드는 각도 (라디안). 두 팔이 함께 움직이는 arm·spread 위에 얹힌다
+ *   shoulder 그 팔의 어깨를 바깥·위로 옮기는 양 (0~1, 캐릭터 키에 대한 비율로 쓰인다)
+ *   tilt     몸통이 그 팔 쪽으로 살짝 기운다
+ *
+ * **어깨를 옮기지 않으면 읽히지 않는다.** 이 캐릭터들의 팔은 관절 없는 짧은 돌기이고
+ * 어깨가 몸통 옆면에 붙박여 있어서, 각도만 주면 팔이 몸통 옆면을 따라 올라가 실루엣
+ * 안에 묻힌다. 어깨를 잠깐 바깥으로 밀어야 팔이 실루엣 밖으로 나온다. 동작이 끝나면
+ * 0으로 돌아오는 값이라 다른 동작에는 영향이 없다.
+ *
+ * 리그(비율·관절)는 건드리지 않는다 — 팔다리를 늘리면 인형이 피규어가 된다.
+ */
+const WAVE_UNIT: Keyframe[] = [
+  { t: 0.0, armOne: 0.0, shoulder: 0.0, tilt: 0.0, ease: 'easeOutQuad' },
+  { t: 0.12, armOne: 0.95, shoulder: 0.55, tilt: -0.03, ease: 'easeOutQuad' }, // 팔이 올라가며 어깨가 따라 나간다
+  { t: 0.28, armOne: 2.5, shoulder: 1.0, tilt: -0.07, ease: 'easeOutBack' }, // 손이 머리 위로 올라왔다
+  { t: 0.44, armOne: 1.98, shoulder: 0.92, tilt: -0.04, ease: 'easeInOutQuad' }, // ── 흔들기 ──
+  { t: 0.6, armOne: 2.72, shoulder: 1.0, tilt: -0.09, ease: 'easeInOutQuad' },
+  { t: 0.76, armOne: 1.98, shoulder: 0.92, tilt: -0.04, ease: 'easeInOutQuad' },
+  { t: 0.92, armOne: 2.72, shoulder: 1.0, tilt: -0.09, ease: 'easeInOutQuad' },
+  { t: 1.1, armOne: 0.85, shoulder: 0.52, tilt: -0.02, ease: 'easeInQuad' }, // 내린다
+  { t: 1.3, armOne: 0.0, shoulder: 0.0, tilt: 0.0, ease: 'easeOutQuad' },
+]
+
+/**
  * 움찔 한 번(0.46초). 제자리에서 몸을 좌우로 떨며 눌린 느낌을 낸다.
  * 뛰지 않으므로 y는 없고, 몸통을 기울이는 tilt 가 흔들림을 만든다.
  */
@@ -83,8 +110,10 @@ const TWITCH_UNIT: Keyframe[] = [
 const HOP_FIELDS = ['y', 'sx', 'sy']
 const DANCE_FIELDS = ['x', 'y', 'tilt', 'arm', 'spread', 'step', 'sx', 'sy']
 const TWITCH_FIELDS = ['sx', 'sy', 'tilt']
+const WAVE_FIELDS = ['armOne', 'shoulder', 'tilt']
 
 const TWITCH_DURATION = TWITCH_UNIT[TWITCH_UNIT.length - 1].t
+const WAVE_DURATION = WAVE_UNIT[WAVE_UNIT.length - 1].t
 const DANCE_CYCLE = DANCE_UNIT[DANCE_UNIT.length - 1].t
 
 const HEIGHT_FALLOFF = 0.66 // 폴짝마다 높이 감쇠
@@ -99,6 +128,8 @@ const HOP_RATIO = 0.26 // 첫 폴짝 높이
 const DANCE_SWAY = 0.22 // 좌우로 벌어지는 폭
 const DANCE_BOB = 0.12 // 춤추며 통통 튀는 높이
 const STEP_LIFT = 0.035 // 발을 드는 높이
+const SHOULDER_REACH = 0.075 // 손 흔들 때 어깨가 바깥으로 나가는 거리
+const SHOULDER_LIFT = 0.055 // 그때 어깨가 올라가는 높이
 
 /** 폴짝 n번을 하나의 키프레임 트랙으로 이어붙인다. */
 export function buildHopTimeline(hops = 3): Timeline {
@@ -154,7 +185,12 @@ export function sampleTwitch(t: number): Sampled {
   return sampleTrack(TWITCH_UNIT, TWITCH_FIELDS, t)
 }
 
-export { TWITCH_DURATION, DANCE_CYCLE }
+/** 손 흔들기를 시각 t에서 샘플링한다. → { armOne, shoulder, tilt } */
+export function sampleWave(t: number): Sampled {
+  return sampleTrack(WAVE_UNIT, WAVE_FIELDS, t)
+}
+
+export { TWITCH_DURATION, WAVE_DURATION, DANCE_CYCLE }
 
 const randomBetween = (min: number, max: number) => min + Math.random() * (max - min)
 
@@ -162,6 +198,7 @@ const randomBetween = (min: number, max: number) => min + Math.random() * (max -
 const REST_HOP: Sampled = { y: 0, sx: 1, sy: 1 }
 const REST_DANCE: Sampled = { x: 0, y: 0, tilt: 0, arm: 0, spread: 0, step: 0, sx: 1, sy: 1 }
 const REST_TWITCH: Sampled = { sx: 1, sy: 1, tilt: 0 }
+const REST_WAVE: Sampled = { armOne: 0, shoulder: 0, tilt: 0 }
 
 /**
  * 타이머를 delta 만큼 진행시키고 이번 프레임의 값을 돌려준다.
@@ -199,6 +236,11 @@ export function createAnimator(
 
   // 다리는 원래 자리에서 위로만 살짝 들 것이므로 기준 높이를 기억해 둔다
   const legBaseY = parts.legL ? parts.legL.position.y : 0
+  // 손 흔들 때 옮겼다가 되돌려 놓아야 하는 어깨 자리. 흔드는 팔은 왼팔 하나뿐이다.
+  const armBaseX = parts.armL ? parts.armL.position.x : 0
+  const armBaseY = parts.armL ? parts.armL.position.y : 0
+  const shoulderReach = height * SHOULDER_REACH
+  const shoulderLift = height * SHOULDER_LIFT
 
   const earLag = createSpring({ stiffness: 170, damping: 15 })
   const headLag = createSpring({ stiffness: 240, damping: 20 })
@@ -208,6 +250,7 @@ export function createAnimator(
   let hopTime: number | null = null
   let danceTime: number | null = null
   let twitchTime: number | null = null
+  let waveTime: number | null = null
   let previousY = 0
   let previousX = 0
 
@@ -235,12 +278,18 @@ export function createAnimator(
     twitchTime = 0
   }
 
+  /** 한쪽 팔을 들어 흔든다. 아직 신호로 연결되지 않아 미리보기에서만 쓴다. */
+  function wave() {
+    waveTime = 0
+  }
+
   function update(delta: number) {
     elapsed += delta
 
     let frameHop: Sampled
     let frameDance: Sampled
     let frameTwitch: Sampled
+    let frameWave: Sampled
     ;[hopTime, frameHop] = advance(
       hopTime,
       delta,
@@ -262,8 +311,10 @@ export function createAnimator(
       sampleTwitch,
       REST_TWITCH,
     )
+    ;[waveTime, frameWave] = advance(waveTime, delta, WAVE_DURATION, sampleWave, REST_WAVE)
 
-    const settled = hopTime === null && danceTime === null && twitchTime === null
+    const settled =
+      hopTime === null && danceTime === null && twitchTime === null && waveTime === null
 
     // ── 호흡 (다른 동작 중에는 거의 죽인다) ──
     const breathAmount = settled ? 1 : 0.2
@@ -278,7 +329,7 @@ export function createAnimator(
     root.scale.set(wide, frameHop.sy * frameDance.sy * frameTwitch.sy * (1 + breath), wide)
 
     // ── 몸통 ──
-    const tilt = frameDance.tilt + frameTwitch.tilt
+    const tilt = frameDance.tilt + frameTwitch.tilt + frameWave.tilt
     parts.body.rotation.z = Math.sin(elapsed * 1.05) * 0.018 * breathAmount + tilt
 
     // ── 속도로부터 지연(lag) 계산 ──
@@ -296,8 +347,13 @@ export function createAnimator(
       Math.sin(elapsed * 2.1 + 0.5) * 0.026 * breathAmount - headLag.value * 0.16
     parts.head.rotation.z = -tilt * 0.45
 
-    // ── 팔 (춤출 때만 움직인다) ──
-    if (parts.armL) parts.armL.rotation.z = frameDance.spread + frameDance.arm
+    // ── 팔 (춤출 때는 두 팔이 함께, 손 흔들 때는 왼팔만) ──
+    if (parts.armL) {
+      parts.armL.rotation.z = frameDance.spread + frameDance.arm + frameWave.armOne
+      // 각도만으로는 짧은 팔이 몸통 옆면에 묻힌다. 어깨를 잠깐 밀어 실루엣 밖으로 뺀다.
+      parts.armL.position.x = armBaseX + frameWave.shoulder * shoulderReach
+      parts.armL.position.y = armBaseY + frameWave.shoulder * shoulderLift
+    }
     if (parts.armR) parts.armR.rotation.z = -frameDance.spread + frameDance.arm
 
     // ── 다리 (춤출 때 번갈아 발을 든다) ──
@@ -365,6 +421,7 @@ export function createAnimator(
     hop,
     dance,
     twitch,
+    wave,
     update,
     get isHopping() {
       return hopTime !== null
@@ -374,6 +431,9 @@ export function createAnimator(
     },
     get isTwitching() {
       return twitchTime !== null
+    },
+    get isWaving() {
+      return waveTime !== null
     },
     get danceDuration() {
       return danceTimeline.duration

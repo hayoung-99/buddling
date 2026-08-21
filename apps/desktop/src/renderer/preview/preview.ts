@@ -46,7 +46,7 @@ labels.innerHTML = CHARACTERS.map(
 
 let spinning = false
 /** 5마리를 시간차로 움직이게 한다. 한 장에 동작의 여러 단계를 담아 볼 수 있다. */
-function playAll(motion: 'hop' | 'dance', stagger = 90) {
+function playAll(motion: 'hop' | 'dance' | 'wave', stagger = 90) {
   animators.forEach((animator, index) => {
     setTimeout(() => animator[motion](), index * stagger)
   })
@@ -56,14 +56,17 @@ declare global {
   interface Window {
     __hopAll: (stagger?: number) => void
     __danceAll: (stagger?: number) => void
+    __waveAll: (stagger?: number) => void
   }
 }
 window.__hopAll = (stagger) => playAll('hop', stagger)
 window.__danceAll = (stagger) => playAll('dance', stagger)
+window.__waveAll = (stagger) => playAll('wave', stagger)
 
 const button = (id: string) => document.getElementById(id) as HTMLElement
 button('hop').addEventListener('click', () => playAll('hop'))
 button('dance').addEventListener('click', () => playAll('dance'))
+button('wave').addEventListener('click', () => playAll('wave'))
 button('spin').addEventListener('click', () => {
   spinning = !spinning
 })
