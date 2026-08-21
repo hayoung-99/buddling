@@ -49,6 +49,7 @@
   "form.createSection": "新しいルームを作る",
   "form.teamName": "ルーム名",
   "form.teamNamePlaceholder": "例）さくらと友だち",
+  "form.teamNameDefault": "名前なし {n}",
   "form.create": "ルームを作る",
   "form.creating": "作成中…",
   "form.joinSection": "招待コードで参加",

@@ -49,6 +49,7 @@
   "form.createSection": "새 방 만들기",
   "form.teamName": "방 이름",
   "form.teamNamePlaceholder": "예) 나오리와 친구들",
+  "form.teamNameDefault": "이름없음 {n}",
   "form.create": "방 만들기",
   "form.creating": "만드는 중…",
   "form.joinSection": "초대코드로 참여하기",

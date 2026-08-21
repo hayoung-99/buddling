@@ -63,9 +63,11 @@ describe('팀 만들기', () => {
     expect(codes.size).toBe(60)
   })
 
-  it('팀 이름을 비우면 기본 이름을 붙인다', async () => {
+  // 앱은 이름이 비면 사전에서 만든 이름을 채워 보낸다(renderer/team/default-name.ts).
+  // 여기 있는 값은 그 기능이 없던 옛 앱을 위한 안전망이라 어느 나라 말도 아니다.
+  it('방 이름을 비우면 안전망 이름을 붙인다', async () => {
     const { team } = await net.alice.createTeam({ name: '   ', nickname: '나영' })
-    expect(team.name).toBe('우리 팀')
+    expect(team.name).toBe('tap-tap')
   })
 
   it('닉네임 없이는 만들 수 없다', async () => {

@@ -12,6 +12,7 @@
 import { ipcMain, Menu, shell } from 'electron'
 import { toFriendlyError } from '../services/net'
 import { t } from './i18n'
+import { nextDefaultName } from './default-name'
 import type { BrowserWindow } from 'electron'
 import type { IpcResult } from '@tap-tap/shared/ipc'
 import type { AppShell } from './main'
@@ -62,9 +63,14 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
 
   // ── 렌더러 → 세션 ──
   handle('app:state', () => session.snapshot())
-  handle('team:create', (payload: { name: string; nickname: string }) =>
-    session.createTeam(payload),
-  )
+  handle('team:create', (payload: { name: string; nickname: string }) => {
+    // 이름을 비워 두는 것은 막지 않는다 — 이름 짓기가 첫 관문이 되면 거기서 그만두는
+    // 사람이 생긴다. 대신 지금 쓰는 말로 "이름없음 1" 처럼 붙여 준다.
+    const taken = session.snapshot().memberships.map((entry) => entry.team.name)
+    const name =
+      payload.name?.trim() || nextDefaultName((n) => t('form.teamNameDefault', { n }), taken)
+    return session.createTeam({ ...payload, name })
+  })
   handle('team:join', (payload: { inviteCode: string; nickname: string }) =>
     session.joinTeam(payload),
   )

@@ -49,6 +49,7 @@
   "form.createSection": "Create a team",
   "form.teamName": "Team name",
   "form.teamNamePlaceholder": "e.g. Naori & friends",
+  "form.teamNameDefault": "Untitled {n}",
   "form.create": "Create team",
   "form.creating": "Creating…",
   "form.joinSection": "Join with an invite code",

@@ -164,7 +164,8 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
 
       const team = {
         id: nextId(),
-        name: name?.trim() || '우리 팀',
+        // 진짜 쪽과 같다 — 이름은 앱이 채워 보내고, 이건 옛 앱을 위한 안전망이다
+        name: name?.trim() || 'tap-tap',
         inviteCode: generateInviteCode(),
         inviteExpiresAt: now() + INVITE_TTL_MS,
       }
