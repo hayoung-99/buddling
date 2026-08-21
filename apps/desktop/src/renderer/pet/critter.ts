@@ -252,17 +252,45 @@ function buildEyes(
   }
 }
 
+/**
+ * 판다의 눈 둘레 검은 무늬.
+ *
+ * **얼굴에 납작한 공을 얹으면 안 된다.** 예전에는 그렇게 했는데, 무늬가 머리 구면
+ * 안쪽에 파묻혀 가장자리 몇 조각만 삐져나왔다. 화면에서는 무늬가 아니라 눈가에 낀
+ * 검은 얼룩처럼 보였다.
+ *
+ * 그래서 머리보다 아주 조금 큰 구의 **일부만 잘라** 씌운다. 무늬가 구면을 그대로
+ * 따라가므로 어느 각도에서 봐도 파묻히지 않고, 가장자리도 얼굴에 딱 붙는다.
+ *
+ * 타원으로 만드는 것은 잘라낸 조각을 옆으로 눌러서 한다. 반지름을 머리보다 2% 크게
+ * 잡아 두어 눌러도 얼굴 밖에 남는다.
+ */
 function buildPandaEyePatches(
   head: THREE.Object3D,
   materials: CritterMaterials,
   headR: number,
 ) {
+  /**
+   * 무늬가 덮는 각도(라디안). 눈보다는 넉넉하고 볼보다는 좁아야 한다 —
+   * 더 키우면 볼의 분홍 빗금을 덮어 검은 바탕에 분홍이 떠 있는 꼴이 된다.
+   */
+  const SPREAD = 0.34
+
   for (const side of [-1, 1]) {
-    const patch = ball(headR * 0.29, materials.accent, 24)
-    patch.scale.set(0.92, 1.2, 0.42)
-    patch.position.set(side * headR * 0.41, headR * 0.05, headR * 0.7)
-    patch.rotation.z = side * 0.32
-    head.add(patch)
+    // 눈이 있는 쪽을 바라보게 — 눈 피벗보다 아주 조금 위다 (눈이 무늬 가운데 오도록)
+    const toward = new THREE.Vector3(side * 0.41, 0.11, 0.8).normalize()
+
+    const aim = new THREE.Group()
+    aim.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), toward)
+    head.add(aim)
+
+    const patch = new THREE.Mesh(
+      new THREE.SphereGeometry(headR * 1.02, 28, 18, 0, Math.PI * 2, 0, SPREAD),
+      materials.accent,
+    )
+    patch.scale.set(0.88, 1, 1.16) // 세로로 조금 길쭉한 타원
+    patch.rotation.y = side * 0.55 // 눈꼬리가 바깥으로 살짝 눕는다
+    aim.add(patch)
   }
 }
 
