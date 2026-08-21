@@ -65,6 +65,7 @@ export function Landing({ copy }: { copy: Copy }) {
                   {copy.hero.tail}
                 </h1>
                 <p className="lead">{copy.hero.sub}</p>
+                <p className="needs-two">{copy.hero.needsTwo}</p>
                 <div className="actions">
                   <a className="btn" href={RELEASES_LATEST} data-hero-download>
                     {copy.hero.download}

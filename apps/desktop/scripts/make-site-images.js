@@ -8,16 +8,19 @@
  * 앱과 같은 캐릭터 코드로 그리므로(`src/renderer/site-assets/`), 캐릭터가 바뀌면
  * 다시 돌리기만 하면 랜딩 페이지의 그림도 따라온다. 산출물은 커밋한다.
  *
- * 팀 창 스크린샷은 여기서 만들지 않는다. 진짜 앱을 띄워서 찍어야 하기 때문이다.
+ * 방 창 스크린샷은 여기서 만들지 않는다. 진짜 앱을 띄워서 찍어야 하기 때문이다.
  * 랜딩페이지는 **한국어와 영어 두 장**을 쓰므로 둘 다 떠야 한다. 한쪽만 새로 뜨면
  * 두 페이지의 화면이 서로 다른 버전을 보여주게 된다.
  *
+ * 예시 방 이름은 언어마다 그 나라에서 자연스러운 것으로 둔다. 음차한 이름을 넣으면
+ * 읽는 사람이 그 이름부터 해석하느라 정작 보여주려던 화면이 눈에 안 들어온다.
+ *
  *   TAPTAP_FAKE_NET=1 TAPTAP_PROFILE=shot TAPTAP_CAPTURE=.preview/ko \
- *     TAPTAP_SEED="디자인팀:나영" TAPTAP_LANG=ko npm start
+ *     TAPTAP_SEED="나오리와 친구들:나영" TAPTAP_LANG=ko npm start
  *   cp .preview/ko/team.png apps/web/public/assets/team-window.png
  *
  *   TAPTAP_FAKE_NET=1 TAPTAP_PROFILE=shot TAPTAP_CAPTURE=.preview/en \
- *     TAPTAP_SEED="Design:Nayoung" TAPTAP_LANG=en npm start
+ *     TAPTAP_SEED="Naori & friends:Nayoung" TAPTAP_LANG=en npm start
  *   cp .preview/en/team.png apps/web/public/assets/team-window-en.png
  *
  * **그렇게 옮겨 둔 뒤 `-- --webp-only` 를 한 번 돌린다.** 랜딩이 거는 것은 WebP 라,

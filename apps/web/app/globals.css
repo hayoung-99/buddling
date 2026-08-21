@@ -143,6 +143,8 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
 
 .hero { padding-block: 62px 54px; }
 .hero .lead { margin-top: 18px; font-size: 1.06rem; color: var(--ink-soft); max-width: 28ch; }
+/* 받기 버튼보다 위에 둔다. 받고 나서 알면 늦는 문장이라 그렇다. */
+.hero .needs-two { margin-top: 12px; font-size: 0.92rem; color: var(--ink-soft); max-width: 30ch; }
 .actions { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 10px; }
 .hero .note { margin-top: 16px; font-size: 0.84rem; color: var(--ink-soft); }
 
@@ -246,7 +248,7 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
   border: 1px solid var(--line);
   box-shadow: 0 18px 40px -18px rgba(20, 18, 26, 0.42);
 }
-/* 원본이 800x1560 으로 아주 길다. 팀 목록이 끝나는 데서 끊는다. */
+/* 원본이 800x1560 으로 아주 길다. 방 목록이 끝나는 데서 끊는다. */
 .app-shot {
   width: 100%;
   aspect-ratio: 3 / 2.75; /* 언어 고르는 줄 바로 아래에서 끊는다 */

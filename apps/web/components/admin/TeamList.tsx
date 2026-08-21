@@ -6,22 +6,22 @@ import type { AdminTeam, AdminTeams } from '../../lib/admin'
 import { characterName } from './character-name'
 
 /**
- * 팀 목록.
+ * 방 목록.
  *
  * 숫자판과 파일을 나눈 이유는 **성격이 다르기 때문**이다. 위쪽은 집계이고 이쪽은
  * 사람이 손으로 적은 이름이 나오는 목록이다. 무엇이 화면에 나가는지 판단할 일이
  * 생기면 이 파일 하나만 보면 되도록 떼어 두었다.
  *
- * **읽기 전용이다.** 이름을 고치거나 팀을 지우는 단추가 없다.
+ * **읽기 전용이다.** 이름을 고치거나 방을 지우는 단추가 없다.
  *
  * 펼치기는 `<details>` 로 만든다. 자바스크립트를 한 줄도 쓰지 않고, 브라우저가 접근성
  * (키보드·스크린리더)까지 알아서 해 준다. 상태를 들고 있으면 그 둘을 직접 해야 한다.
  *
- * 거르기는 브라우저에서 한다. 서버를 다시 부를 만큼 팀이 많지 않고, 글자를 칠 때마다
+ * 거르기는 브라우저에서 한다. 서버를 다시 부를 만큼 방이 많지 않고, 글자를 칠 때마다
  * 왕복하면 오히려 굼떠 보인다.
  */
 
-/** 한 번에 받아 오는 팀 수. 서버가 1000 까지만 준다 (`admin_teams`) */
+/** 한 번에 받아 오는 방 수. 서버가 1000 까지만 준다 (`admin_teams`) */
 const LIMIT = 200
 
 export function TeamList() {
@@ -44,7 +44,7 @@ export function TeamList() {
     }
   }, [])
 
-  /* 팀 이름과 팀원 닉네임 양쪽에서 찾는다 — 누가 어느 팀인지가 대개 궁금한 것이다 */
+  /* 방 이름과 멤버 닉네임 양쪽에서 찾는다 — 누가 어느 방인지가 대개 궁금한 것이다 */
   const shown = useMemo(() => {
     const needle = query.trim().toLowerCase()
     if (!data) return []
@@ -63,9 +63,9 @@ export function TeamList() {
   if (error) {
     return (
       <section className="admin-panel">
-        <h3 className="admin-panel-title">팀</h3>
+        <h3 className="admin-panel-title">방</h3>
         <p className="admin-error">
-          팀 목록을 불러오지 못했어요 — {error}
+          방 목록을 불러오지 못했어요 — {error}
           {/DOES NOT EXIST|admin_teams/i.test(error) && (
             <>
               {' '}
@@ -80,7 +80,7 @@ export function TeamList() {
   if (!data) {
     return (
       <section className="admin-panel">
-        <h3 className="admin-panel-title">팀</h3>
+        <h3 className="admin-panel-title">방</h3>
         <p className="admin-note">불러오는 중이에요…</p>
       </section>
     )
@@ -88,15 +88,15 @@ export function TeamList() {
 
   return (
     <section className="admin-panel">
-      <h3 className="admin-panel-title">팀 {data.total}개</h3>
+      <h3 className="admin-panel-title">방 {data.total}개</h3>
 
       <input
         className="admin-filter"
         type="search"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="팀 이름이나 닉네임으로 거르기"
-        aria-label="팀 이름이나 닉네임으로 거르기"
+        placeholder="방 이름이나 닉네임으로 거르기"
+        aria-label="방 이름이나 닉네임으로 거르기"
       />
 
       {/*
@@ -110,7 +110,7 @@ export function TeamList() {
       )}
 
       {shown.length === 0 ? (
-        <p className="admin-note">{query.trim() ? '걸린 팀이 없어요.' : '아직 팀이 없어요.'}</p>
+        <p className="admin-note">{query.trim() ? '걸린 방이 없어요.' : '아직 방이 없어요.'}</p>
       ) : (
         <ul className="admin-teams">
           {shown.map((team) => (
@@ -133,9 +133,9 @@ function TeamRow({ team }: { team: AdminTeam }) {
         </summary>
 
         {team.members.length === 0 ? (
-          /* 마지막 사람이 나가면 leave_team() 이 팀도 지우므로 여기 올 일은 없다.
+          /* 마지막 사람이 나가면 leave_team() 이 방도 지우므로 여기 올 일은 없다.
              콘솔에서 손으로 지운 경우에만 남으므로, 깨지지 않게만 해 둔다. */
-          <p className="admin-note">팀원이 없어요.</p>
+          <p className="admin-note">멤버가 없어요.</p>
         ) : (
           <ul className="admin-members">
             {team.members.map((member) => (

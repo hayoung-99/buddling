@@ -63,6 +63,14 @@ export interface Copy {
     emphasis: string
     tail: string
     sub: string
+    /**
+     * 히어로 바로 아래 한 줄. 둘 이상이어야 시작된다는 것을 **받기 전에** 알려 준다.
+     *
+     * 방이 없으면 캐릭터도 뜨지 않아서(기획서 "알고 둔 선택"), 이걸 모르고 받은 사람은
+     * 바탕화면의 친구 대신 입력 폼을 먼저 만난다. FAQ 안쪽에도 적혀 있지만 그 자리는
+     * 받기 버튼보다 한참 아래라 읽히지 않는다.
+     */
+    needsTwo: string
     download: string
     allVersions: string
     note: string
