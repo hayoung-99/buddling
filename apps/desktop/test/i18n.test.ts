@@ -94,7 +94,7 @@ describe('처음 실행할 때 쓸 언어 정하기', () => {
 describe('번역기', () => {
   it('빈칸을 채운다', () => {
     const t = createTranslator('ko')
-    expect(t('list.members', { count: 2, max: 5 })).toBe('팀원 2/5명')
+    expect(t('list.members', { count: 2, max: 5 })).toBe('멤버 2/5명')
   })
 
   it.each(CODES)('%s 에서도 빈칸이 남지 않는다', (code) => {
