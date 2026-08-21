@@ -29,7 +29,7 @@ export interface Timeline {
 }
 
 /** 폴짝 한 번(0.64초)의 키프레임. y는 최고점 기준 0~1 비율. */
-const HOP_UNIT: Keyframe[] = [
+export const HOP_UNIT: Keyframe[] = [
   { t: 0.0, y: 0.0, sx: 1.0, sy: 1.0, ease: 'linear' },
   { t: 0.09, y: 0.0, sx: 1.13, sy: 0.81, ease: 'easeOutQuad' }, // 웅크림(예비동작)
   { t: 0.19, y: 0.26, sx: 0.92, sy: 1.16, ease: 'easeOutCubic' }, // 차고 오르며 늘어남
@@ -51,7 +51,7 @@ const HOP_UNIT: Keyframe[] = [
  *
  * 시작과 끝이 모두 중립이라 몇 바퀴든 이어 붙여도 이음매가 튀지 않는다.
  */
-const DANCE_UNIT: Keyframe[] = [
+export const DANCE_UNIT: Keyframe[] = [
   { t: 0.0, x: 0.0, y: 0.0, tilt: 0.0, arm: 0.0, spread: 0.0, step: 0.0, sx: 1.0, sy: 1.0, ease: 'linear' },
   // ── 왼쪽으로 ──
   { t: 0.06, x: -0.15, y: 0.0, tilt: 0.07, arm: 0.28, spread: 0.18, step: 0.0, sx: 1.07, sy: 0.93, ease: 'easeOutQuad' },
@@ -81,7 +81,7 @@ const DANCE_UNIT: Keyframe[] = [
  *
  * 리그(비율·관절)는 건드리지 않는다 — 팔다리를 늘리면 인형이 피규어가 된다.
  */
-const WAVE_UNIT: Keyframe[] = [
+export const WAVE_UNIT: Keyframe[] = [
   { t: 0.0, armOne: 0.0, shoulder: 0.0, tilt: 0.0, ease: 'easeOutQuad' },
   { t: 0.12, armOne: 0.95, shoulder: 0.55, tilt: -0.03, ease: 'easeOutQuad' }, // 팔이 올라가며 어깨가 따라 나간다
   { t: 0.28, armOne: 2.5, shoulder: 1.0, tilt: -0.07, ease: 'easeOutBack' }, // 손이 머리 위로 올라왔다
@@ -97,7 +97,7 @@ const WAVE_UNIT: Keyframe[] = [
  * 움찔 한 번(0.46초). 제자리에서 몸을 좌우로 떨며 눌린 느낌을 낸다.
  * 뛰지 않으므로 y는 없고, 몸통을 기울이는 tilt 가 흔들림을 만든다.
  */
-const TWITCH_UNIT: Keyframe[] = [
+export const TWITCH_UNIT: Keyframe[] = [
   { t: 0.0, sx: 1.0, sy: 1.0, tilt: 0.0, ease: 'linear' },
   { t: 0.06, sx: 1.09, sy: 0.91, tilt: 0.07, ease: 'easeOutQuad' }, // 화들짝
   { t: 0.14, sx: 0.95, sy: 1.06, tilt: -0.08, ease: 'easeInOutQuad' },
@@ -112,16 +112,46 @@ const DANCE_FIELDS = ['x', 'y', 'tilt', 'arm', 'spread', 'step', 'sx', 'sy']
 const TWITCH_FIELDS = ['sx', 'sy', 'tilt']
 const WAVE_FIELDS = ['armOne', 'shoulder', 'tilt']
 
-const TWITCH_DURATION = TWITCH_UNIT[TWITCH_UNIT.length - 1].t
-const WAVE_DURATION = WAVE_UNIT[WAVE_UNIT.length - 1].t
-const DANCE_CYCLE = DANCE_UNIT[DANCE_UNIT.length - 1].t
+/** 갈아끼울 수 있는 트랙 이름 */
+export type TrackName = 'hop' | 'dance' | 'twitch' | 'wave'
+
+/**
+ * 트랙마다 보간하는 필드와 지금 소스에 적혀 있는 유닛.
+ *
+ * 미리보기의 키프레임 편집기가 이 둘을 읽어 슬라이더를 만들고 초기값을 채운다.
+ * **편집기가 자기 나름대로 캐릭터를 움직이면 거기서 다듬은 숫자가 앱에서 다르게
+ * 보이므로**, 값을 부위에 바르는 일은 아래 `createAnimator` 하나만 한다.
+ */
+export const TRACK_FIELDS: Record<TrackName, string[]> = {
+  hop: HOP_FIELDS,
+  dance: DANCE_FIELDS,
+  twitch: TWITCH_FIELDS,
+  wave: WAVE_FIELDS,
+}
+
+export const TRACK_UNITS: Record<TrackName, Keyframe[]> = {
+  hop: HOP_UNIT,
+  dance: DANCE_UNIT,
+  twitch: TWITCH_UNIT,
+  wave: WAVE_UNIT,
+}
+
+/** 유닛 트랙의 길이 — 마지막 키의 시각이 곧 그 동작의 길이다. */
+export const trackDuration = (keys: Keyframe[]): number => keys[keys.length - 1].t
+
+const TWITCH_DURATION = trackDuration(TWITCH_UNIT)
+const WAVE_DURATION = trackDuration(WAVE_UNIT)
+const DANCE_CYCLE = trackDuration(DANCE_UNIT)
 
 const HEIGHT_FALLOFF = 0.66 // 폴짝마다 높이 감쇠
 const SPEED_STEP = 0.1 // 폴짝마다 조금씩 빨라짐
 const BLINK_DURATION = 0.14
 
 /** 콕 찔렸을 때 추는 바퀴 수. 2바퀴 ≈ 1.7초로 예전 점프와 비슷한 길이다. */
-const DANCE_CYCLES = 2
+export const DANCE_CYCLES = 2
+
+/** 한 번 뛰면 몇 번 튀는지. 뒤로 갈수록 낮아지고 빨라진다. */
+export const HOP_COUNT = 3
 
 /** 아래는 모두 "캐릭터 키의 몇 배" 단위라, 종·크기가 달라도 같은 비율로 움직인다. */
 const HOP_RATIO = 0.26 // 첫 폴짝 높이
@@ -132,8 +162,8 @@ const SHOULDER_REACH = 0.075 // 손 흔들 때 어깨가 바깥으로 나가는 
 const SHOULDER_LIFT = 0.055 // 그때 어깨가 올라가는 높이
 
 /** 폴짝 n번을 하나의 키프레임 트랙으로 이어붙인다. */
-export function buildHopTimeline(hops = 3): Timeline {
-  const unitEnd = HOP_UNIT[HOP_UNIT.length - 1].t
+export function buildHopTimeline(hops = HOP_COUNT, unit: Keyframe[] = HOP_UNIT): Timeline {
+  const unitEnd = trackDuration(unit)
   const keys: Keyframe[] = []
   let offset = 0
 
@@ -141,7 +171,7 @@ export function buildHopTimeline(hops = 3): Timeline {
     const height = HEIGHT_FALLOFF ** index
     const speed = 1 + index * SPEED_STEP
 
-    HOP_UNIT.forEach((key, keyIndex) => {
+    unit.forEach((key, keyIndex) => {
       // 두 번째 폴짝부터는 첫 키가 직전 폴짝의 마지막 키와 같으므로 건너뛴다
       if (index > 0 && keyIndex === 0) return
       keys.push({ ...key, t: offset + key.t / speed, y: (key.y as number) * height })
@@ -157,17 +187,21 @@ export function buildHopTimeline(hops = 3): Timeline {
  * 춤 n바퀴를 이어붙인다.
  * 점프와 달리 힘이 빠지지 않는다 — 끝까지 같은 세기로 추다가 중립에서 멈춘다.
  */
-export function buildDanceTimeline(cycles = DANCE_CYCLES): Timeline {
+export function buildDanceTimeline(
+  cycles = DANCE_CYCLES,
+  unit: Keyframe[] = DANCE_UNIT,
+): Timeline {
+  const cycle = trackDuration(unit)
   const keys: Keyframe[] = []
 
   for (let index = 0; index < cycles; index += 1) {
-    DANCE_UNIT.forEach((key, keyIndex) => {
+    unit.forEach((key, keyIndex) => {
       if (index > 0 && keyIndex === 0) return
-      keys.push({ ...key, t: index * DANCE_CYCLE + key.t })
+      keys.push({ ...key, t: index * cycle + key.t })
     })
   }
 
-  return { keys, duration: cycles * DANCE_CYCLE }
+  return { keys, duration: cycles * cycle }
 }
 
 /** 폴짝 타임라인을 시각 t에서 샘플링한다. → { y, sx, sy } */
@@ -222,11 +256,17 @@ function advance(
 /** 캐릭터에 애니메이션을 입힌다. */
 export function createAnimator(
   critter: Critter,
-  { hops = 3, cycles = DANCE_CYCLES }: { hops?: number; cycles?: number } = {},
+  { hops = HOP_COUNT, cycles = DANCE_CYCLES }: { hops?: number; cycles?: number } = {},
 ) {
   const { root, parts, spec, height } = critter
-  const hopTimeline = buildHopTimeline(hops)
-  const danceTimeline = buildDanceTimeline(cycles)
+
+  // 유닛은 애니메이터마다 따로 들고 있다. 미리보기의 편집기가 `setTrack()` 으로
+  // 갈아끼워도 다른 캐릭터 창이나 테스트가 함께 흔들리지 않게 하려는 것이다.
+  const units: Record<TrackName, Keyframe[]> = { ...TRACK_UNITS }
+  let hopTimeline = buildHopTimeline(hops, units.hop)
+  let danceTimeline = buildDanceTimeline(cycles, units.dance)
+  let twitchDuration = trackDuration(units.twitch)
+  let waveDuration = trackDuration(units.wave)
   const wags = spec.build.tail.type === TAIL.WAG
 
   const hopHeight = height * HOP_RATIO
@@ -283,6 +323,50 @@ export function createAnimator(
     waveTime = 0
   }
 
+  const durationOf = (name: TrackName): number =>
+    name === 'hop'
+      ? hopTimeline.duration
+      : name === 'dance'
+        ? danceTimeline.duration
+        : name === 'twitch'
+          ? twitchDuration
+          : waveDuration
+
+  /**
+   * 유닛 트랙을 갈아끼운다. 미리보기의 키프레임 편집기만 부른다.
+   *
+   * 폴짝과 춤은 유닛을 여러 번 이어 붙여 쓰므로(3번·2바퀴) 타임라인을 다시 만든다.
+   */
+  function setTrack(name: TrackName, keys: Keyframe[]) {
+    units[name] = keys
+    if (name === 'hop') hopTimeline = buildHopTimeline(hops, keys)
+    else if (name === 'dance') danceTimeline = buildDanceTimeline(cycles, keys)
+    else if (name === 'twitch') twitchDuration = trackDuration(keys)
+    else waveDuration = trackDuration(keys)
+  }
+
+  /** 재생 중인 것을 전부 끄고 기본 자세로 돌아간다. */
+  function stop() {
+    hopTime = danceTime = twitchTime = waveTime = null
+  }
+
+  /**
+   * 재생하지 않고 **그 시각의 정지 포즈**로 고정한다. 편집기가 키를 고를 때 쓴다.
+   *
+   * `delta` 를 0으로 한 번만 돌리므로 호흡도 스프링도 눈 깜빡임도 움직이지 않는다.
+   * 시각은 이어 붙인 타임라인 기준이다 — 폴짝 3번이면 0 부터 세 번째 착지까지다.
+   */
+  function scrub(name: TrackName, t: number) {
+    stop()
+    // 끝에 정확히 닿으면 `advance` 가 타이머를 끄고 기본 자세를 주므로 살짝 앞에 세운다
+    const at = clamp(t, 0, durationOf(name) - 1e-4)
+    if (name === 'hop') hopTime = at
+    else if (name === 'dance') danceTime = at
+    else if (name === 'twitch') twitchTime = at
+    else waveTime = at
+    update(0)
+  }
+
   function update(delta: number) {
     elapsed += delta
 
@@ -307,11 +391,17 @@ export function createAnimator(
     ;[twitchTime, frameTwitch] = advance(
       twitchTime,
       delta,
-      TWITCH_DURATION,
-      sampleTwitch,
+      twitchDuration,
+      (t) => sampleTrack(units.twitch, TWITCH_FIELDS, t),
       REST_TWITCH,
     )
-    ;[waveTime, frameWave] = advance(waveTime, delta, WAVE_DURATION, sampleWave, REST_WAVE)
+    ;[waveTime, frameWave] = advance(
+      waveTime,
+      delta,
+      waveDuration,
+      (t) => sampleTrack(units.wave, WAVE_FIELDS, t),
+      REST_WAVE,
+    )
 
     const settled =
       hopTime === null && danceTime === null && twitchTime === null && waveTime === null
@@ -437,6 +527,20 @@ export function createAnimator(
     },
     get danceDuration() {
       return danceTimeline.duration
+    },
+
+    // ── 아래 넷은 미리보기의 키프레임 편집기만 쓴다 ──
+    setTrack,
+    scrub,
+    stop,
+    /** 이어 붙인 뒤의 길이. 편집기의 스크럽 바가 이 값을 눈금으로 쓴다. */
+    get durations(): Record<TrackName, number> {
+      return {
+        hop: hopTimeline.duration,
+        dance: danceTimeline.duration,
+        twitch: twitchDuration,
+        wave: waveDuration,
+      }
     },
   }
 }
