@@ -40,6 +40,7 @@ import { createBubble } from './bubble'
 import { createNameplate } from './nameplate'
 import { createNotes } from './notes'
 import { createPuff } from './puff'
+import { createTakeoff } from './takeoff'
 import { toSignal } from '@buddling/shared/signals'
 import type { SignalKind } from '@buddling/shared/signals'
 import { createPacer } from './pacer'
@@ -99,8 +100,8 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
    * 아무것도 안 하고 있으면 null 이다.
    */
   let playing: SignalKind | null = null
-  /** 직전 프레임의 캐릭터 높이. 발이 땅에서 떨어지는 순간을 잡는 데 쓴다. */
-  let previousLift = 0
+  /** 땅을 박차는 순간을 잡아 발밑에 먼지를 피운다. 규칙은 `takeoff.ts` 한 곳에 있다. */
+  const takeoff = createTakeoff((strength) => puff?.burst(strength))
   /** 지금 쓰는 절전 프로필. 설정 창에서 바꾸면 갈아끼운다. */
   let profile: PowerProfile = powerProfile(null)
   /** 말풍선 문구. 설정 창에서 말을 바꾸면 다음 상태와 함께 갈아끼운다. */
@@ -263,7 +264,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
     if (kind !== playing) {
       animator?.stop()
       playing = kind
-      previousLift = 0
+      takeoff.reset()
       if (kind === 'hop') {
         animator?.hop()
       } else {
@@ -273,26 +274,6 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
     }
 
     nameplate.show(fromNickname ?? '', { centerX: hotZone.centerX, bottom: hotZone.bottom })
-  }
-
-  /**
-   * 폴짝이 땅을 박차는 순간에 발밑 바람 자국을 터뜨린다.
-   *
-   * 시간표를 짜지 않고 **높이가 0에서 위로 넘어가는 지점**을 잡는다. 그래야 폴짝
-   * 횟수나 속도를 나중에 바꿔도 저절로 따라오고, 세기를 그때의 솟는 속도에 비례시키면
-   * 뒤로 갈수록 낮게 뛰는 만큼 자국도 함께 옅어진다.
-   *
-   * **춤도 통통 튀느라 높이가 오르내리므로 폴짝일 때만 본다.** 이 조건이 없으면
-   * 콕을 받을 때마다 발밑에서 바람이 샌다.
-   */
-  function watchTakeoff(lift: number, step: number) {
-    if (!animator?.isHopping) {
-      previousLift = 0
-      return
-    }
-    const rising = (lift - previousLift) / Math.max(step, 1 / 240)
-    if (previousLift <= 0 && lift > 0 && rising > 0) puff?.burst(Math.min(1, rising / 2.4))
-    previousLift = lift
   }
 
   // 크기 조절 패널로 창 크기가 바뀌면 여기로 들어온다
@@ -368,7 +349,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
     if (animator && critter) {
       animator.update(step)
       const lift = critter.root.position.y
-      watchTakeoff(lift, step)
+      takeoff.watch(lift, step, Boolean(animator.isHopping))
       if (playing && !isPlayingSignal()) playing = null
       // 말풍선도 같이 떠오른다. 창 위에 닿으면 bubble 쪽에서 알아서 멈춘다.
       bubble.setLift(lift * stage.stand.scale.y * pixelsPerUnit)
