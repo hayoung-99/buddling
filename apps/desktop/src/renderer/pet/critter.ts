@@ -114,7 +114,8 @@ export function createCritter(spec: CharacterSpec): Critter {
   buildSnout(head, parts, materials, headR, build.snout)
   if (build.patches.includes('pandaEyes')) buildPandaEyePatches(head, materials, headR)
   buildEyes(head, parts, materials, headR)
-  buildCheeks(head, parts, materials, headR)
+  // 눈 무늬가 있는 종은 볼을 비켜 놓는다 — 아래 buildCheeks 주석 참고
+  buildCheeks(head, parts, materials, headR, build.patches.includes('pandaEyes'))
   buildEars(head, parts, materials, headR, build.ears)
 
   // ── 팔 (실루엣 밖으로 확실히 나오게 어깨를 몸통 옆면에 붙인다) ──
@@ -274,11 +275,11 @@ function buildPandaEyePatches(
    * 무늬가 덮는 각도(라디안). 눈보다는 넉넉하고 볼보다는 좁아야 한다 —
    * 더 키우면 볼의 분홍 빗금을 덮어 검은 바탕에 분홍이 떠 있는 꼴이 된다.
    */
-  const SPREAD = 0.34
+  const SPREAD = 0.31
 
   for (const side of [-1, 1]) {
-    // 눈이 있는 쪽을 바라보게 — 눈 피벗보다 아주 조금 위다 (눈이 무늬 가운데 오도록)
-    const toward = new THREE.Vector3(side * 0.41, 0.11, 0.8).normalize()
+    // 눈이 있는 쪽을 바라보게 — 눈 피벗과 거의 같은 방향이라 눈이 무늬 가운데 온다
+    const toward = new THREE.Vector3(side * 0.41, 0.09, 0.8).normalize()
 
     const aim = new THREE.Group()
     aim.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), toward)
@@ -305,13 +306,21 @@ function buildCheeks(
   parts: CritterParts,
   materials: CritterMaterials,
   headR: number,
+  makeRoomForPatches = false,
 ) {
   const STROKES = 3
   const middleIndex = (STROKES - 1) / 2
 
+  // 눈에서 볼까지는 0.33(반지름 단위)뿐인데 눈알이 0.15, 빗금 무리가 0.11 을 쓴다.
+  // 그 사이에 검은 무늬가 들어갈 자리가 0.07 밖에 없어서, 무늬를 눈에 맞춰 그리면
+  // 빗금 위를 덮어 분홍이 뭉개진다. 그래서 무늬가 있는 종만 볼을 아래·바깥으로
+  // 비켜 놓는다 — 무늬를 줄이는 대신 자리를 내주는 쪽이다.
+  const spread = makeRoomForPatches ? 0.62 : 0.58
+  const drop = makeRoomForPatches ? 0.28 : 0.2
+
   for (const side of [-1, 1]) {
-    const x = side * headR * 0.58
-    const y = -headR * 0.2
+    const x = side * headR * spread
+    const y = -headR * drop
     const z = Math.sqrt(Math.max(headR * headR - x * x - y * y, 0))
 
     const cheek = new THREE.Group()
