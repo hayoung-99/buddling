@@ -15,7 +15,7 @@ import { characterName } from './character-name'
  * 그래프 라이브러리를 넣지 않는다 — 막대 몇 개 그리자고 의존성을 하나 더 들일 화면이
  * 아니다. 세로 막대는 `height: %` 하나로 그린다.
  *
- * **읽기 전용이다.** 팀이나 사람을 고치거나 지우는 단추가 없다. 잘못 누르면 되돌릴 수
+ * **읽기 전용이다.** 방이나 사람을 고치거나 지우는 단추가 없다. 잘못 누르면 되돌릴 수
  * 없는 일을, 지금 필요하지도 않은데 만들어 둘 이유가 없다.
  */
 
@@ -77,7 +77,7 @@ export function Dashboard() {
         <Card
           label="지금 켜 둔 사람"
           value={overview.now.people}
-          sub={`최근 1시간 · 팀 ${overview.now.teams}개`}
+          sub={`최근 1시간 · 방 ${overview.now.teams}개`}
         />
         <Card
           label="오늘 온 사람"
@@ -94,12 +94,12 @@ export function Dashboard() {
           sub={`최근 30일 안에 앱을 켠 사람 · 누적 ${overview.total.people}명 중`}
         />
         <Card
-          label="쓰는 팀"
+          label="쓰는 방"
           value={overview.total.teams}
-          sub="마지막 사람이 나가면 팀도 함께 사라져요 — 남아 있는 팀이 곧 쓰는 팀입니다"
+          sub="마지막 사람이 나가면 방도 함께 사라져요 — 남아 있는 방이 곧 쓰는 방입니다"
         />
         <Card
-          label="혼자인 팀"
+          label="혼자인 방"
           value={`${soloRatio}%`}
           sub={`${overview.solo}개 / ${overview.total.teams}개`}
         />
@@ -109,7 +109,7 @@ export function Dashboard() {
         <strong>계정 {overview.accounts.total}개</strong> 중 {overview.accounts.anonymous}개가
         익명입니다. 앱을 다시 깔거나 세션을 잃을 때마다 하나씩 늘어나므로{' '}
         <strong>사람 수가 아닙니다</strong> — 사람 수로 읽어야 하는 것은 위의 &ldquo;쓰는
-        사람&rdquo; 입니다. 팀에 들어가지 않은 채 떠도는 계정은 7일마다 저절로 정리됩니다.
+        사람&rdquo; 입니다. 방에 들어가지 않은 채 떠도는 계정은 7일마다 저절로 정리됩니다.
       </p>
 
       <h2 className="admin-heading">신규 유입</h2>
@@ -117,22 +117,22 @@ export function Dashboard() {
         <Card
           label="오늘"
           value={overview.fresh.people.today}
-          sub={`새 사람 · 새 팀 ${overview.fresh.teams.today}개`}
+          sub={`새 사람 · 새 방 ${overview.fresh.teams.today}개`}
         />
         <Card
           label="최근 7일"
           value={overview.fresh.people.d7}
-          sub={`새 사람 · 새 팀 ${overview.fresh.teams.d7}개`}
+          sub={`새 사람 · 새 방 ${overview.fresh.teams.d7}개`}
         />
         <Card
           label="최근 30일"
           value={overview.fresh.people.d30}
-          sub={`새 사람 · 새 팀 ${overview.fresh.teams.d30}개`}
+          sub={`새 사람 · 새 방 ${overview.fresh.teams.d30}개`}
         />
         <Card
-          label="깔고 팀 안 만든 사람"
+          label="깔고 방 안 만든 사람"
           value={overview.accounts.stranded}
-          sub="앱까지는 왔는데 팀을 못 만든 사람 · 7일이 지나면 매일 새벽 3시에 정리돼요"
+          sub="앱까지는 왔는데 방을 못 만든 사람 · 7일이 지나면 매일 새벽 3시에 정리돼요"
         />
       </section>
 
@@ -162,7 +162,7 @@ export function Dashboard() {
         </div>
 
         <div className="admin-panel">
-          <h3>팀 크기</h3>
+          <h3>방 크기</h3>
           <Rows rows={distribution.teamSizes.map((row) => [`${row.size}명`, row.teams])} />
         </div>
 
@@ -201,14 +201,14 @@ function Bars({ rows }: { rows: DailyRow[] }) {
     <>
       <div className="admin-bars">
         {rows.map((row) => (
-          <div className="admin-bar-day" key={row.date} title={`${row.date} · 팀 ${row.newTeams} · 사람 ${row.newPeople}`}>
+          <div className="admin-bar-day" key={row.date} title={`${row.date} · 방 ${row.newTeams} · 사람 ${row.newPeople}`}>
             <span className="admin-bar teams" style={{ height: `${(row.newTeams / peak) * 100}%` }} />
             <span className="admin-bar members" style={{ height: `${(row.newPeople / peak) * 100}%` }} />
           </div>
         ))}
       </div>
       <p className="admin-legend">
-        <span className="admin-swatch teams" /> 새 팀 {total.teams}
+        <span className="admin-swatch teams" /> 새 방 {total.teams}
         <span className="admin-swatch members" /> 새 사람 {total.people}
         <span className="admin-range">
           {rows[0]?.date} ~ {rows[rows.length - 1]?.date}

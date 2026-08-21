@@ -17,7 +17,7 @@ interface Spread {
 
 export interface Overview {
   /**
-   * 지금 켜 둔 사람과 팀 (최근 1시간 안에 흔적).
+   * 지금 켜 둔 사람과 방 (최근 1시간 안에 흔적).
    *
    * 앱이 30분마다 흔적을 남기므로 켜 둔 사람은 이 창 안에 반드시 들어온다.
    * **다만 새 버전을 받기 전의 앱은 아직 12시간짜리라, 배포 직후 한동안은 실제보다
@@ -29,32 +29,32 @@ export interface Overview {
   /**
    * 누적 전체.
    *
-   * **`total.teams` 가 곧 "쓰는 팀" 이다.** 마지막 사람이 나가면 `leave_team()` 이
-   * 팀도 함께 지우므로, 남아 있는 팀은 반드시 사람이 있는 팀이다.
+   * **`total.teams` 가 곧 "쓰는 방" 이다.** 마지막 사람이 나가면 `leave_team()` 이
+   * 방도 함께 지우므로, 남아 있는 방은 반드시 사람이 있는 방이다.
    */
   total: {
     teams: number
-    /** 팀 자리 수. 한 사람이 두 팀에 들면 둘로 센다 */
+    /** 방 자리 수. 한 사람이 두 방에 들면 둘로 센다 */
     members: number
-    /** 팀에 속한 **사람** 수. 아래 accounts 와 다르다 */
+    /** 방에 속한 **사람** 수. 아래 accounts 와 다르다 */
     people: number
   }
   accounts: {
     total: number
     anonymous: number
     /**
-     * 깔았지만 팀까지 가지 못한 사람 = 온보딩 이탈.
+     * 깔았지만 방까지 가지 못한 사람 = 온보딩 이탈.
      *
-     * **누적이 아니라 최근 일주일치다** — 팀 없는 익명 계정은 7일이 지나면
+     * **누적이 아니라 최근 일주일치다** — 방 없는 익명 계정은 7일이 지나면
      * `cleanup_anonymous_users()` 가 매일 새벽 3시에 지운다.
      */
     stranded: number
   }
   /** 마지막 흔적이 얼마나 최근인가 */
   active: { d1: number; d7: number; d30: number }
-  /** 새로 생긴 팀과, 처음 팀에 들어온 사람 */
+  /** 새로 생긴 방과, 처음 방에 들어온 사람 */
   fresh: { teams: Spread; people: Spread }
-  /** 혼자만 있는 팀 */
+  /** 혼자만 있는 방 */
   solo: number
   generatedAt: string
 }
@@ -62,7 +62,7 @@ export interface Overview {
 export interface DailyRow {
   date: string
   newTeams: number
-  /** `members` 줄 수가 아니라 **그날 처음 팀에 들어온 사람** 수 */
+  /** `members` 줄 수가 아니라 **그날 처음 방에 들어온 사람** 수 */
   newPeople: number
 }
 
@@ -80,24 +80,24 @@ export interface AdminTeamMember {
 }
 
 export interface AdminTeam {
-  /** 화면에서 줄을 구별하는 열쇠. 팀 이름은 유일하지 않다 */
+  /** 화면에서 줄을 구별하는 열쇠. 방 이름은 유일하지 않다 */
   id: string
   name: string
   createdAt: string
-  /** 팀원 중 가장 최근 흔적. 아무도 온 적이 없으면 null */
+  /** 멤버 중 가장 최근 흔적. 아무도 온 적이 없으면 null */
   lastSeen: string | null
   members: AdminTeamMember[]
 }
 
 /**
- * 팀 목록.
+ * 방 목록.
  *
- * **여기에는 초대코드가 없다.** 그건 이름이 아니라 팀에 들어가는 열쇠라서, 팀 이름과
- * 함께 새면 남의 팀에 그대로 들어갈 수 있다. `supabase/schema.sql` 의 `admin_teams`
+ * **여기에는 초대코드가 없다.** 그건 이름이 아니라 방에 들어가는 열쇠라서, 방 이름과
+ * 함께 새면 남의 방에 그대로 들어갈 수 있다. `supabase/schema.sql` 의 `admin_teams`
  * 가 애초에 내보내지 않으므로 화면에서 감추는 것이 아니라 오지를 않는다.
  */
 export interface AdminTeams {
-  /** 실제 팀 수. `teams.length` 와 다르면 잘린 것이다 */
+  /** 실제 방 수. `teams.length` 와 다르면 잘린 것이다 */
   total: number
   /** 서버가 담아 준 최대 개수 */
   limit: number

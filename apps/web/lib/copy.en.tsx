@@ -12,7 +12,8 @@ export const en: Copy = {
     lead: 'A',
     emphasis: 'small friend',
     tail: ' on your desktop',
-    sub: "Tap your own character and your teammates' characters dance on theirs.",
+    sub: 'Give your teammates a poke. Tap your character and theirs dances on their screen.',
+    needsTwo: 'It takes two — invite one friend and you are set.',
     download: 'Download',
     allVersions: 'All versions',
     note: 'Free · No sign up · macOS and Windows',
@@ -23,7 +24,7 @@ export const en: Copy = {
     headingTop: 'This is what',
     headingBottom: 'opens up',
     body: 'Create a team and you get a six character code. Your teammates type it in, and that is it.',
-    imageAlt: 'The tap-tap window with a team list open, showing one team with one member online.',
+    imageAlt: 'The tap-tap window with a team list open, showing one team with one teammate online.',
   },
 
   characters: {
