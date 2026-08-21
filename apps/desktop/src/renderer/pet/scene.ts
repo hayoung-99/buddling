@@ -52,9 +52,28 @@ export function createShadowCatcher(size = 12) {
 }
 
 /** 캐릭터 한 마리를 보여주는 무대를 만든다. */
+/**
+ * 캐릭터 창의 카메라 구도.
+ *
+ * 세로 화각(`fov`)이 고정이라 **창을 넓혀도 캐릭터는 그대로 있고 양옆 자리만 늘어난다.**
+ * 동작이 실루엣 밖으로 나가 잘릴 때 창을 넓히면 되는 이유가 이것이다.
+ *
+ * 위쪽에 여백을 넉넉히 둔다 — 폴짝 뛸 때 머리가 잘리면 안 되고, 그 위로 말풍선도 떠야 한다.
+ *
+ * 테스트가 같은 구도로 재어 보므로(`animations.test.ts` 의 "창 안에 들어온다") 여기
+ * 값을 바꾸면 그쪽이 함께 움직인다.
+ */
+export const PET_CAMERA = {
+  fov: 26,
+  position: [0, 1.85, 7.4] as [number, number, number],
+  target: [0, 1.25, 0] as [number, number, number],
+  /** 캐릭터를 세워 두는 각도. `createStage` 의 기본값과 같다 */
+  yaw: -0.2,
+}
+
 export function createStage({
   canvas,
-  yaw = -0.2,
+  yaw = PET_CAMERA.yaw,
 }: {
   canvas: HTMLCanvasElement
   yaw?: number
@@ -73,11 +92,9 @@ export function createStage({
   const lights = addLighting(scene)
   scene.add(createShadowCatcher())
 
-  // 위쪽에 여백을 넉넉히 둔다 — 폴짝 뛸 때 머리가 잘리면 안 되고,
-  // 그 위로 말풍선도 떠야 한다.
-  const camera = new THREE.PerspectiveCamera(26, 1, 0.1, 50)
-  camera.position.set(0, 1.85, 7.4)
-  camera.lookAt(0, 1.25, 0)
+  const camera = new THREE.PerspectiveCamera(PET_CAMERA.fov, 1, 0.1, 50)
+  camera.position.set(...PET_CAMERA.position)
+  camera.lookAt(...PET_CAMERA.target)
 
   /** 캐릭터가 들어가는 자리. 교체할 때 이 그룹의 자식만 갈아끼운다. */
   const stand = new THREE.Group()
