@@ -50,7 +50,7 @@
 
 - [도란도란 홈페이지](https://doran-doran-desktop.vercel.app/#download) — 내 컴퓨터에 맞는
   파일을 알아서 골라 줍니다
-- [GitHub 릴리스](https://github.com/hayoung-99/doran-doran-desktop/releases) — 지난 버전까지 전부
+- [GitHub 릴리스](https://github.com/hayoung-99/doran-doran/releases) — 지난 버전까지 전부
 
 ### 처음 한 번만
 

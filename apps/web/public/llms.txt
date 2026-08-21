@@ -50,8 +50,8 @@ Chinese.
 
 ## Source
 
-- [GitHub repository](https://github.com/hayoung-99/doran-doran-desktop): full source code, MIT licensed.
-- [Releases](https://github.com/hayoung-99/doran-doran-desktop/releases): installers.
+- [GitHub repository](https://github.com/hayoung-99/doran-doran): full source code, MIT licensed.
+- [Releases](https://github.com/hayoung-99/doran-doran/releases): installers.
 
 ## 한국어 요약
 

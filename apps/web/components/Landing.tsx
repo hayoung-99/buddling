@@ -217,7 +217,7 @@ export function Landing({ copy }: { copy: Copy }) {
           <footer>
             <span>{copy.footer.tagline}</span>
             <nav>
-              <a href="https://github.com/hayoung-99/doran-doran-desktop">{copy.footer.github}</a>
+              <a href="https://github.com/hayoung-99/doran-doran">{copy.footer.github}</a>
               <a href={RELEASES_PAGE}>{copy.footer.releases}</a>
               <a href={copy.other.href} hrefLang={copy.other.lang} lang={copy.other.lang}>
                 {copy.other.long}

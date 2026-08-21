@@ -84,7 +84,7 @@ export const en: Copy = {
     pending: (
       <>
         Nothing has been published yet. It will show up here as soon as it is ready.{' '}
-        <a href="https://github.com/hayoung-99/doran-doran-desktop/releases">Check the releases page</a>
+        <a href="https://github.com/hayoung-99/doran-doran/releases">Check the releases page</a>
       </>
     ),
   },

@@ -53,4 +53,4 @@ macOS 는 코드 서명이 없으면 자동 설치가 불가능해서, 새 버�
 
 ---
 
-전체 코드와 문서: https://github.com/hayoung-99/doran-doran-desktop
+전체 코드와 문서: https://github.com/hayoung-99/doran-doran

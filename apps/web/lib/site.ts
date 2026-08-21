@@ -9,7 +9,7 @@
 
 export const SITE_URL = 'https://doran-doran-desktop.vercel.app'
 
-export const REPO = 'hayoung-99/doran-doran-desktop'
+export const REPO = 'hayoung-99/doran-doran'
 export const REPO_URL = `https://github.com/${REPO}`
 export const RELEASES_PAGE = `${REPO_URL}/releases`
 export const RELEASES_LATEST = `${RELEASES_PAGE}/latest`

@@ -78,7 +78,7 @@ export const ko: Copy = {
     pending: (
       <>
         아직 올라온 파일이 없어요. 준비되면 여기에 나타나요.{' '}
-        <a href="https://github.com/hayoung-99/doran-doran-desktop/releases">릴리스 보러 가기</a>
+        <a href="https://github.com/hayoung-99/doran-doran/releases">릴리스 보러 가기</a>
       </>
     ),
   },

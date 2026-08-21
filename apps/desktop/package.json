@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hayoung-99/doran-doran-desktop.git"
+    "url": "git+https://github.com/hayoung-99/doran-doran.git"
   },
   "homepage": "https://doran-doran-desktop.vercel.app",
   "main": "dist-main/main/main.cjs",
@@ -51,7 +51,7 @@
       {
         "provider": "github",
         "owner": "hayoung-99",
-        "repo": "doran-doran-desktop",
+        "repo": "doran-doran",
         "releaseType": "draft"
       }
     ],
