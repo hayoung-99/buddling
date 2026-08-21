@@ -6,7 +6,7 @@
  *   nickname    새 팀에 들어갈 때 기본으로 채워 넣을 이름
  *   memberships 마지막으로 확인한 소속 팀들. 서버가 진짜지만, 앱을 켜자마자
  *               캐릭터를 띄우려면 캐시가 필요하다 (네트워크가 늦거나 끊겨도 뜬다).
- *   pets        팀별 화면 설정 — 어디에 얼마만 하게 띄울지
+ *   pets        팀별 개인 설정 — 어디에 얼마만 하게 띄울지, 이 방에서 무슨 신호를 보낼지
  *   language    고른 언어. 비어 있으면 첫 실행 때 운영체제 언어로 한 번 정해 넣는다.
  *   power       절전 강도. 캐릭터가 가만히 있을 때 얼마나 게으르게 그릴지를 정한다.
  *   lastUpdateCheck  새 버전을 마지막으로 확인한 날. 앱을 껐다 켜도 하루 한 번을 지키려면
@@ -22,6 +22,7 @@ import { app } from 'electron'
 import { legacyStorePath } from './legacy-store'
 import { writeJsonAtomically } from './write-json'
 import type { Member, PetSettings, Team } from '@buddling/shared/state'
+import { DEFAULT_SIGNAL } from '@buddling/shared/signals'
 
 /**
  * 저장 파일에 남는 소속.
@@ -43,7 +44,7 @@ export interface StoredState {
   auth: Record<string, string>
   nickname: string
   memberships: CachedMembership[]
-  /** teamId → 그 팀 캐릭터를 어디에 얼마만 하게 띄울지 */
+  /** teamId → 그 팀 캐릭터를 어디에 얼마만 하게 띄울지, 무슨 신호를 보낼지 */
   pets: Record<string, PetSettings>
   petVisible: boolean
   /** 아직 안 고른 상태는 null. 처음 실행할 때 운영체제 언어를 보고 정해진다. */
@@ -65,7 +66,7 @@ const DEFAULTS: StoredState = {
   lastUpdateCheck: null,
 }
 
-const DEFAULT_PET: PetSettings = { position: null, scale: 1 }
+const DEFAULT_PET: PetSettings = { position: null, scale: 1, signal: DEFAULT_SIGNAL }
 
 /**
  * 쓰기를 모아서 하는 간격(ms).

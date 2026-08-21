@@ -69,6 +69,8 @@ export interface TeamApi {
   setNickname: (teamId: string, nickname: string) => Promise<AppState>
   setLanguage: (preference: string) => Promise<AppState>
   setCharacter: (teamId: string, characterKey: string) => Promise<AppState>
+  /** 이 방에서 내가 보낼 신호를 고른다 (내 기기에만 저장된다) */
+  setSignal: (teamId: string, signal: string) => Promise<AppState>
 
   /** 그 팀의 특정 멤버 한 명만 콕 찌른다. 너무 자주 부르면 false 가 돌아온다. */
   tapMember: (teamId: string, memberId: string) => Promise<boolean>

@@ -85,6 +85,10 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
   handle('character:set', ({ teamId, characterKey }: { teamId: string; characterKey: string }) =>
     session.setCharacter(teamId, characterKey),
   )
+  handle('signal:set', ({ teamId, signal }: { teamId: string; signal: string }) =>
+    session.setSignal(teamId, signal),
+  )
+
   handle('team:tap', (payload: { teamId: string; toMemberId?: string | null }) =>
     session.tap(payload),
   )

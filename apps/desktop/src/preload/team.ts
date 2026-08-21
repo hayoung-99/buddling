@@ -49,6 +49,7 @@ const api: TeamApi = {
   setNickname: (id, nickname) => call<AppState>('member:nickname', { teamId: id, nickname }),
   setLanguage: (preference) => call<AppState>('settings:language', preference),
   setCharacter: (id, characterKey) => call<AppState>('character:set', { teamId: id, characterKey }),
+  setSignal: (id, signal) => call<AppState>('signal:set', { teamId: id, signal }),
 
   /** 그 팀의 특정 멤버 한 명만 콕 찌른다 */
   tapMember: (id, memberId) => call<boolean>('team:tap', { teamId: id, toMemberId: memberId }),

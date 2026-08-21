@@ -10,6 +10,7 @@
     "./i18n/*.json": "./src/i18n/*.json",
     "./ipc": "./src/ipc.ts",
     "./power": "./src/power.ts",
+    "./signals": "./src/signals.ts",
     "./state": "./src/state.ts"
   }
 }
