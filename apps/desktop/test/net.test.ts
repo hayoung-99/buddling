@@ -67,7 +67,7 @@ describe('팀 만들기', () => {
   // 여기 있는 값은 그 기능이 없던 옛 앱을 위한 안전망이라 어느 나라 말도 아니다.
   it('방 이름을 비우면 안전망 이름을 붙인다', async () => {
     const { team } = await net.alice.createTeam({ name: '   ', nickname: '나영' })
-    expect(team.name).toBe('tap-tap')
+    expect(team.name).toBe('buddling')
   })
 
   it('닉네임 없이는 만들 수 없다', async () => {

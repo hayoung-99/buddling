@@ -6,10 +6,10 @@
  */
 
 import { useState } from 'react'
-import { CHARACTERS, getCharacter } from '@tap-tap/shared/characters'
-import { createTranslator } from '@tap-tap/shared/i18n'
-import type { Translate } from '@tap-tap/shared/i18n'
-import type { Membership, Team } from '@tap-tap/shared/state'
+import { CHARACTERS, getCharacter } from '@buddling/shared/characters'
+import { createTranslator } from '@buddling/shared/i18n'
+import type { Translate } from '@buddling/shared/i18n'
+import type { Membership, Team } from '@buddling/shared/state'
 import { characterThumbnails } from './thumbnails'
 import { inviteStatus } from './invite'
 import { useAppState, useMinuteTick, useRunner, useToast } from './hooks'
@@ -379,7 +379,7 @@ export function TeamDetail() {
   return (
     <>
       <header className={ui.titlebar}>
-        <span>TAP TAP!</span>
+        <span>{t('app.name')}</span>
       </header>
       <main className={ui.main}>{body}</main>
       <div

@@ -11,10 +11,10 @@
  */
 
 import { useState } from 'react'
-import { getCharacter } from '@tap-tap/shared/characters'
-import { createTranslator } from '@tap-tap/shared/i18n'
-import type { Translate } from '@tap-tap/shared/i18n'
-import type { AppState, Membership } from '@tap-tap/shared/state'
+import { getCharacter } from '@buddling/shared/characters'
+import { createTranslator } from '@buddling/shared/i18n'
+import type { Translate } from '@buddling/shared/i18n'
+import type { AppState, Membership } from '@buddling/shared/state'
 import { characterThumbnails } from './thumbnails'
 import { useAppState, useRunner } from './hooks'
 import * as ui from '../ui'
@@ -311,7 +311,7 @@ export function TeamList() {
   return (
     <>
       <header className={ui.titlebar}>
-        <span>TAP TAP!</span>
+        <span>{t('app.name')}</span>
       </header>
       <main className={ui.main}>
         <UpdateBanner state={state} t={t} />

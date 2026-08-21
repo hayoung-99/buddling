@@ -18,7 +18,7 @@
 
 import { startUpdateCheck } from './update-check'
 import { startMorningSchedule } from './update-schedule'
-import type { UpdateInfo } from '@tap-tap/shared/state'
+import type { UpdateInfo } from '@buddling/shared/state'
 
 /** 이 플랫폼에서 받아서 설치까지 할 수 있는가 */
 function canAutoInstall(platform: string): boolean {
@@ -105,7 +105,7 @@ async function startUpdates({
      * 여기서 앱을 죽이지는 않는다. 업데이트는 곁다리 기능이고,
      * 알림만이라도 되면 사람이 직접 받을 수 있다.
      */
-    console.error('[tap-tap] 자동 업데이트를 쓸 수 없어 알림으로 대신합니다', error)
+    console.error('[buddling] 자동 업데이트를 쓸 수 없어 알림으로 대신합니다', error)
     const watcher = startNotifying()
     return { stop: watcher.stop, install() {} }
   }

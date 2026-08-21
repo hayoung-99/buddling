@@ -14,7 +14,7 @@ import { toFriendlyError } from '../services/net'
 import { t } from './i18n'
 import { nextDefaultName } from './default-name'
 import type { BrowserWindow } from 'electron'
-import type { IpcResult } from '@tap-tap/shared/ipc'
+import type { IpcResult } from '@buddling/shared/ipc'
 import type { AppShell } from './main'
 import type { Session } from './session'
 
@@ -112,7 +112,7 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
   ipcMain.on('pet:menu', (_event, { teamId }) => {
     const entry = session.snapshot().memberships.find((m) => m.team.id === teamId)
     Menu.buildFromTemplate([
-      { label: entry ? entry.team.name : 'tap-tap', enabled: false },
+      { label: entry ? entry.team.name : t('app.name'), enabled: false },
       { type: 'separator' },
       { label: t('app.openDetail'), click: () => app.openTeamDetail(teamId) },
       { label: t('app.openList'), click: () => app.openTeamWindow() },

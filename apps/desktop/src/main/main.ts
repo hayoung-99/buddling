@@ -1,11 +1,11 @@
 /**
- * tap-tap 진입점.
+ * Buddling 진입점.
  *
  * 속한 팀마다 캐릭터 창이 하나씩 뜬다. 팀에 들어가고 나갈 때마다
  * `syncPetWindows()` 가 창 목록을 소속과 맞춰 준다.
  *
  * 두 번째 인스턴스를 띄워 혼자서 테스트하려면:
- *   TAPTAP_PROFILE=second npm start
+ *   BUDDLING_PROFILE=second npm start
  * userData 경로가 갈라지므로 다른 기기처럼 취급된다.
  */
 
@@ -36,8 +36,8 @@ import type { TrayHandle } from './tray'
 import type { Updates } from './updates'
 
 // 프로필을 나누면 같은 컴퓨터에서 여러 인스턴스를 띄울 수 있다
-if (process.env.TAPTAP_PROFILE) {
-  electronApp.setPath('userData', `${electronApp.getPath('userData')}-${process.env.TAPTAP_PROFILE}`)
+if (process.env.BUDDLING_PROFILE) {
+  electronApp.setPath('userData', `${electronApp.getPath('userData')}-${process.env.BUDDLING_PROFILE}`)
 }
 
 /**
@@ -368,7 +368,7 @@ function start() {
     }
 
     // 켜졌을 때만 읽는다 — 늘 도는 것이 아니라 재 볼 때만 쓰는 도구다
-    if (process.env.TAPTAP_METRICS) {
+    if (process.env.BUDDLING_METRICS) {
       const { startMetrics } = await import('./metrics')
       startMetrics(electronApp)
     }
@@ -411,8 +411,8 @@ if (isFirstInstance) {
 }
 
 process.on('unhandledRejection', (reason) => {
-  console.error('[tap-tap] 처리되지 않은 오류', reason)
-  if (process.env.TAPTAP_DEBUG) {
-    dialog.showErrorBox('tap-tap 오류', String((reason as Error)?.message ?? reason))
+  console.error('[buddling] 처리되지 않은 오류', reason)
+  if (process.env.BUDDLING_DEBUG) {
+    dialog.showErrorBox('Buddling 오류', String((reason as Error)?.message ?? reason))
   }
 })

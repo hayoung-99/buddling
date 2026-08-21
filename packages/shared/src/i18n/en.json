@@ -3,8 +3,8 @@
 
   "settings.title": "Settings",
   "settings.power": "Power use",
-  "settings.powerHint": "tap-tap stays on screen until you shut down. Choose how much it should hold back while your character is idle.",
-  "settings.languageHint": "The language tap-tap speaks. Your teammates each see their own choice.",
+  "settings.powerHint": "Buddling stays on screen until you shut down. Choose how much it should hold back while your character is idle.",
+  "settings.languageHint": "The language Buddling speaks. Your teammates each see their own choice.",
   "power.smooth": "Smooth",
   "power.smoothHint": "Moves as smoothly as possible. Uses the most battery.",
   "power.balanced": "Balanced",
@@ -12,7 +12,8 @@
   "power.saver": "Saver",
   "power.saverHint": "Saves the most. Motion is a little choppy and the character looks slightly rougher.",
 
-  "app.quit": "Quit tap-tap",
+  "app.name": "Buddling",
+  "app.quit": "Quit Buddling",
   "app.settings": "Settings…",
   "app.openList": "Open team list",
   "app.openDetail": "Open this team",
@@ -22,6 +23,8 @@
   "app.showAll": "Show characters",
   "app.noTeams": "No teams yet",
   "app.teamSummary": "{name} · {count} teammates",
+
+  "pet.bubble": "NUDGE NUDGE!",
 
   "size.caption": "Size",
   "size.reset": "Back to default size",

@@ -16,7 +16,7 @@ import type { Metadata } from 'next'
  * 나라말은 한국어 한 벌뿐이다. 읽는 사람이 운영자라 네 언어 사전에 넣지 않는다.
  */
 export const metadata: Metadata = {
-  title: 'tap-tap 어드민',
+  title: 'Buddling 어드민',
   robots: { index: false, follow: false, nocache: true },
 }
 

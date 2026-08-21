@@ -12,7 +12,7 @@ import {
 import { sampleTrack, createSpring, easing, clamp } from '../src/renderer/pet/tween'
 import type { Keyframe } from '../src/renderer/pet/tween'
 import { createCritter, scaleToStandardHeight } from '../src/renderer/pet/critter'
-import { CHARACTERS, getCharacter } from '@tap-tap/shared/characters'
+import { CHARACTERS, getCharacter } from '@buddling/shared/characters'
 
 describe('sampleTrack', () => {
   const keys = [

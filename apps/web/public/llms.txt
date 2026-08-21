@@ -1,14 +1,15 @@
-# tap-tap
+# Buddling
 
-> tap-tap is a free desktop app for macOS and Windows that keeps a 3D animal
+> Buddling is a free desktop app for macOS and Windows that keeps a 3D animal
 > character on your desktop. Tap your own character and every teammate on that
 > team sees their character dance on their screen. There is no sign up: you join
 > a team with a nickname and a six character invite code.
 
 Written by GitHub user hayoung-99, built with Electron, MIT licensed. The name is
-always written lowercase and hyphenated: tap-tap. It is unrelated to the TapTap
-game store (taptap.io). The landing page is Korean and English; the app itself
-runs in Korean, English, Japanese and Chinese.
+one coined word, always capitalised: Buddling (buddy + -ling, a small friend).
+It is written the same way in every language, and it was called tap-tap until
+August 2026. The landing page is Korean and English; the app itself runs in
+Korean, English, Japanese and Chinese.
 
 ## Facts
 
@@ -37,27 +38,27 @@ runs in Korean, English, Japanese and Chinese.
 
 ## Pages
 
-- [tap-tap (Korean)](https://tap-tap-desktop.vercel.app/): what it is, what opens
+- [Buddling (Korean)](https://buddling.vercel.app/): what it is, what opens
   after you install it, the five characters, downloads, first launch, FAQ.
-- [tap-tap (English)](https://tap-tap-desktop.vercel.app/en/): the same page in English.
-- [Downloads](https://tap-tap-desktop.vercel.app/#download): macOS and Windows builds.
-- [First launch](https://tap-tap-desktop.vercel.app/#install): getting past the
+- [Buddling (English)](https://buddling.vercel.app/en/): the same page in English.
+- [Downloads](https://buddling.vercel.app/#download): macOS and Windows builds.
+- [First launch](https://buddling.vercel.app/#install): getting past the
   warning box on macOS and Windows.
-- [FAQ](https://tap-tap-desktop.vercel.app/#faq): what it is, whether teammates
+- [FAQ](https://buddling.vercel.app/#faq): what it is, whether teammates
   need it, whether it is free, using it alone, installing it on a work computer,
   and what to do if it will not open the first time.
 
 ## Source
 
-- [GitHub repository](https://github.com/hayoung-99/tap-tap): full source code, MIT licensed.
-- [Releases](https://github.com/hayoung-99/tap-tap/releases): installers.
+- [GitHub repository](https://github.com/hayoung-99/buddling): full source code, MIT licensed.
+- [Releases](https://github.com/hayoung-99/buddling/releases): installers.
 
 ## 한국어 요약
 
-tap-tap 은 바탕화면에 3D 동물 캐릭터를 띄워 두는 macOS·Windows 무료 앱입니다.
-내 캐릭터를 누르면 같은 팀 사람들의 화면에서 캐릭터가 춤을 춥니다. 가입하지 않고,
-닉네임과 여섯 글자 초대코드로 팀에 들어갑니다. 초대코드는 영문과 숫자를 섞은 여섯
-글자이고 24시간 뒤 만료됩니다. 한 사람이 최대 3개 팀, 팀 하나에 최대 5명이며
-팀마다 캐릭터가 한 마리씩 뜹니다. 오가는 것은 누가 눌렀다는 신호와 이름뿐이고,
+Buddling은 바탕화면에 3D 동물 캐릭터를 띄워 두는 macOS·Windows 무료 앱입니다.
+내 캐릭터를 누르면 같은 방 사람들의 화면에서 캐릭터가 춤을 춥니다. 가입하지 않고,
+닉네임과 여섯 글자 초대코드로 방에 들어갑니다. 초대코드는 영문과 숫자를 섞은 여섯
+글자이고 24시간 뒤 만료됩니다. 한 사람이 최대 3개 방, 방 하나에 최대 5명이며
+방마다 캐릭터가 한 마리씩 뜹니다. 오가는 것은 누가 눌렀다는 신호와 이름뿐이고,
 화면 내용이나 파일은 어디로도 가지 않습니다. 처음 열 때 확인 창이 한 번 뜨고,
-넘기는 방법은 https://tap-tap-desktop.vercel.app/#install 에 있습니다.
+넘기는 방법은 https://buddling.vercel.app/#install 에 있습니다.

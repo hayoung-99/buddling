@@ -6,7 +6,7 @@
  */
 
 import * as THREE from 'three'
-import { CHARACTERS } from '@tap-tap/shared/characters'
+import { CHARACTERS } from '@buddling/shared/characters'
 import { createCritter, disposeCritter, scaleToStandardHeight } from '../pet/critter'
 import { addLighting } from '../pet/scene'
 

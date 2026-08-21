@@ -2,14 +2,14 @@
 
 <img src="apps/web/public/assets/hero-cat.webp" alt="바탕화면 위에 서 있는 흰 고양이 캐릭터" width="200">
 
-# tap-tap
+# Buddling
 
 **바탕화면 위에 작은 친구 한 마리.**
 내 캐릭터를 누르면 상대 화면에서 캐릭터가 춤을 춰요.
 
 무료 · 가입 없음 · macOS와 Windows
 
-[**받으러 가기**](https://tap-tap-desktop.vercel.app/) · [English](https://tap-tap-desktop.vercel.app/en/)
+[**받으러 가기**](https://buddling.vercel.app/) · [English](https://buddling.vercel.app/en/)
 
 </div>
 
@@ -20,7 +20,7 @@
 말을 걸기에는 시시하고, 안 걸자니 아쉬운 순간이 있어요. "뭐 해?" 라고 보내면 상대가
 답해야 할 것 같아 부담이 되고, 그렇다고 이모지 하나만 보내기도 뻘쭘하고요.
 
-tap-tap 은 그 사이를 채웁니다. 내가 내 캐릭터를 톡 누르면, 멀리 있는 친구의 바탕화면
+Buddling은 그 사이를 채웁니다. 내가 내 캐릭터를 톡 누르면, 멀리 있는 친구의 바탕화면
 구석에서 캐릭터가 잠깐 춤을 춰요. **받은 쪽은 아무것도 하지 않아도 됩니다.** 읽음
 표시도, 답장해야 할 말풍선도 없어요. 그냥 뭔가 잠깐 움직였고 그게 나였다는 것만
 전해집니다.
@@ -48,9 +48,9 @@ tap-tap 은 그 사이를 채웁니다. 내가 내 캐릭터를 톡 누르면, �
 
 받는 곳은 두 군데인데 내용은 같습니다.
 
-- [tap-tap 홈페이지](https://tap-tap-desktop.vercel.app/#download) — 내 컴퓨터에 맞는
+- [Buddling 홈페이지](https://buddling.vercel.app/#download) — 내 컴퓨터에 맞는
   파일을 알아서 골라 줍니다
-- [GitHub 릴리스](https://github.com/hayoung-99/tap-tap/releases) — 지난 버전까지 전부
+- [GitHub 릴리스](https://github.com/hayoung-99/buddling/releases) — 지난 버전까지 전부
 
 ### 처음 한 번만
 
@@ -71,7 +71,7 @@ tap-tap 은 그 사이를 채웁니다. 내가 내 캐릭터를 톡 누르면, �
 2. 파란 창이 뜨면 **추가 정보**를 눌러요.
 3. 아래에 나타나는 **실행**을 누르면 설치가 이어져요.
 
-> 같은 안내가 [홈페이지](https://tap-tap-desktop.vercel.app/#install)에도 그림과 함께
+> 같은 안내가 [홈페이지](https://buddling.vercel.app/#install)에도 그림과 함께
 > 있습니다. 둘 중 편한 쪽을 보세요.
 
 ---
@@ -81,7 +81,7 @@ tap-tap 은 그 사이를 채웁니다. 내가 내 캐릭터를 톡 누르면, �
 앱을 켜면 캐릭터와 함께 이런 창이 열려요.
 
 <div align="center">
-<img src="apps/web/public/assets/team-window.webp" alt="방 목록이 열려 있는 tap-tap 창" width="420">
+<img src="apps/web/public/assets/team-window.webp" alt="방 목록이 열려 있는 Buddling 창" width="420">
 </div>
 
 1. **이름을 정해요.** 방에서 다른 사람들에게 보일 이름이에요.
@@ -119,7 +119,7 @@ tap-tap 은 그 사이를 채웁니다. 내가 내 캐릭터를 톡 누르면, �
 | 보이는 것 | 뜻 |
 |---|---|
 | 좌우로 흔들며 춤추고 음표가 떠올라요 | 그 방 누군가 나를 콕 찔렀어요 (발밑 이름표에 누구인지) |
-| 움찔하며 `TAP TAP!` 말풍선이 떠요 | 내가 내 캐릭터를 눌렀어요 |
+| 움찔하며 `콕콕!` 말풍선이 떠요 | 내가 내 캐릭터를 눌렀어요 |
 | 둘이 한꺼번에 | 같은 순간에 일어났어요 |
 
 겹치지 않게 자리를 셋으로 나눠 뒀어요 — **머리 위**는 내가 눌렀을 때의 말풍선,
@@ -220,7 +220,7 @@ npm start   # 빌드하고 앱을 띄웁니다
 ```
 
 접속 정보가 없어도 앱은 켜지고, 무엇을 해야 하는지 창이 안내해 줍니다. 화면만
-둘러보려면 `TAPTAP_FAKE_NET=1 npm start` 로 가짜 서버를 쓸 수도 있어요.
+둘러보려면 `BUDDLING_FAKE_NET=1 npm start` 로 가짜 서버를 쓸 수도 있어요.
 
 자주 쓰는 것들.
 

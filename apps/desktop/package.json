@@ -1,14 +1,14 @@
 {
-  "name": "tap-tap",
+  "name": "buddling",
   "version": "0.4.0",
   "private": true,
   "description": "바탕화면 위 3D 동물 친구. 내 캐릭터를 클릭하면 팀원들의 캐릭터가 폴짝 뜁니다.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hayoung-99/tap-tap.git"
+    "url": "git+https://github.com/hayoung-99/buddling.git"
   },
-  "homepage": "https://tap-tap-desktop.vercel.app",
+  "homepage": "https://buddling.vercel.app",
   "main": "dist-main/main/main.cjs",
   "engines": {
     "node": ">=22"
@@ -17,8 +17,8 @@
     "build": "vite build --config vite.config.mts && vite build --config vite.preload.config.mts && vite build --config vite.main.config.mts",
     "typecheck": "tsc --noEmit",
     "start": "npm run build && electron .",
-    "start:second": "npm run build && TAPTAP_PROFILE=second electron .",
-    "start:both": "npm run build && (trap 'kill 0' INT TERM EXIT; electron . & TAPTAP_PROFILE=second electron . & wait)",
+    "start:second": "npm run build && BUDDLING_PROFILE=second electron .",
+    "start:both": "npm run build && (trap 'kill 0' INT TERM EXIT; electron . & BUDDLING_PROFILE=second electron . & wait)",
     "dev": "vite build --config vite.config.mts --watch",
     "preview": "npm run build && electron scripts/preview.js",
     "tray-icon": "node scripts/make-tray-icon.js",
@@ -32,7 +32,7 @@
   },
   "build": {
     "appId": "com.taptap.desktop",
-    "productName": "tap-tap",
+    "productName": "Buddling",
     "directories": {
       "output": "dist"
     },
@@ -51,7 +51,7 @@
       {
         "provider": "github",
         "owner": "hayoung-99",
-        "repo": "tap-tap",
+        "repo": "buddling",
         "releaseType": "draft"
       }
     ],
@@ -60,7 +60,7 @@
       "icon": "build/icon.icns",
       "identity": "-",
       "hardenedRuntime": false,
-      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "artifactName": "buddling-${version}-${arch}.${ext}",
       "target": [
         {
           "target": "dmg",
@@ -93,11 +93,11 @@
       "oneClick": true,
       "perMachine": false,
       "allowToChangeInstallationDirectory": false,
-      "artifactName": "${productName}-${version}-setup.${ext}"
+      "artifactName": "buddling-${version}-setup.${ext}"
     },
     "linux": {
       "icon": "build/icon.png",
-      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "artifactName": "buddling-${version}-${arch}.${ext}",
       "target": [
         "AppImage"
       ],
@@ -111,7 +111,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
-    "@tap-tap/shared": "*",
+    "@buddling/shared": "*",
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",

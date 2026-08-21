@@ -11,7 +11,7 @@
  */
 
 import { createNet, createEmitter, toFriendlyError } from '../services/net'
-import type { ConnectionState, AppState, TapPayload, UpdateInfo } from '@tap-tap/shared/state'
+import type { ConnectionState, AppState, TapPayload, UpdateInfo } from '@buddling/shared/state'
 import type { Net, NetMembership } from '../services/net'
 import type { Store } from './store'
 import defaultStore from './store'

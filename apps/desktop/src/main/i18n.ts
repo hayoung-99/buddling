@@ -10,8 +10,8 @@
  * 지금은 그럴 이유가 없다.
  */
 
-import { createTranslator, resolveLanguage, DEFAULT_LANGUAGE, LANGUAGES } from '@tap-tap/shared/i18n'
-import type { Translate } from '@tap-tap/shared/i18n'
+import { createTranslator, resolveLanguage, DEFAULT_LANGUAGE, LANGUAGES } from '@buddling/shared/i18n'
+import type { Translate } from '@buddling/shared/i18n'
 
 let current: string = DEFAULT_LANGUAGE
 let translate: Translate = createTranslator(current)

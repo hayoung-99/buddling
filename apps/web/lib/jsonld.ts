@@ -3,6 +3,7 @@ import type { Copy } from './copy'
 import {
   APP_VERSION,
   AUTHOR,
+  BRAND,
   LICENSE_URL,
   LOCALE_PATHS,
   MODIFIED,
@@ -53,7 +54,7 @@ export function buildJsonLd(copy: Copy) {
         '@type': 'WebSite',
         '@id': id('website'),
         url: `${SITE_URL}/`,
-        name: 'tap-tap',
+        name: BRAND,
         inLanguage: ['ko', 'en'],
         publisher: { '@id': id('author') },
       },
@@ -97,7 +98,7 @@ export function buildJsonLd(copy: Copy) {
       {
         '@type': 'SoftwareApplication',
         '@id': id('app'),
-        name: 'tap-tap',
+        name: BRAND,
         description: copy.app.description,
         url: `${SITE_URL}/`,
         image: { '@id': id('og-image') },

@@ -4,7 +4,7 @@
  * 화면과 떨어져 있어야 하는 계산이라 컴포넌트 밖에 둔다.
  */
 
-import type { Translate } from '@tap-tap/shared/i18n'
+import type { Translate } from '@buddling/shared/i18n'
 
 export interface InviteStatus {
   expired: boolean

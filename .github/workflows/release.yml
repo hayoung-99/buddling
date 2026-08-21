@@ -166,7 +166,7 @@ jobs:
           fi
 
           gh release edit "${TAG}" \
-            --title "tap-tap ${TAG}" \
+            --title "Buddling ${TAG}" \
             --notes-file "${RUNNER_TEMP}/notes.md" \
             --draft=false \
             --latest

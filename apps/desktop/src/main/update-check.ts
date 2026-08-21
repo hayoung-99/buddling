@@ -14,7 +14,7 @@
  *   사람은 어느 날 갑자기 연결이 끊긴다. 그때 무슨 일인지 알 방법이 있어야 한다.
  */
 
-const REPO = 'hayoung-99/tap-tap'
+const REPO = 'hayoung-99/buddling'
 
 const LATEST_RELEASE_API = `https://api.github.com/repos/${REPO}/releases/latest`
 
@@ -66,7 +66,7 @@ async function fetchLatestVersion() {
     headers: {
       accept: 'application/vnd.github+json',
       // GitHub 은 User-Agent 없는 요청을 거절한다
-      'user-agent': 'tap-tap-desktop',
+      'user-agent': 'buddling-desktop',
     },
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   })

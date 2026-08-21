@@ -12,7 +12,7 @@
 import path from 'node:path'
 import { Tray, Menu, nativeImage } from 'electron'
 import { t } from './i18n'
-import type { AppState } from '@tap-tap/shared/state'
+import type { AppState } from '@buddling/shared/state'
 
 const ICON = path.join(__dirname, '..', '..', 'assets', 'trayTemplate.png')
 
@@ -51,7 +51,7 @@ function createTray(app: TrayHost): TrayHandle {
   const tray = new Tray(image)
   // 테스트용 두 번째 인스턴스는 트레이 아이콘이 하나 더 생기므로 이름을 붙여 구분한다
   tray.setToolTip(
-    process.env.TAPTAP_PROFILE ? `tap-tap (${process.env.TAPTAP_PROFILE})` : 'tap-tap',
+    process.env.BUDDLING_PROFILE ? `${t('app.name')} (${process.env.BUDDLING_PROFILE})` : t('app.name'),
   )
 
   /** 오른쪽 클릭 때 띄울 메뉴. 팀 목록이나 언어가 바뀌면 `refresh()` 가 새로 짓는다. */
