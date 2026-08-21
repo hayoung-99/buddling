@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.5.0](https://github.com/hayoung-99/tap-tap/compare/v0.4.0...v0.5.0) (2026-08-21)
+
+
+### 새로운 것
+
+* **admin:** rebuild the dashboard around now, real usage and new arrivals ([#51](https://github.com/hayoung-99/tap-tap/issues/51)) ([816fe11](https://github.com/hayoung-99/tap-tap/commit/816fe1114357545de311dedda46f202b9c3d76d5))
+* call it a room on the landing page and in the admin ([#63](https://github.com/hayoung-99/tap-tap/issues/63)) ([6125b16](https://github.com/hayoung-99/tap-tap/commit/6125b16940a3d75c7497692a2ff6876bfd0755af))
+* **i18n:** call it a room, not a team ([#62](https://github.com/hayoung-99/tap-tap/issues/62)) ([5dcd795](https://github.com/hayoung-99/tap-tap/commit/5dcd79579a5136a7e19b05b5644220dd5802e559))
+* name an unnamed room in the user's own language ([#65](https://github.com/hayoung-99/tap-tap/issues/65)) ([2f3a5c4](https://github.com/hayoung-99/tap-tap/commit/2f3a5c4031399f3816267263eb6a1d955a99d8eb))
+* **pet:** give animations a one-armed wave, and widen the window to fit it ([#66](https://github.com/hayoung-99/tap-tap/issues/66)) ([89b6f5d](https://github.com/hayoung-99/tap-tap/commit/89b6f5dc2279bc4212c0667b881757e768ecf43a))
+* **web:** add a read-only usage dashboard at /admin ([#48](https://github.com/hayoung-99/tap-tap/issues/48)) ([df2284f](https://github.com/hayoung-99/tap-tap/commit/df2284f32876d7084fc381c8d78667b7c27151fc))
+
+
+### 고친 것
+
+* **app:** recover instead of failing when the account was cleaned up ([#54](https://github.com/hayoung-99/tap-tap/issues/54)) ([df3d716](https://github.com/hayoung-99/tap-tap/commit/df3d7169413f066f9e543632272e9c98fb51e5c9))
+
+
+### 빨라진 것
+
+* **web:** render the landing images at 2x and ship them as WebP ([#45](https://github.com/hayoung-99/tap-tap/issues/45)) ([1b6d224](https://github.com/hayoung-99/tap-tap/commit/1b6d2240d694b5dda35f565127ea60e2fcd272cf))
+
 ## [0.4.0](https://github.com/hayoung-99/tap-tap/compare/v0.3.0...v0.4.0) (2026-08-15)
 
 
