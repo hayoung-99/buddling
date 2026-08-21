@@ -30,6 +30,7 @@
     "dev:web": "npm run dev -w @buddling/web",
     "dist": "npm run dist -w buddling",
     "preview": "npm run preview -w buddling",
+    "preview:figures": "npm run preview:figures -w buddling --",
     "site-images": "npm run site-images -w buddling --",
     "start": "npm run start -w buddling",
     "tray-icon": "npm run tray-icon -w buddling"

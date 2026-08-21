@@ -37,6 +37,7 @@ export default defineConfig({
         // 배포본에는 들어가지 않지만(package.json 의 build.files 참고) 개발용 명령이
         // 이 산출물을 연다 — npm run preview · app-icon · site-images.
         preview: renderer('preview', 'index.html'),
+        figuresPreview: renderer('figures-preview', 'index.html'),
         icon: renderer('icon', 'index.html'),
         siteAssets: renderer('site-assets', 'index.html'),
       },
