@@ -49,6 +49,7 @@
   "form.createSection": "创建新房间",
   "form.teamName": "房间名称",
   "form.teamNamePlaceholder": "例如：小美和朋友们",
+  "form.teamNameDefault": "未命名 {n}",
   "form.create": "创建房间",
   "form.creating": "创建中…",
   "form.joinSection": "用邀请码加入",

@@ -248,8 +248,12 @@ begin
     if v_try > 20 then raise exception 'CODE_GENERATION_FAILED'; end if;
   end loop;
 
+  -- 이름은 앱이 채워 보낸다 (사용자의 말로 "이름없음 1" 처럼). 여기 남은 값은
+  -- 그 기능이 없던 옛 앱이 빈 이름을 보낼 때를 위한 안전망이라, 어느 나라 말도
+  -- 아닌 것으로 둔다. 예전에는 이 자리에 한국어가 박혀 있어서, 일본어를 쓰는
+  -- 사람이 이름 없이 만들면 한국어 이름이 나왔다.
   insert into teams (name, invite_code, invite_expires_at)
-  values (coalesce(nullif(trim(p_name), ''), '우리 팀'), v_code, now() + invite_ttl())
+  values (coalesce(nullif(trim(p_name), ''), 'tap-tap'), v_code, now() + invite_ttl())
   returning * into v_team;
 
   insert into members (team_id, nickname, character_key, user_id)
