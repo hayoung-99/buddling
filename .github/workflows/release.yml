@@ -30,7 +30,8 @@
 # 를 본다.
 #
 # 주의: 코드 서명을 하지 않으므로 받는 사람은 macOS Gatekeeper·Windows SmartScreen
-# 경고를 한 번 넘겨야 합니다. 자세한 안내는 docs/RELEASE.md 에 있습니다.
+# 경고를 한 번 넘겨야 합니다. 넘기는 순서는 README 와 랜딩페이지에 적어 두었습니다
+# (배포 절차를 적은 docs/RELEASE.md 는 저장소에 올리지 않는 로컬 문서입니다).
 
 name: release
 
