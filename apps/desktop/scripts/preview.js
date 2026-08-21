@@ -25,7 +25,7 @@ void app.whenReady().then(async () => {
     width: 1360,
     height: 560,
     backgroundColor: '#f5efe1',
-    title: '도란도란 캐릭터 미리보기',
+    title: 'Buddling 캐릭터 미리보기',
   })
 
   await window.loadFile(path.join(__dirname, '..', 'dist-renderer', 'preview', 'index.html'))

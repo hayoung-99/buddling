@@ -27,11 +27,11 @@
  */
 
 import * as THREE from 'three'
-import { getCharacter } from '@doran-doran/shared/characters'
-import { createTranslator } from '@doran-doran/shared/i18n'
-import { powerProfile } from '@doran-doran/shared/power'
-import type { PowerProfile } from '@doran-doran/shared/power'
-import type { AppState, Membership, TapPayload } from '@doran-doran/shared/state'
+import { getCharacter } from '@buddling/shared/characters'
+import { createTranslator } from '@buddling/shared/i18n'
+import { powerProfile } from '@buddling/shared/power'
+import type { PowerProfile } from '@buddling/shared/power'
+import type { AppState, Membership, TapPayload } from '@buddling/shared/state'
 import { createCritter, disposeCritter, scaleToStandardHeight } from './critter'
 import type { Critter } from './critter'
 import { createStage } from './scene'

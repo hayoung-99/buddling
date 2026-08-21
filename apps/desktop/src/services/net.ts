@@ -15,13 +15,13 @@ import { randomUUID } from 'node:crypto'
 import { createFakeServer, createFakeNet } from './fake-net'
 import { createSupabaseNet } from './supabase-net'
 import type { Emitter } from './emitter'
-import type { Member, TapPayload, Team } from '@doran-doran/shared/state'
+import type { Member, TapPayload, Team } from '@buddling/shared/state'
 
 // 함께 쓰는 것들은 따로 산다 (고리를 만들지 않으려고). 부르는 쪽이 바뀌지 않도록 여기서 다시 내보낸다.
 export { createEmitter } from './emitter'
 export { toFriendlyError } from './errors'
 export type { Emitter, EventMap } from './emitter'
-export type { Member, Team } from '@doran-doran/shared/state'
+export type { Member, Team } from '@buddling/shared/state'
 
 /** 서버가 아는 소속. 화면이 보는 것(`shared/state.ts` 의 `Membership`)보다 좁다. */
 export interface NetMembership {
@@ -99,7 +99,7 @@ export interface NetConfig {
 /** 설정에 맞는 Net 구현을 만든다 */
 export function createNet(config: NetConfig): Net {
   // 개발용: Supabase 없이 UI 전체를 눌러보고 싶을 때 (같은 프로세스 안에서만 통한다)
-  if (process.env.DORAN_FAKE_NET) {
+  if (process.env.BUDDLING_FAKE_NET) {
     // 진짜 쪽은 익명 로그인이 신원을 만들어 준다. 여기서는 흉내만 내면 된다.
     return createFakeNet({ server: createFakeServer(), userId: randomUUID() })
   }

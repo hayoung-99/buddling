@@ -1,4 +1,4 @@
-import ko from '@doran-doran/shared/i18n/ko.json'
+import ko from '@buddling/shared/i18n/ko.json'
 
 /**
  * 캐릭터 이름은 앱이 쓰는 사전에서 그대로 가져온다.

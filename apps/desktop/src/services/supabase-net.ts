@@ -14,7 +14,7 @@ import { createEmitter } from './emitter'
 import { toFriendlyError } from './errors'
 import { withSessionRecovery } from './session-recovery'
 import type { Net, NetConfig, NetEvents } from './net'
-import type { Member, Team } from '@doran-doran/shared/state'
+import type { Member, Team } from '@buddling/shared/state'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
 const TAP_EVENT = 'tap'

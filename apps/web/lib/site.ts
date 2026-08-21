@@ -7,9 +7,18 @@
  * `check-site.js` 가 그걸 검사하고 있었다.
  */
 
-export const SITE_URL = 'https://doran-doran-desktop.vercel.app'
+/**
+ * 화면에 보이는 서비스 이름.
+ *
+ * 만들어 낸 한 낱말이라 나라말마다 갈리지 않는다. 갈라 두면 구조화 데이터와
+ * `og:site_name` 에서 같은 것을 가리키는 이름이 페이지마다 달라지고, 검색엔진이
+ * 그걸 둘로 잡는다.
+ */
+export const BRAND = 'Buddling'
 
-export const REPO = 'hayoung-99/doran-doran'
+export const SITE_URL = 'https://buddling.vercel.app'
+
+export const REPO = 'hayoung-99/buddling'
 export const REPO_URL = `https://github.com/${REPO}`
 export const RELEASES_PAGE = `${REPO_URL}/releases`
 export const RELEASES_LATEST = `${RELEASES_PAGE}/latest`

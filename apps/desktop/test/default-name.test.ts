@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { nextDefaultName } from '../src/main/default-name'
-import { createTranslator, DICTIONARIES } from '@doran-doran/shared/i18n'
+import { createTranslator, DICTIONARIES } from '@buddling/shared/i18n'
 
 const CODES = Object.keys(DICTIONARIES)
 

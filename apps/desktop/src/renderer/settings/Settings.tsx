@@ -15,10 +15,10 @@
  */
 
 import { useEffect, useState } from 'react'
-import { createTranslator, LANGUAGES } from '@doran-doran/shared/i18n'
-import type { Translate } from '@doran-doran/shared/i18n'
-import { POWER_LEVELS, resolvePower } from '@doran-doran/shared/power'
-import type { AppState } from '@doran-doran/shared/state'
+import { createTranslator, LANGUAGES } from '@buddling/shared/i18n'
+import type { Translate } from '@buddling/shared/i18n'
+import { POWER_LEVELS, resolvePower } from '@buddling/shared/power'
+import type { AppState } from '@buddling/shared/state'
 import * as ui from '../ui'
 
 /** 라디오 한 줄. 이름표 전체가 눌리는 카드다. */

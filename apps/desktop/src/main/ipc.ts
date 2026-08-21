@@ -14,7 +14,7 @@ import { toFriendlyError } from '../services/net'
 import { t } from './i18n'
 import { nextDefaultName } from './default-name'
 import type { BrowserWindow } from 'electron'
-import type { IpcResult } from '@doran-doran/shared/ipc'
+import type { IpcResult } from '@buddling/shared/ipc'
 import type { AppShell } from './main'
 import type { Session } from './session'
 

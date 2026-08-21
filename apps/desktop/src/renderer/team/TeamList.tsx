@@ -11,10 +11,10 @@
  */
 
 import { useState } from 'react'
-import { getCharacter } from '@doran-doran/shared/characters'
-import { createTranslator } from '@doran-doran/shared/i18n'
-import type { Translate } from '@doran-doran/shared/i18n'
-import type { AppState, Membership } from '@doran-doran/shared/state'
+import { getCharacter } from '@buddling/shared/characters'
+import { createTranslator } from '@buddling/shared/i18n'
+import type { Translate } from '@buddling/shared/i18n'
+import type { AppState, Membership } from '@buddling/shared/state'
 import { characterThumbnails } from './thumbnails'
 import { useAppState, useRunner } from './hooks'
 import * as ui from '../ui'

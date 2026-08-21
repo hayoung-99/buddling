@@ -3,8 +3,8 @@
 
   "settings.title": "设置",
   "settings.power": "省电",
-  "settings.powerHint": "Doran Doran 会一直显示到你关机。请选择角色闲着时要节省多少。",
-  "settings.languageHint": "Doran Doran 使用的语言。成员看到的是他们各自选择的语言。",
+  "settings.powerHint": "Buddling 会一直显示到你关机。请选择角色闲着时要节省多少。",
+  "settings.languageHint": "Buddling 使用的语言。成员看到的是他们各自选择的语言。",
   "power.smooth": "流畅",
   "power.smoothHint": "动作最流畅，也最耗电。",
   "power.balanced": "均衡",
@@ -12,8 +12,8 @@
   "power.saver": "省电",
   "power.saverHint": "最省电。动作会略有卡顿，角色看起来也会稍微粗糙一些。",
 
-  "app.name": "Doran Doran",
-  "app.quit": "退出 Doran Doran",
+  "app.name": "Buddling",
+  "app.quit": "退出 Buddling",
   "app.settings": "设置…",
   "app.openList": "打开房间列表",
   "app.openDetail": "打开该房间",

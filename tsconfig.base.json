@@ -15,7 +15,7 @@
     "skipLibCheck": true,
     "noEmit": true,
     "paths": {
-      "@doran-doran/shared/*": ["./packages/shared/src/*"]
+      "@buddling/shared/*": ["./packages/shared/src/*"]
     }
   }
 }

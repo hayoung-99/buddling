@@ -6,10 +6,10 @@
  */
 
 import { useState } from 'react'
-import { CHARACTERS, getCharacter } from '@doran-doran/shared/characters'
-import { createTranslator } from '@doran-doran/shared/i18n'
-import type { Translate } from '@doran-doran/shared/i18n'
-import type { Membership, Team } from '@doran-doran/shared/state'
+import { CHARACTERS, getCharacter } from '@buddling/shared/characters'
+import { createTranslator } from '@buddling/shared/i18n'
+import type { Translate } from '@buddling/shared/i18n'
+import type { Membership, Team } from '@buddling/shared/state'
 import { characterThumbnails } from './thumbnails'
 import { inviteStatus } from './invite'
 import { useAppState, useMinuteTick, useRunner, useToast } from './hooks'

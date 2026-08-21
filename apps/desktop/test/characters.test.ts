@@ -9,8 +9,8 @@ import {
   TAIL,
   SNOUT,
   ARM,
-} from '@doran-doran/shared/characters'
-import type { PaletteKey } from '@doran-doran/shared/characters'
+} from '@buddling/shared/characters'
+import type { PaletteKey } from '@buddling/shared/characters'
 
 describe('캐릭터 스펙', () => {
   it('컨셉아트의 5종이 모두 있다', () => {

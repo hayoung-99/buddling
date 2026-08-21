@@ -7,7 +7,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { AppState } from '@doran-doran/shared/state'
+import type { AppState } from '@buddling/shared/state'
 
 /**
  * 메인 프로세스가 보내 주는 상태를 따라간다.

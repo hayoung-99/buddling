@@ -12,7 +12,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { Box3, Group, PerspectiveCamera, Vector3 } from 'three'
-import { CHARACTERS } from '@doran-doran/shared/characters'
+import { CHARACTERS } from '@buddling/shared/characters'
 import { createCritter, scaleToStandardHeight } from '../src/renderer/pet/critter'
 import { PET_CAMERA } from '../src/renderer/pet/scene'
 import { createAnimator, sampleWave, WAVE_DURATION } from '../src/renderer/pet/animations'

@@ -3,7 +3,6 @@ import type { Copy } from './copy'
 /** 한국어판. 문장은 예전 `site/index.html` 에서 그대로 옮겨 왔다. */
 export const ko: Copy = {
   locale: 'ko',
-  brand: '도란도란',
   other: { href: '/en/', lang: 'en', short: 'EN', long: 'English' },
 
   skipToContent: '본문으로 건너뛰기',
@@ -25,7 +24,7 @@ export const ko: Copy = {
     headingTop: '받고 나면',
     headingBottom: '이 창이 열려요',
     body: '방을 만들면 여섯 글자 코드가 나와요. 멤버가 그 코드를 넣으면 시작이에요.',
-    imageAlt: '방 목록이 열려 있는 도란도란 창. 나오리와 친구들 한 개에 멤버 한 명이 접속해 있다.',
+    imageAlt: '방 목록이 열려 있는 Buddling 창. 나오리와 친구들 한 개에 멤버 한 명이 접속해 있다.',
   },
 
   characters: {
@@ -78,7 +77,7 @@ export const ko: Copy = {
     pending: (
       <>
         아직 올라온 파일이 없어요. 준비되면 여기에 나타나요.{' '}
-        <a href="https://github.com/hayoung-99/doran-doran/releases">릴리스 보러 가기</a>
+        <a href="https://github.com/hayoung-99/buddling/releases">릴리스 보러 가기</a>
       </>
     ),
   },
@@ -89,7 +88,7 @@ export const ko: Copy = {
     sub: '처음 열 때 컴퓨터가 한 번 확인해요. 아래대로 하면 다음부터는 그냥 열려요.',
     macos: {
       title: 'macOS',
-      howToName: 'macOS에서 도란도란 처음 열기',
+      howToName: 'macOS에서 Buddling 처음 열기',
       steps: [
         ['받은 앱을 ', { strong: '응용 프로그램' }, ' 폴더로 옮겨요.'],
         ['두 번 눌러 열고, 경고가 뜨면 ', { strong: '완료' }, '를 눌러요.'],
@@ -104,7 +103,7 @@ export const ko: Copy = {
     },
     windows: {
       title: 'Windows',
-      howToName: 'Windows에서 도란도란 설치하기',
+      howToName: 'Windows에서 Buddling 설치하기',
       steps: [
         ['받은 파일을 두 번 눌러요.'],
         ['파란 창이 뜨면 ', { strong: '추가 정보' }, '를 눌러요.'],
@@ -120,7 +119,7 @@ export const ko: Copy = {
     items: [
       {
         id: 'faq-what',
-        question: '도란도란이 뭔가요?',
+        question: 'Buddling이 뭔가요?',
         answer:
           '바탕화면에 3D 동물 캐릭터를 띄워 두는 macOS·Windows 앱이에요. 내 캐릭터를 누르면 같은 방 사람들 화면에서 캐릭터가 춤을 춰요. 무료이고 가입도 없어요.',
       },
@@ -157,7 +156,7 @@ export const ko: Copy = {
   },
 
   footer: {
-    tagline: '도란도란 · 무료로 쓰고 고칠 수 있어요',
+    tagline: 'Buddling · 무료로 쓰고 고칠 수 있어요',
     github: 'GitHub',
     releases: '릴리스',
   },
@@ -181,7 +180,7 @@ export const ko: Copy = {
   },
 
   meta: {
-    title: '도란도란 · 친구들과 함께 쓰는 무료 바탕화면 캐릭터 앱',
+    title: 'Buddling · 친구들과 함께 쓰는 무료 바탕화면 캐릭터 앱',
     description:
       '바탕화면에 3D 동물 친구를 띄우고, 내 캐릭터를 누르면 멤버들 화면에서 캐릭터가 춤을 춰요. macOS·Windows 무료. 가입 없이 닉네임과 여섯 글자 코드로 시작해요.',
     ogDescription:

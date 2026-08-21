@@ -1,6 +1,6 @@
 # Supabase 세팅 가이드
 
-도란도란은 방 정보 저장과 실시간 "콕 찌르기" 전달에 Supabase를 씁니다.
+Buddling은 방 정보 저장과 실시간 "콕 찌르기" 전달에 Supabase를 씁니다.
 아래 5단계면 끝나고, 무료 플랜으로 충분합니다. **약 5분** 걸립니다.
 
 ---
@@ -10,7 +10,7 @@
 1. https://supabase.com 에 접속해 GitHub 계정 등으로 로그인합니다.
 2. **New project** 를 누릅니다.
 3. 입력값:
-   - **Name**: `doran-doran` (아무 이름이나 괜찮습니다)
+   - **Name**: `buddling` (아무 이름이나 괜찮습니다)
    - **Database Password**: 아무거나 생성해 두세요. 이 앱에서는 쓰지 않지만 나중에 필요할 수 있으니 저장해 두면 좋습니다.
    - **Region**: `Northeast Asia (Seoul)` — 팀원이 한국에 있다면 반응 속도가 가장 빠릅니다.
 4. **Create new project** 를 누르고 프로비저닝이 끝날 때까지 1~2분 기다립니다.

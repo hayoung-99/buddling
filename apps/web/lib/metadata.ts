@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import type { Copy } from './copy'
-import { LOCALE_PATHS, OG_IMAGE, SITE_URL, absolute } from './site'
+import { BRAND, LOCALE_PATHS, OG_IMAGE, SITE_URL, absolute } from './site'
 
 /**
  * 나라말 한 벌에 딸린 `<head>` 를 만든다.
@@ -45,7 +45,7 @@ export function buildMetadata(copy: Copy): Metadata {
 
     openGraph: {
       type: 'website',
-      siteName: 'Doran Doran',
+      siteName: BRAND,
       locale: copy.locale === 'ko' ? 'ko_KR' : 'en_US',
       alternateLocale: copy.locale === 'ko' ? 'en_US' : 'ko_KR',
       url,

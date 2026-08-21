@@ -1,13 +1,13 @@
 {
-  "name": "doran-doran-workspace",
+  "name": "buddling-workspace",
   "private": true,
-  "description": "도란도란 저장소. 실제 앱은 apps/ 아래에 있다.",
+  "description": "Buddling 저장소. 실제 앱은 apps/ 아래에 있다.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hayoung-99/doran-doran.git"
+    "url": "git+https://github.com/hayoung-99/buddling.git"
   },
-  "homepage": "https://doran-doran-desktop.vercel.app",
+  "homepage": "https://buddling.vercel.app",
   "engines": {
     "node": ">=22"
   },
@@ -17,22 +17,22 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w doran-doran && npm run build -w @doran-doran/web",
-    "build:web": "npm run build -w @doran-doran/web",
-    "test": "npm run test -w doran-doran",
+    "build": "npm run build -w buddling && npm run build -w @buddling/web",
+    "build:web": "npm run build -w @buddling/web",
+    "test": "npm run test -w buddling",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint --type-aware",
-    "app-icon": "npm run app-icon -w doran-doran",
-    "check": "npm run check -w doran-doran",
-    "check:expiry": "npm run check:expiry -w doran-doran",
+    "app-icon": "npm run app-icon -w buddling",
+    "check": "npm run check -w buddling",
+    "check:expiry": "npm run check:expiry -w buddling",
     "check:site": "npm run build:web && node scripts/check-site.js",
-    "dev": "npm run dev -w doran-doran",
-    "dev:web": "npm run dev -w @doran-doran/web",
-    "dist": "npm run dist -w doran-doran",
-    "preview": "npm run preview -w doran-doran",
-    "site-images": "npm run site-images -w doran-doran --",
-    "start": "npm run start -w doran-doran",
-    "tray-icon": "npm run tray-icon -w doran-doran"
+    "dev": "npm run dev -w buddling",
+    "dev:web": "npm run dev -w @buddling/web",
+    "dist": "npm run dist -w buddling",
+    "preview": "npm run preview -w buddling",
+    "site-images": "npm run site-images -w buddling --",
+    "start": "npm run start -w buddling",
+    "tray-icon": "npm run tray-icon -w buddling"
   },
   "devDependencies": {
     "oxlint": "^1.78.0",
