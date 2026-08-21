@@ -7,6 +7,8 @@
 
 import { useState } from 'react'
 import { CHARACTERS, getCharacter } from '@buddling/shared/characters'
+import { SIGNALS, toSignal } from '@buddling/shared/signals'
+import type { SignalKind } from '@buddling/shared/signals'
 import { createTranslator } from '@buddling/shared/i18n'
 import type { Translate } from '@buddling/shared/i18n'
 import type { Membership, Team } from '@buddling/shared/state'
@@ -207,6 +209,45 @@ function MemberList({
   )
 }
 
+/**
+ * 이 방에서 내가 보낼 신호를 고른다.
+ *
+ * 누르는 동작은 하나로 두고 **평소에 나갈 신호를 미리 골라 두는 것**이 기획서가 정한
+ * 방식이다. 메뉴에서 그때그때 고르게 하면 캐릭터를 톡 누르는 0.2초짜리 동작이
+ * 사라지고, 신호가 시그니처가 되지도 않는다.
+ */
+function SignalPicker({
+  teamId,
+  selected,
+  t,
+  run,
+}: {
+  teamId: string
+  selected: SignalKind
+  t: Translate
+  run: (action: () => Promise<unknown>) => Promise<void>
+}) {
+  return (
+    <div className="flex gap-[7px]">
+      {SIGNALS.map((kind) => (
+        <button
+          key={kind}
+          className="flex-1 bg-card border-2 border-transparent rounded-pick px-[10px] py-[9px]
+            flex flex-col items-start gap-[2px] text-ink cursor-pointer text-left
+            aria-pressed:border-accent"
+          aria-pressed={kind === selected}
+          onClick={() => run(() => window.teamApi.setSignal(teamId, kind))}
+        >
+          <span className="text-[12px] font-bold">{t(`signal.${kind}`)}</span>
+          <span className="text-[11px] text-ink-soft leading-[1.3]">
+            {t(`signal.${kind}.hint`)}
+          </span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function CharacterPicker({
   teamId,
   selectedKey,
@@ -361,6 +402,12 @@ export function TeamDetail() {
           t={t}
           run={run}
         />
+      </section>
+
+      <section className={ui.section}>
+        <h2 className={ui.h2}>{t('detail.mySignal')}</h2>
+        <p className={ui.hint}>{t('detail.mySignalHint')}</p>
+        <SignalPicker teamId={teamId} selected={toSignal(entry.pet.signal)} t={t} run={run} />
       </section>
 
       <div className={ui.errorLine}>{error}</div>

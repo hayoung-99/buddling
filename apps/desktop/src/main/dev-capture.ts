@@ -16,6 +16,7 @@
  *   BUDDLING_POKE="민수,수진"       팀원들이 콕 찌른 것처럼 만든다
  *   BUDDLING_POKE_TEAM="2"          그 순서의 팀만 찌른다 (없으면 전부)
  *   BUDDLING_POKE_DELAY="175"       찌른 뒤 몇 ms 지난 순간을 찍을지
+ *   BUDDLING_POKE_SIGNAL="hop"      무슨 신호로 찌를지 (없으면 콕). 모르는 값은 콕으로 떨어진다
  *   BUDDLING_DETAIL="1"             그 순서의 팀 상세 창을 열어 함께 찍는다
  *   BUDDLING_SETTINGS=1             설정 창을 열어 함께 찍는다 (목록 화면)
  *   BUDDLING_SETTINGS="power"       그 항목의 상세 화면까지 들어가서 찍는다 ("language" 도)
@@ -156,7 +157,11 @@ async function captureIfRequested(app: AppShell, electronApp: Electron.App) {
     for (const [index, [teamId, pet]] of petWindows().entries()) {
       if (only !== null && index + 1 !== only) continue
       for (const nickname of process.env.BUDDLING_POKE.split(',')) {
-        pet.window.webContents.send('tap', { teamId, fromNickname: nickname.trim() })
+        pet.window.webContents.send('tap', {
+          teamId,
+          fromNickname: nickname.trim(),
+          signal: process.env.BUDDLING_POKE_SIGNAL,
+        })
       }
     }
     await wait(Number(process.env.BUDDLING_POKE_DELAY ?? 175))
