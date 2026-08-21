@@ -37,7 +37,7 @@ export const OG_IMAGE = { path: '/assets/og.png', width: 1200, height: 630 }
  * 올린다. 자동으로 오늘 날짜를 넣지 않는다 — 아무것도 안 바뀐 날에도 바뀐 척하게 된다.
  */
 export const PUBLISHED = '2026-08-13'
-export const MODIFIED = '2026-08-19'
+export const MODIFIED = '2026-08-21'
 
 /** 앱 버전. `apps/desktop/package.json` 이 진짜이고 여기는 구조화 데이터용 사본이다. */
 export const APP_VERSION = '0.4.0'

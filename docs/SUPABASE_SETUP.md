@@ -19,7 +19,7 @@ Buddling은 방 정보 저장과 실시간 "콕 찌르기" 전달에 Supabase를
 
 1. 왼쪽 사이드바에서 **SQL Editor** 를 엽니다.
 2. **New query** 를 누릅니다.
-3. 이 저장소의 [`supabase/schema.sql`](../supabase/schema.sql) **파일 전체**를 복사해 붙여넣습니다.
+3. `schema.sql` **파일 전체**를 복사해 붙여넣습니다. 이 파일은 저장소에 올려 두지 않으니 관리자에게 받으세요.
 4. **Run** (⌘+Enter) 을 누릅니다.
 5. `Success. No rows returned` 이 나오면 성공입니다.
 
