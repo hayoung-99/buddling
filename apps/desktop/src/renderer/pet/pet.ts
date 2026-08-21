@@ -39,6 +39,10 @@ import { createAnimator } from './animations'
 import { createBubble } from './bubble'
 import { createNameplate } from './nameplate'
 import { createNotes } from './notes'
+import { createPuff } from './puff'
+import { createTakeoff } from './takeoff'
+import { toSignal } from '@buddling/shared/signals'
+import type { SignalKind } from '@buddling/shared/signals'
 import { createPacer } from './pacer'
 
 /**
@@ -90,6 +94,14 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
   let interactive = false
   let pixelsPerUnit = 0
   let notes: ReturnType<typeof createNotes> | null = null
+  let puff: ReturnType<typeof createPuff> | null = null
+  /**
+   * 지금 화면에서 재생 중인 신호. 다른 신호가 오면 갈아타야 해서 들고 있는다.
+   * 아무것도 안 하고 있으면 null 이다.
+   */
+  let playing: SignalKind | null = null
+  /** 땅을 박차는 순간을 잡아 발밑에 먼지를 피운다. 규칙은 `takeoff.ts` 한 곳에 있다. */
+  const takeoff = createTakeoff((strength) => puff?.burst(strength))
   /** 지금 쓰는 절전 프로필. 설정 창에서 바꾸면 갈아끼운다. */
   let profile: PowerProfile = powerProfile(null)
   /** 말풍선 문구. 설정 창에서 말을 바꾸면 다음 상태와 함께 갈아끼운다. */
@@ -116,8 +128,12 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
     stage.stand.scale.setScalar(scaleToStandardHeight(critter))
     stage.stand.add(critter.root)
     animator = createAnimator(critter)
+    const unit = critter.height * scaleToStandardHeight(critter)
     notes?.dispose()
-    notes = createNotes(stage.stand, critter.height * scaleToStandardHeight(critter))
+    notes = createNotes(stage.stand, unit)
+    puff?.dispose()
+    puff = createPuff(stage.stand, unit)
+    playing = null
     updateHotZone()
   }
 
@@ -230,17 +246,33 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
   }
 
   /**
-   * 팀원이 나를 콕 찔렀을 때.
+   * 방 멤버가 나에게 신호를 보냈을 때.
    *
-   * 춤은 이미 추는 중이면 그냥 넘긴다. 다섯 명이 동시에 찔러도 다섯 번이 아니라
-   * 한 번만 춰야 "지금 누군가 찔렀다"가 한 번의 동작으로 읽힌다.
-   * 이름은 반대로 찌른 사람마다 하나씩 띄워 누가 찔렀는지 다 보이게 한다.
+   * **같은 신호는 겹쳐 재생하지 않고, 다른 신호는 도중이라도 곧바로 갈아탄다.**
+   * 다섯 명이 동시에 찔러도 한 번만 춰야 "지금 누군가 찔렀다"가 한 번의 동작으로
+   * 읽히고, 반대로 앞사람 동작이 끝나기를 기다리면 방금 보낸 사람의 시그니처가
+   * 늦게 나타난다. 늘 마지막에 온 신호가 화면에 있어야 한다.
+   *
+   * 이름표만은 신호 종류와 상관없이 **찌른 사람마다 하나씩** 띄운다.
+   *
+   * 모르는 값은 `toSignal` 이 기본 춤으로 떨어뜨린다 — 업데이트하지 않은 상대에게서
+   * 오거나, 나중에 신호가 더 늘었을 때를 위한 것이다.
    */
-  function tapReceived({ fromNickname }: Partial<TapPayload> = {}) {
-    if (!animator?.isDancing) {
-      animator?.dance()
-      notes?.burst({ count: 6 })
+  function tapReceived({ fromNickname, signal }: Partial<TapPayload> = {}) {
+    const kind = toSignal(signal)
+
+    if (kind !== playing) {
+      animator?.stop()
+      playing = kind
+      takeoff.reset()
+      if (kind === 'hop') {
+        animator?.hop()
+      } else {
+        animator?.dance()
+        notes?.burst({ count: 6 })
+      }
     }
+
     nameplate.show(fromNickname ?? '', { centerX: hotZone.centerX, bottom: hotZone.bottom })
   }
 
@@ -289,12 +321,18 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
   const pacer = createPacer()
 
   /** 지금 눈에 띄게 움직이는 중인가 */
+  /** 신호로 시작한 동작이 아직 도는 중인가 (내가 눌러서 나는 움찔은 신호가 아니다) */
+  function isPlayingSignal() {
+    return Boolean(animator?.isDancing || animator?.isHopping)
+  }
+
   function isBusy() {
     return Boolean(
       animator?.isDancing ||
         animator?.isTwitching ||
         animator?.isHopping ||
         notes?.count ||
+        puff?.count ||
         interactive ||
         drag,
     )
@@ -310,9 +348,13 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
 
     if (animator && critter) {
       animator.update(step)
+      const lift = critter.root.position.y
+      takeoff.watch(lift, step, Boolean(animator.isHopping))
+      if (playing && !isPlayingSignal()) playing = null
       // 말풍선도 같이 떠오른다. 창 위에 닿으면 bubble 쪽에서 알아서 멈춘다.
-      bubble.setLift(critter.root.position.y * stage.stand.scale.y * pixelsPerUnit)
+      bubble.setLift(lift * stage.stand.scale.y * pixelsPerUnit)
       notes?.update(step)
+      puff?.update(step)
     }
     stage.render()
   }
@@ -373,6 +415,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
     window.removeEventListener('resize', onResize)
     document.removeEventListener('visibilitychange', onVisibilityChange)
     notes?.dispose()
+    puff?.dispose()
     if (critter) disposeCritter(critter)
   }
 }

@@ -6,6 +6,8 @@
  * 함께 고쳐야 한다. 그래도 적어 두는 편이 낫다 — 화면 쪽 실수는 여기서 다 걸린다.
  */
 
+import type { SignalKind } from './signals'
+
 export interface Team {
   id: string
   name: string
@@ -20,10 +22,15 @@ export interface Member {
   joinedAt?: string
 }
 
-/** 캐릭터 창의 자리와 크기. 팀마다 따로이고 내 화면에만 적용된다. */
+/**
+ * 캐릭터 창의 자리와 크기, 그리고 이 방에서 내가 보낼 신호.
+ * 팀마다 따로이고 **내 화면에만 적용되는 개인 설정**이다 (서버로 나가지 않는다).
+ */
 export interface PetSettings {
   position: { x: number; y: number } | null
   scale: number
+  /** 옛 저장 파일에는 없다. 없으면 기본 신호(콕)로 본다. */
+  signal?: SignalKind
 }
 
 /** 실시간 채널이 지금 어떤 상태인가 */
@@ -61,10 +68,12 @@ export interface AppState {
   memberships: Membership[]
 }
 
-/** 콕 찔렸을 때 캐릭터 창으로 오는 것 */
+/** 신호를 받았을 때 캐릭터 창으로 오는 것 */
 export interface TapPayload {
   teamId: string
   fromMemberId: string
   fromNickname: string
   toMemberId: string | null
+  /** 무슨 신호인가. 옛 버전이 보낸 것에는 없으므로 받는 쪽이 기본값으로 채운다. */
+  signal?: SignalKind
 }

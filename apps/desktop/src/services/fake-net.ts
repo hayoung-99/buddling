@@ -36,6 +36,7 @@
 import { createEmitter } from './emitter'
 import type { Net, NetEvents, NetMembership } from './net'
 import type { Member, Team } from '@buddling/shared/state'
+import { DEFAULT_SIGNAL } from '@buddling/shared/signals'
 
 /** 서버 안에서만 쓰는 팀. 밖으로 나갈 때는 `publicTeam` 이 `Team` 모양으로 깎는다. */
 interface StoredTeam {
@@ -424,7 +425,7 @@ function createFakeNet({
     /** 지금 붙어 있는 팀들 (supabase-net 과 같은 규약) */
     connectedTeamIds: () => [...rooms.keys()],
 
-    async sendTap({ teamId, toMemberId = null }) {
+    async sendTap({ teamId, toMemberId = null, signal = DEFAULT_SIGNAL }) {
       const room = rooms.get(teamId)
       if (!room) throw new Error('error.notConnected')
       server.broadcast(
@@ -434,6 +435,7 @@ function createFakeNet({
           fromMemberId: room.member.id,
           fromNickname: room.member.nickname,
           toMemberId,
+          signal,
         },
         // 자기 자신에게는 되돌려 보내지 않는다 (로컬에서 이미 반응했다)
         room.member.id,

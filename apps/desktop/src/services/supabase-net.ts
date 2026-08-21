@@ -15,6 +15,7 @@ import { toFriendlyError } from './errors'
 import { withSessionRecovery } from './session-recovery'
 import type { Net, NetConfig, NetEvents } from './net'
 import type { Member, Team } from '@buddling/shared/state'
+import { DEFAULT_SIGNAL } from '@buddling/shared/signals'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
 const TAP_EVENT = 'tap'
@@ -289,7 +290,7 @@ function createSupabaseNet({ url, anonKey, storage }: Required<Pick<NetConfig, '
     /** 지금 채널이 열려 있는 팀들. 다시 붙여야 할 팀을 가려내는 데 쓴다. */
     connectedTeamIds: () => [...rooms.keys()],
 
-    async sendTap({ teamId, toMemberId = null }) {
+    async sendTap({ teamId, toMemberId = null, signal = DEFAULT_SIGNAL }) {
       const room = requireRoom(teamId)
       await room.channel.send({
         type: 'broadcast',
@@ -298,6 +299,9 @@ function createSupabaseNet({ url, anonKey, storage }: Required<Pick<NetConfig, '
           fromMemberId: room.member.id,
           fromNickname: room.member.nickname,
           toMemberId,
+          // 업데이트하지 않은 상대는 이 값을 모른 채 늘 춤춘다. 그래도 아무 일도
+          // 일어나지 않는 것보다는 낫다 — 보낸 사람은 갔는지 알 길이 없다.
+          signal,
         },
       })
     },

@@ -4,8 +4,9 @@ import { createFakeServer, createFakeNet, MAX_TEAMS_PER_USER } from '../src/serv
 import type { Store, StoredState } from '../src/main/store'
 import type { Net } from '../src/services/net'
 import type { PetSettings, TapPayload } from '@buddling/shared/state'
+import { DEFAULT_SIGNAL } from '@buddling/shared/signals'
 
-const DEFAULT_PET: PetSettings = { position: null, scale: 1 }
+const DEFAULT_PET: PetSettings = { position: null, scale: 1, signal: DEFAULT_SIGNAL }
 
 /**
  * Electron 없이 돌아가는 저장소 흉내.
@@ -191,6 +192,90 @@ describe('세션 — 콕 찌르기', () => {
   it('속하지 않은 팀에는 보내지 않는다', async () => {
     const ctx = makeSession()
     expect(await ctx.session.tap({ teamId: '없는팀' })).toBe(false)
+  })
+
+  /**
+   * 무엇을 보낼지는 세션이 저장소를 읽어 붙인다. 캐릭터 창도 방 창의 `콕!` 버튼도
+   * 그냥 "보내 줘" 라고만 하므로, 두 곳에서 각각 챙기다 한쪽만 어긋나는 일이 없다.
+   */
+  describe('고른 신호가 실려 나간다', () => {
+    /** 나와 상대를 한 방에 넣고, 상대에게 온 신호를 모아 준다 */
+    async function pair() {
+      const server = createFakeServer()
+      const me = makeSession({ server, userId: 'user-me' })
+      const mate = makeSession({ server, userId: 'user-mate' })
+      const created = await me.session.createTeam({ name: '나오리와 친구들', nickname: '나영' })
+      const teamId = created.memberships[0].team.id
+      await mate.session.joinTeam({
+        inviteCode: created.memberships[0].team.inviteCode,
+        nickname: '민수',
+      })
+      const got: TapPayload[] = []
+      mate.session.on('tap', (payload) => got.push(payload))
+      return { me, mate, teamId, got }
+    }
+
+    it('아무것도 안 고르면 콕이 나간다', async () => {
+      const { me, teamId, got } = await pair()
+      await me.session.tap({ teamId })
+      expect(got[0].signal).toBe('poke')
+    })
+
+    it('폴짝을 고르면 폴짝이 나간다', async () => {
+      const { me, teamId, got } = await pair()
+      me.session.setSignal(teamId, 'hop')
+      await me.session.tap({ teamId })
+      expect(got[0].signal).toBe('hop')
+    })
+
+    it('한 사람만 찌를 때도 같은 신호가 따라간다', async () => {
+      const { me, mate, teamId, got } = await pair()
+      me.session.setSignal(teamId, 'hop')
+      const mateId = mate.store.peek().memberships[0].member.id
+      await me.session.tap({ teamId, toMemberId: mateId })
+      expect(got[0].signal).toBe('hop')
+      expect(got[0].toMemberId).toBe(mateId)
+    })
+
+    it('모르는 값을 고르려 하면 콕으로 떨어진다', async () => {
+      const { me, teamId, got } = await pair()
+      me.session.setSignal(teamId, 'nonsense')
+      await me.session.tap({ teamId })
+      expect(got[0].signal).toBe('poke')
+    })
+
+    it('옛 저장 파일처럼 신호 칸이 없으면 콕으로 본다', async () => {
+      const { me, teamId, got } = await pair()
+      me.store.setPet(teamId, { signal: undefined })
+      await me.session.tap({ teamId })
+      expect(got[0].signal).toBe('poke')
+    })
+
+    it('신호는 방마다 따로다', async () => {
+      const { me, teamId, got } = await pair()
+      const other = await me.session.createTeam({ name: '가족', nickname: '나영' })
+      const otherId = other.memberships.find((entry) => entry.team.id !== teamId)!.team.id
+
+      me.session.setSignal(teamId, 'hop')
+      expect(me.store.peek().pets[teamId].signal).toBe('hop')
+      expect(me.store.peek().pets[otherId]?.signal ?? DEFAULT_SIGNAL).toBe('poke')
+
+      await me.session.tap({ teamId })
+      expect(got[0].signal).toBe('hop')
+    })
+
+    it('고른 신호는 화면 상태에도 실려 나간다 — 창을 다시 열지 않아도 된다', async () => {
+      const { me, teamId } = await pair()
+      const state = me.session.setSignal(teamId, 'hop')
+      const entry = state.memberships.find((item) => item.team.id === teamId)
+      expect(entry?.pet.signal).toBe('hop')
+    })
+
+    it('속하지 않은 방의 신호는 고르지 않는다', async () => {
+      const { me } = await pair()
+      me.session.setSignal('없는팀', 'hop')
+      expect(me.store.peek().pets['없는팀']).toBeUndefined()
+    })
   })
 })
 

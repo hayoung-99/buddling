@@ -12,6 +12,7 @@
 
 import { createNet, createEmitter, toFriendlyError } from '../services/net'
 import type { ConnectionState, AppState, TapPayload, UpdateInfo } from '@buddling/shared/state'
+import { toSignal } from '@buddling/shared/signals'
 import type { Net, NetMembership } from '../services/net'
 import type { Store } from './store'
 import defaultStore from './store'
@@ -399,8 +400,12 @@ function createSession({
     },
 
     /**
-     * 콕 찌르기. toMemberId 가 없으면 그 팀 전원에게 보낸다.
+     * 신호 보내기. toMemberId 가 없으면 그 방 전원에게 보낸다.
      * 연타해도 네트워크를 도배하지 않도록 팀별로 짧게 스로틀한다.
+     *
+     * **무슨 신호를 보낼지는 여기서 정한다.** 캐릭터 창도 방 창의 `콕!` 버튼도 그냥
+     * "보내 줘" 라고만 하고, 골라 둔 값은 이 한 곳에서 붙는다. 두 곳에서 각각
+     * 챙기게 두면 한쪽만 고쳐져 조용히 어긋난다.
      */
     async tap({ teamId, toMemberId = null }: { teamId: string; toMemberId?: string | null }) {
       if (!net || !memberships.has(teamId)) return false
@@ -408,12 +413,25 @@ function createSession({
       if (now - (lastTapAt.get(teamId) ?? 0) < TAP_THROTTLE_MS) return false
       lastTapAt.set(teamId, now)
       try {
-        await net.sendTap({ teamId, toMemberId })
+        await net.sendTap({ teamId, toMemberId, signal: toSignal(store.pet(teamId).signal) })
         return true
       } catch (error) {
         emitter.emit('error', toFriendlyError(error).message)
         return false
       }
+    },
+
+    /**
+     * 이 방에서 내가 보낼 신호를 고른다.
+     *
+     * 캐릭터와 달리 **서버로 나가지 않는다.** 남이 미리 알 필요가 없고, 보낼 때
+     * 페이로드에 실어 보내는 것으로 충분하다 (`@buddling/shared/signals` 참고).
+     */
+    setSignal(teamId: string, signal: string) {
+      if (!memberships.has(teamId)) return snapshot()
+      store.setPet(teamId, { signal: toSignal(signal) })
+      commit()
+      return snapshot()
     },
 
     /**

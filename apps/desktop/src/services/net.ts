@@ -16,6 +16,7 @@ import { createFakeServer, createFakeNet } from './fake-net'
 import { createSupabaseNet } from './supabase-net'
 import type { Emitter } from './emitter'
 import type { Member, TapPayload, Team } from '@buddling/shared/state'
+import type { SignalKind } from '@buddling/shared/signals'
 
 // 함께 쓰는 것들은 따로 산다 (고리를 만들지 않으려고). 부르는 쪽이 바뀌지 않도록 여기서 다시 내보낸다.
 export { createEmitter } from './emitter'
@@ -35,7 +36,7 @@ export type ChannelStatus = 'SUBSCRIBED' | 'CHANNEL_ERROR' | 'TIMED_OUT' | 'CLOS
 
 /** Net 이 밖으로 내보내는 것들 */
 export type NetEvents = {
-  /** 누군가 나(또는 우리 팀 전원)를 콕 찔렀다 */
+  /** 누군가 나(또는 우리 팀 전원)에게 신호를 보냈다 */
   tap: TapPayload
   /** 팀원이 들어오거나 나갔다 — 명단을 다시 받아야 한다 */
   roster: { teamId: string }
@@ -78,7 +79,12 @@ export interface Net {
   connectedTeamIds(): string[]
 
   /** toMemberId 가 없거나 null 이면 그 팀 전원에게 */
-  sendTap(payload: { teamId: string; toMemberId?: string | null }): Promise<void>
+  sendTap(payload: {
+    teamId: string
+    toMemberId?: string | null
+    /** 무엇을 보낼지. 주지 않으면 기본 신호(콕)로 나간다. */
+    signal?: SignalKind
+  }): Promise<void>
   announceRosterChange(teamId: string): Promise<void>
   onlineIn(teamId: string): string[]
 
