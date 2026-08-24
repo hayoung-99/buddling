@@ -301,6 +301,18 @@ function buildPandaEyePatches(
  * 얼굴이 구면이라 그냥 평평하게 붙이면 가장자리가 얼굴 속으로 파묻힌다.
  * 볼 위치를 구 표면에서 잡고, 그 지점의 법선 방향으로 세운 뒤 그 위에 빗금을 얹는다.
  */
+/**
+ * 수줍을 때 볼에 번지는 붉음.
+ *
+ * 종마다 다른 빗금 색을 그대로 쓰지 않는다. 빗금은 얼굴을 이루는 색이라 종에 맞춰
+ * 옅게 골라져 있어서(터비 독은 갈색에 가깝다) 그대로 짙게 하면 볼이 붉어진 것이
+ * 아니라 빗금이 커진 것으로 보인다. 붉어지는 것은 다섯 종이 같은 감정이다.
+ */
+const BLUSH_COLOR = 0xff6f7d
+
+/** 붉음이 덮는 각도(라디안). 빗금 무리보다 넉넉해야 뒤에서 번진 것으로 보인다. */
+const BLUSH_SPREAD = 0.27
+
 function buildCheeks(
   head: THREE.Object3D,
   parts: CritterParts,
@@ -329,6 +341,38 @@ function buildCheeks(
     cheek.lookAt(x * 2, y * 2, z * 2) // +Z 가 얼굴 바깥(법선)을 향하게
     head.add(cheek)
     parts[side < 0 ? 'cheekR' : 'cheekL'] = cheek
+
+    /*
+     * 수줍을 때 볼에 번지는 붉은 기운. 평소에는 보이지 않는다(`opacity: 0`).
+     *
+     * **빗금과 형제로 둔다.** 빗금 셋은 다섯 종의 얼굴을 이루는 것이라 건드리지 않고
+     * 그 뒤에서 번지게 하는 것이 기획이고, 볼 그룹 안에 넣으면 `critter.test.ts` 의
+     * "양 볼에 빗금 3개씩" 검사가 깨진다. 그 검사는 지킬 값이 있어서 자리를 옮겼다.
+     *
+     * 평면 원반이 아니라 **머리와 같은 곡률의 구면 조각**이다 — 판다 눈 무늬가 쓰는
+     * 방법과 같다. 얼굴이 구면이라 납작한 원을 붙이면 가장자리가 파묻힌다.
+     * 반지름을 머리보다 아주 조금만(1.004배) 키워, 머리 위에 얹히되 그보다 더 바깥에
+     * 있는 빗금 밑으로 들어가게 한다.
+     */
+    const toward = new THREE.Vector3(x, y, z).normalize()
+    const aim = new THREE.Group()
+    aim.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), toward)
+    head.add(aim)
+
+    const blush = new THREE.Mesh(
+      new THREE.SphereGeometry(headR * 1.004, 24, 14, 0, Math.PI * 2, 0, BLUSH_SPREAD),
+      new THREE.MeshStandardMaterial({
+        color: BLUSH_COLOR,
+        roughness: 1,
+        metalness: 0,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+      }),
+    )
+    blush.scale.set(1.2, 1, 0.85) // 빗금 무리를 덮도록 가로로 넓은 타원
+    aim.add(blush)
+    parts[side < 0 ? 'blushR' : 'blushL'] = blush
 
     for (let index = 0; index < STROKES; index += 1) {
       const isMiddle = index === middleIndex

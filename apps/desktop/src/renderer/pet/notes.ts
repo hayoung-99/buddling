@@ -1,13 +1,10 @@
 /**
- * 캐릭터 주위로 두둥실 떠오르는 것들 — **음표와 하트**.
+ * 춤출 때 캐릭터 주위로 두둥실 떠오르는 3D 음표.
  *
- * 콕(춤)에는 음표가, 하트 신호에는 하트가 뜬다. 떠오르는 방식은 둘이 같아서
- * (아래에서 위로 오르며 좌우로 살랑이다 사라진다) 만드는 틀 하나를 나눠 쓰고
- * **모양만 갈아 끼운다.** 예전에는 이 파일이 음표 전용이었는데, 하트를 더하면서
- * 떠오르는 규칙을 두 벌로 두면 한쪽만 고쳐져 조용히 어긋날 자리가 되어 합쳤다.
+ * 캐릭터와 같은 장난감 질감(부드러운 노란 재질)으로 만들고,
+ * 아래에서 위로 떠오르며 좌우로 살랑이다가 서서히 사라진다.
  *
- * 캐릭터와 같은 장난감 질감으로 만들고, 캐릭터가 담긴 그룹에 붙이므로 크기 조절
- * (25~200%)을 그대로 따라간다.
+ * 캐릭터가 담긴 그룹에 붙이므로 크기 조절(50~200%)을 그대로 따라간다.
  */
 
 import * as THREE from 'three'
@@ -24,14 +21,6 @@ const materialOf = (mesh: THREE.Mesh) => mesh.material as THREE.MeshStandardMate
 
 const NOTE_COLOR = 0xf0cf58
 const BEAM_COLOR = 0xe8c247
-
-/**
- * 하트의 붉은 분홍.
- *
- * 고양이 코(`0xff8fa3`)와 같은 계열이되 한 단계 짙다. 볼과 코가 이미 분홍이라
- * 옅게 두면 얼굴 옆을 지나갈 때 몸에 묻히고, 특히 몸이 분홍인 홉 버니에서 사라진다.
- */
-const HEART_COLOR = 0xf4667f
 
 /** 음표 하나가 떠 있는 시간(초) */
 const LIFE = 1.6
@@ -109,45 +98,7 @@ function buildBeamed(size: number) {
   return group
 }
 
-/**
- * 하트 하나.
- *
- * 처음에는 공 둘과 뒤집은 고깔로 만들어 봤다. 캐릭터가 구와 캡슐로만 이루어져 있으니
- * 같은 재료가 어울릴 줄 알았는데, **깔때기처럼 보였다** — 공 둘 사이가 벌어져 위가
- * 뚫리고, 고깔의 둥근 면이 하트의 뾰족한 아래를 뭉개기 때문이다.
- *
- * 그래서 하트 윤곽을 곡선으로 그려 얇게 밀어낸다. 모서리를 둥글려(`bevel`) 다른
- * 부위와 같은 장난감 질감을 낸다. 실루엣이 보장되므로 작게 떠 있어도 하트로 읽힌다.
- */
-function buildHeart(size: number) {
-  const shape = new THREE.Shape()
-  // 아래 숫자는 가로 2.2 · 세로 1.9 짜리 하트다. 마지막에 크기를 맞춰 줄인다.
-  shape.moveTo(0.5, 0.5)
-  shape.bezierCurveTo(0.5, 0.5, 0.4, 0, 0, 0)
-  shape.bezierCurveTo(-0.6, 0, -0.6, 0.7, -0.6, 0.7)
-  shape.bezierCurveTo(-0.6, 1.1, -0.3, 1.54, 0.5, 1.9)
-  shape.bezierCurveTo(1.2, 1.54, 1.6, 1.1, 1.6, 0.7)
-  shape.bezierCurveTo(1.6, 0.7, 1.6, 0, 1.0, 0)
-  shape.bezierCurveTo(0.7, 0, 0.5, 0.5, 0.5, 0.5)
-
-  const geometry = new THREE.ExtrudeGeometry(shape, {
-    depth: 0.34,
-    bevelEnabled: true,
-    bevelThickness: 0.12,
-    bevelSize: 0.12,
-    bevelSegments: 3,
-    curveSegments: 12,
-  })
-  geometry.center()
-  // 그린 하트는 뾰족한 끝이 위를 보고 있다
-  geometry.rotateZ(Math.PI)
-  const scale = size / 2.2
-  geometry.scale(scale, scale, scale)
-
-  return new THREE.Mesh(geometry, material(HEART_COLOR))
-}
-
-/** 떠 있는 것 하나 */
+/** 떠 있는 음표 하나 */
 interface Note {
   object: THREE.Object3D
   origin: THREE.Vector3
@@ -161,19 +112,14 @@ interface Note {
 
 /**
  * @param parent 캐릭터가 담긴 그룹
- * @param unit 캐릭터 키 (월드 단위) — 크기·높이를 여기에 맞춘다
- * @param templates 떠오를 모양들. 낱개마다 이 중 하나를 골라 복제한다
+ * @param unit 캐릭터 키 (월드 단위) — 음표 크기·높이를 여기에 맞춘다
  */
-function createFloaters(parent: THREE.Object3D, unit: number, templates: THREE.Object3D[]) {
+export function createNotes(parent: THREE.Object3D, unit = 2) {
+  const templates = [buildEighth(unit * 0.21), buildBeamed(unit * 0.21)]
   const live: Note[] = []
 
-  /**
-   * 한 마리 주위로 몇 개를 시간차로 띄운다.
-   *
-   * `out` 은 몸통 중심에서 얼마나 비켜서 뜨는지다. **속이 찬 하트는 음표보다 멀리
-   * 세운다** — 음표는 가늘어서 얼굴에 겹쳐도 뒤가 비치지만, 하트는 눈을 통째로 가린다.
-   */
-  function burst({ count = 5, spread = 0.55, stagger = 0.18, out = 0.28 } = {}) {
+  /** 한 마리 주위로 음표 몇 개를 시간차로 띄운다 */
+  function burst({ count = 5, spread = 0.55, stagger = 0.18 } = {}) {
     for (let index = 0; index < count; index += 1) {
       const template = templates[Math.floor(Math.random() * templates.length)]
       const object = template.clone(true)
@@ -185,7 +131,7 @@ function createFloaters(parent: THREE.Object3D, unit: number, templates: THREE.O
       const side = Math.random() < 0.5 ? -1 : 1
       const origin = new THREE.Vector3(
         // 몸통 옆으로 확실히 비켜서 떠오른다
-        side * unit * (out + Math.random() * spread * 0.45),
+        side * unit * (0.28 + Math.random() * spread * 0.45),
         unit * (0.18 + Math.random() * 0.18),
         unit * (0.24 + Math.random() * 0.16),
       )
@@ -259,22 +205,7 @@ function createFloaters(parent: THREE.Object3D, unit: number, templates: THREE.O
     }
   }
 
-  return {
-    burst,
-    update,
-    dispose,
-    get count() {
-      return live.length
-    },
-  }
-}
-
-/** 콕 찔렸을 때 춤과 함께 뜨는 음표 */
-export function createNotes(parent: THREE.Object3D, unit = 2) {
-  return createFloaters(parent, unit, [buildEighth(unit * 0.21), buildBeamed(unit * 0.21)])
-}
-
-/** 하트 신호를 받았을 때 뜨는 하트 */
-export function createHearts(parent: THREE.Object3D, unit = 2) {
-  return createFloaters(parent, unit, [buildHeart(unit * 0.17)])
+  return { burst, update, dispose, get count() {
+    return live.length
+  } }
 }
