@@ -110,6 +110,8 @@
   "signal.hop.hint": "その場でぴょんぴょん跳ねます",
   "signal.wave": "手ふり",
   "signal.wave.hint": "片手を上げて振ります",
+  "signal.heart": "ハート",
+  "signal.heart.hint": "ハートを浮かべて踊ります",
   "character.cat": "ハッピーキャット",
   "character.dog": "まるまるドッグ",
   "character.panda": "もちもちパンダ",

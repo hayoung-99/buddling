@@ -38,7 +38,7 @@ import { createStage } from './scene'
 import { createAnimator } from './animations'
 import { createBubble } from './bubble'
 import { createNameplate } from './nameplate'
-import { createNotes } from './notes'
+import { createNotes, createHearts } from './floaters'
 import { createPuff } from './puff'
 import { createGreet } from './greet'
 import { createTakeoff } from './takeoff'
@@ -95,6 +95,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
   let interactive = false
   let pixelsPerUnit = 0
   let notes: ReturnType<typeof createNotes> | null = null
+  let hearts: ReturnType<typeof createHearts> | null = null
   let puff: ReturnType<typeof createPuff> | null = null
   let greet: ReturnType<typeof createGreet> | null = null
   /**
@@ -133,6 +134,8 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
     const unit = critter.height * scaleToStandardHeight(critter)
     notes?.dispose()
     notes = createNotes(stage.stand, unit)
+    hearts?.dispose()
+    hearts = createHearts(stage.stand, unit)
     puff?.dispose()
     puff = createPuff(stage.stand, unit)
     greet?.dispose()
@@ -274,6 +277,11 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
       } else if (kind === 'wave') {
         animator?.wave()
         greet?.burst()
+      } else if (kind === 'heart') {
+        // 춤은 콕과 같은 것을 쓴다. 갈라 주는 것은 떠오르는 것이다 — 신호는 뜻이고
+        // 동작은 그것을 어떻게 보이느냐라서, 같은 춤 위에 다른 마음이 뜰 수 있다.
+        animator?.dance()
+        hearts?.burst({ count: 5, out: 0.5, spread: 0.22 })
       } else {
         animator?.dance()
         notes?.burst({ count: 6 })
@@ -340,6 +348,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
         animator?.isHopping ||
         animator?.isWaving ||
         greet?.count ||
+        hearts?.count ||
         notes?.count ||
         puff?.count ||
         interactive ||
@@ -363,6 +372,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
       // 말풍선도 같이 떠오른다. 창 위에 닿으면 bubble 쪽에서 알아서 멈춘다.
       bubble.setLift(lift * stage.stand.scale.y * pixelsPerUnit)
       notes?.update(step)
+      hearts?.update(step)
       puff?.update(step)
       greet?.update(step)
     }

@@ -14,7 +14,7 @@
  * 바꿀 수 있어야 한다.
  */
 
-export const SIGNALS = ['poke', 'hop', 'wave'] as const
+export const SIGNALS = ['poke', 'hop', 'wave', 'heart'] as const
 
 export type SignalKind = (typeof SIGNALS)[number]
 
