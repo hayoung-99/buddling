@@ -27,8 +27,10 @@ export function supabase(): SupabaseClient {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      // 매직링크는 주소에 붙어서 돌아온다. 이걸 켜 둬야 그걸 읽어 로그인으로 바꾼다.
-      detectSessionInUrl: true,
+      // 로그인은 메일 주소 + 비밀번호 하나뿐이라 주소에 붙어 돌아오는 토큰이 없다.
+      // 켜 두면 어드민을 열 때마다 URL 을 헛되이 뒤진다. **메일 링크를 되살리는 날에는
+      // 이 줄도 함께 되돌려야 한다** — 안 그러면 링크를 눌러도 로그인이 되지 않는다.
+      detectSessionInUrl: false,
     },
   })
   return client
