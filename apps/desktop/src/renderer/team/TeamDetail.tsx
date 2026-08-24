@@ -239,7 +239,9 @@ function SignalPicker({
           onClick={() => run(() => window.teamApi.setSignal(teamId, kind))}
         >
           <span className="text-[12px] font-bold">{t(`signal.${kind}`)}</span>
-          <span className="text-[11px] text-ink-soft leading-[1.3]">
+          {/* 신호가 셋이 되며 칸이 좁아졌다. `break-keep` 이 없으면 한국어가 글자 단위로
+              끊겨 "흔들어 / 요" 처럼 조사만 다음 줄로 떨어진다. */}
+          <span className="text-[11px] text-ink-soft leading-[1.3] break-keep">
             {t(`signal.${kind}.hint`)}
           </span>
         </button>

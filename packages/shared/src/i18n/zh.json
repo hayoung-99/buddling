@@ -108,6 +108,8 @@
   "signal.poke.hint": "左右摇摆跳舞",
   "signal.hop": "蹦跳",
   "signal.hop.hint": "原地蹦蹦跳跳",
+  "signal.wave": "挥手",
+  "signal.wave.hint": "举起一只手挥动",
   "character.cat": "开心猫",
   "character.dog": "圆滚狗",
   "character.panda": "胖嘟熊猫",

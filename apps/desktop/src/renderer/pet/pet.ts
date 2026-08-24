@@ -267,6 +267,11 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
       takeoff.reset()
       if (kind === 'hop') {
         animator?.hop()
+      } else if (kind === 'wave') {
+        // 손 흔들기에는 곁들이는 것이 없다. 음표도 먼지도 없이 팔만 올라간다 —
+        // 인사는 콕·폴짝과 달리 캐릭터가 무언가에 반응한 것이 아니라 사람을 향한
+        // 것이라, 옆에서 튀는 것이 있으면 시선이 그쪽으로 간다.
+        animator?.wave()
       } else {
         animator?.dance()
         notes?.burst({ count: 6 })
@@ -323,7 +328,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
   /** 지금 눈에 띄게 움직이는 중인가 */
   /** 신호로 시작한 동작이 아직 도는 중인가 (내가 눌러서 나는 움찔은 신호가 아니다) */
   function isPlayingSignal() {
-    return Boolean(animator?.isDancing || animator?.isHopping)
+    return Boolean(animator?.isDancing || animator?.isHopping || animator?.isWaving)
   }
 
   function isBusy() {
@@ -331,6 +336,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
       animator?.isDancing ||
         animator?.isTwitching ||
         animator?.isHopping ||
+        animator?.isWaving ||
         notes?.count ||
         puff?.count ||
         interactive ||
