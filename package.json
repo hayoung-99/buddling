@@ -32,6 +32,9 @@
     "preview": "npm run preview -w buddling",
     "site-images": "npm run site-images -w buddling --",
     "start": "npm run start -w buddling",
+    "start:both": "npm run start:both -w buddling",
+    "start:second": "npm run start:second -w buddling",
+    "test:watch": "npm run test:watch -w buddling",
     "tray-icon": "npm run tray-icon -w buddling"
   },
   "devDependencies": {
