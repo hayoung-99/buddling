@@ -40,6 +40,7 @@ import { createBubble } from './bubble'
 import { createNameplate } from './nameplate'
 import { createNotes } from './notes'
 import { createPuff } from './puff'
+import { createGreet } from './greet'
 import { createTakeoff } from './takeoff'
 import { toSignal } from '@buddling/shared/signals'
 import type { SignalKind } from '@buddling/shared/signals'
@@ -95,6 +96,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
   let pixelsPerUnit = 0
   let notes: ReturnType<typeof createNotes> | null = null
   let puff: ReturnType<typeof createPuff> | null = null
+  let greet: ReturnType<typeof createGreet> | null = null
   /**
    * 지금 화면에서 재생 중인 신호. 다른 신호가 오면 갈아타야 해서 들고 있는다.
    * 아무것도 안 하고 있으면 null 이다.
@@ -133,6 +135,8 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
     notes = createNotes(stage.stand, unit)
     puff?.dispose()
     puff = createPuff(stage.stand, unit)
+    greet?.dispose()
+    greet = createGreet(stage.stand, unit)
     playing = null
     updateHotZone()
   }
@@ -268,10 +272,8 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
       if (kind === 'hop') {
         animator?.hop()
       } else if (kind === 'wave') {
-        // 손 흔들기에는 곁들이는 것이 없다. 음표도 먼지도 없이 팔만 올라간다 —
-        // 인사는 콕·폴짝과 달리 캐릭터가 무언가에 반응한 것이 아니라 사람을 향한
-        // 것이라, 옆에서 튀는 것이 있으면 시선이 그쪽으로 간다.
         animator?.wave()
+        greet?.burst()
       } else {
         animator?.dance()
         notes?.burst({ count: 6 })
@@ -337,6 +339,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
         animator?.isTwitching ||
         animator?.isHopping ||
         animator?.isWaving ||
+        greet?.count ||
         notes?.count ||
         puff?.count ||
         interactive ||
@@ -361,6 +364,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
       bubble.setLift(lift * stage.stand.scale.y * pixelsPerUnit)
       notes?.update(step)
       puff?.update(step)
+      greet?.update(step)
     }
     stage.render()
   }
