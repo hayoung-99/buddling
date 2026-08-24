@@ -10,7 +10,7 @@
  * 밖으로 내주지 않기 때문이다. 그 값을 React 상태로 올리지 않고 콜백으로 흘리는
  * 이유는 초당 60번 도는 자리라서다 — 프레임마다 재조정을 돌릴 이유가 없다.
  *
- * **음표와 먼지도 함께 띄운다.** 동작을 다듬는 도구인데 정작 그 동작을 완성하는
+ * **음표·먼지·인사 짝대기도 함께 띄운다.** 동작을 다듬는 도구인데 정작 그 동작을 완성하는
  * 연출이 안 보이면, 여기서 알맞아 보이던 것이 앱에서는 다르게 읽힌다. 박차는 순간을
  * 잡는 규칙도 캐릭터 창과 같은 것(`pet/takeoff.ts`)을 쓴다 — 두 벌로 두면 한쪽만
  * 고쳐져 조용히 어긋난다.
@@ -23,6 +23,7 @@ import { createStage } from '../pet/scene'
 import { createAnimator, TRACK_UNITS } from '../pet/animations'
 import { createNotes } from '../pet/notes'
 import { createPuff } from '../pet/puff'
+import { createGreet } from '../pet/greet'
 import { createTakeoff } from '../pet/takeoff'
 import type { TrackName } from '../pet/animations'
 import type { Keyframe } from '../pet/tween'
@@ -58,6 +59,7 @@ export function startEditorStage({
   let animator = createAnimator(critter)
   let notes: ReturnType<typeof createNotes> | null = null
   let puff: ReturnType<typeof createPuff> | null = null
+  let greet: ReturnType<typeof createGreet> | null = null
   const takeoff = createTakeoff((strength) => puff?.burst(strength))
 
   function mount() {
@@ -72,6 +74,8 @@ export function startEditorStage({
     notes = createNotes(stage.stand, unit)
     puff?.dispose()
     puff = createPuff(stage.stand, unit)
+    greet?.dispose()
+    greet = createGreet(stage.stand, unit)
     takeoff.reset()
   }
   mount()
@@ -106,8 +110,9 @@ export function startEditorStage({
     takeoff.reset()
     animator.stop()
     animator[name]()
-    // 앱에서 콕을 받았을 때와 같이, 춤에는 음표가 함께 뜬다
+    // 앱에서 신호를 받았을 때와 같이, 춤에는 음표가 손 흔들기에는 짝대기가 함께 뜬다
     if (name === 'dance') notes?.burst({ count: 6 })
+    if (name === 'wave') greet?.burst()
   }
 
   function stop() {
@@ -141,6 +146,7 @@ export function startEditorStage({
     takeoff.watch(critter.root.position.y, delta, Boolean(playing && animator.isHopping))
     notes?.update(delta)
     puff?.update(delta)
+    greet?.update(delta)
     stage.render()
   })
 
@@ -156,6 +162,7 @@ export function startEditorStage({
       window.removeEventListener('resize', resize)
       notes?.dispose()
       puff?.dispose()
+      greet?.dispose()
       disposeCritter(critter)
       stage.renderer.dispose()
       stage.renderer.forceContextLoss()

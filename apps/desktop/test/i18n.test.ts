@@ -7,6 +7,7 @@ import {
   createTranslator,
 } from '@buddling/shared/i18n'
 import { CHARACTER_KEYS } from '@buddling/shared/characters'
+import { SIGNALS } from '@buddling/shared/signals'
 
 const CODES = Object.keys(DICTIONARIES)
 
@@ -53,6 +54,15 @@ describe('사전', () => {
   it.each(CODES)('%s 에 캐릭터 이름이 다 있다', (code) => {
     for (const key of CHARACTER_KEYS) {
       expect(DICTIONARIES[code][`character.${key}`], `${code} / ${key}`).toBeTruthy()
+    }
+  })
+
+  // 신호를 하나 더하면 고르는 칸이 곧바로 한 칸 늘어나므로(`SignalPicker` 가 `SIGNALS`
+  // 를 그대로 돈다), 문구를 빠뜨리면 이름도 설명도 없는 빈 단추가 생긴다.
+  it.each(CODES)('%s 에 신호 이름과 설명이 다 있다', (code) => {
+    for (const kind of SIGNALS) {
+      expect(DICTIONARIES[code][`signal.${kind}`], `${code} / ${kind}`).toBeTruthy()
+      expect(DICTIONARIES[code][`signal.${kind}.hint`], `${code} / ${kind}.hint`).toBeTruthy()
     }
   })
 })

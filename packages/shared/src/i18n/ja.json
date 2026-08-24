@@ -108,6 +108,8 @@
   "signal.poke.hint": "左右に揺れて踊ります",
   "signal.hop": "ぴょん",
   "signal.hop.hint": "その場でぴょんぴょん跳ねます",
+  "signal.wave": "手ふり",
+  "signal.wave.hint": "片手を上げて振ります",
   "character.cat": "ハッピーキャット",
   "character.dog": "まるまるドッグ",
   "character.panda": "もちもちパンダ",

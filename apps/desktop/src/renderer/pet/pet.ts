@@ -40,6 +40,7 @@ import { createBubble } from './bubble'
 import { createNameplate } from './nameplate'
 import { createNotes } from './notes'
 import { createPuff } from './puff'
+import { createGreet } from './greet'
 import { createTakeoff } from './takeoff'
 import { toSignal } from '@buddling/shared/signals'
 import type { SignalKind } from '@buddling/shared/signals'
@@ -95,6 +96,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
   let pixelsPerUnit = 0
   let notes: ReturnType<typeof createNotes> | null = null
   let puff: ReturnType<typeof createPuff> | null = null
+  let greet: ReturnType<typeof createGreet> | null = null
   /**
    * 지금 화면에서 재생 중인 신호. 다른 신호가 오면 갈아타야 해서 들고 있는다.
    * 아무것도 안 하고 있으면 null 이다.
@@ -133,6 +135,8 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
     notes = createNotes(stage.stand, unit)
     puff?.dispose()
     puff = createPuff(stage.stand, unit)
+    greet?.dispose()
+    greet = createGreet(stage.stand, unit)
     playing = null
     updateHotZone()
   }
@@ -267,6 +271,9 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
       takeoff.reset()
       if (kind === 'hop') {
         animator?.hop()
+      } else if (kind === 'wave') {
+        animator?.wave()
+        greet?.burst()
       } else {
         animator?.dance()
         notes?.burst({ count: 6 })
@@ -323,7 +330,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
   /** 지금 눈에 띄게 움직이는 중인가 */
   /** 신호로 시작한 동작이 아직 도는 중인가 (내가 눌러서 나는 움찔은 신호가 아니다) */
   function isPlayingSignal() {
-    return Boolean(animator?.isDancing || animator?.isHopping)
+    return Boolean(animator?.isDancing || animator?.isHopping || animator?.isWaving)
   }
 
   function isBusy() {
@@ -331,6 +338,8 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
       animator?.isDancing ||
         animator?.isTwitching ||
         animator?.isHopping ||
+        animator?.isWaving ||
+        greet?.count ||
         notes?.count ||
         puff?.count ||
         interactive ||
@@ -355,6 +364,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
       bubble.setLift(lift * stage.stand.scale.y * pixelsPerUnit)
       notes?.update(step)
       puff?.update(step)
+      greet?.update(step)
     }
     stage.render()
   }
