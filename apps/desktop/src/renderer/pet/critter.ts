@@ -376,7 +376,12 @@ function buildCheeks(
     head.add(aim)
 
     const blush = new THREE.Mesh(
-      new THREE.SphereGeometry(headR * 1.004, 24, 14, 0, Math.PI * 2, 0, BLUSH_SPREAD),
+      /*
+       * 테두리가 매끄러워야 한다. 24조각으로 두었더니 가로로 1.4배 늘리는 순간
+       * 그 조각들이 눈에 보여 **가장자리가 울퉁불퉁**했다 — 늘어난 만큼 한 조각의
+       * 길이도 늘어나기 때문이다. 조각 수는 테두리에만 값을 하므로 가로만 넉넉히 준다.
+       */
+      new THREE.SphereGeometry(headR * 1.004, 72, 10, 0, Math.PI * 2, 0, BLUSH_SPREAD),
       new THREE.MeshStandardMaterial({
         // 얼굴과 같은 정도로 빛을 받아야 얼굴에 번진 것으로 보인다. 무광으로 두었더니
         // 붉음만 어둡게 가라앉아 붙여 놓은 색종이처럼 보였다.
