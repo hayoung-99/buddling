@@ -138,16 +138,29 @@ describe('재운 캐릭터', () => {
     expect(squintL.scale.x).toBeCloseTo(0, 5)
   })
 
-  it.each(CHARACTERS)('$key — 발은 바닥에 남는다', (spec) => {
+  it.each(CHARACTERS)('$key — 발이 몸통 앞으로 나오고 바닥에 남는다', (spec) => {
     const { critter, animator } = stage(spec)
-    const { legL } = critter.parts
-    if (!legL) return
-    const baseY = legL.position.y
+    const { legL, legR } = critter.parts
+    if (!legL || !legR) return
+    const base = { y: legL.position.y, z: legL.position.z }
 
     animator.doze()
     run(animator, DOZE_DURATION + 0.2)
+    /*
+     * 앙탈과 같은 거리만큼 앞으로 나와야 한다.
+     *
+     * 처음에는 그 3분의 1만 내보냈는데, **내려앉은 몸통이 발을 통째로 삼켰다.** 발이
+     * 한 짝도 안 보이면 웅크린 것이 아니라 몸통만 남은 덩어리로 보인다.
+     */
+    expect(legL.position.z).toBeGreaterThan(base.z)
+    expect(legR.position.z).toBeGreaterThan(base.z)
     // 몸통이 내려간 만큼 발은 몸통 안에서 되올라와야 땅에 박힌 것처럼 보이지 않는다
-    expect(legL.position.y).toBeGreaterThan(baseY)
+    expect(legL.position.y).toBeGreaterThan(base.y)
+
+    animator.wake()
+    run(animator, WAKE_DURATION + 0.5)
+    expect(legL.position.z).toBeCloseTo(base.z, 6)
+    expect(legL.position.y).toBeCloseTo(base.y, 6)
   })
 
   it('귀를 눕힌다 — 귀가 서 있으면 자는 것으로 안 읽힌다', () => {
