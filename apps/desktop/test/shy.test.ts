@@ -111,25 +111,27 @@ describe('수줍음을 캐릭터에 입혔을 때', () => {
     expect(opacityOf(blushR)).toBe(0)
   })
 
-  it.each(CHARACTERS)('$key — 어깨가 밀렸다가 정확히 제자리로 돌아온다', (spec) => {
+  it.each(CHARACTERS)('$key — 어깨가 올라가고 모였다가 정확히 제자리로 돌아온다', (spec) => {
     const { critter, animator } = stage(spec)
-    const arm = critter.parts.armL
-    if (!arm) return
+    const { armL, armR } = critter.parts
+    if (!armL || !armR) return
 
-    const baseX = arm.position.x
-    const baseY = arm.position.y
+    const base = { lx: armL.position.x, ly: armL.position.y, rx: armR.position.x }
 
     animator.shy()
     run(animator, 0.5)
-    expect(arm.position.x).toBeGreaterThan(baseX)
-    expect(arm.position.y).toBeGreaterThan(baseY)
+    expect(armL.position.y).toBeGreaterThan(base.ly)
+    // 두 어깨가 가운데로 모인다 — 벌어진 채 올라가면 만세가 된다
+    expect(armL.position.x).toBeLessThan(base.lx)
+    expect(armR.position.x).toBeGreaterThan(base.rx)
 
     run(animator, SHY_DURATION + 0.5)
-    expect(arm.position.x).toBeCloseTo(baseX, 6)
-    expect(arm.position.y).toBeCloseTo(baseY, 6)
+    expect(armL.position.x).toBeCloseTo(base.lx, 6)
+    expect(armL.position.y).toBeCloseTo(base.ly, 6)
+    expect(armR.position.x).toBeCloseTo(base.rx, 6)
   })
 
-  it('한쪽 팔만 올린다 — 두 팔을 들면 만세가 된다', () => {
+  it('두 팔이 대칭으로 올라간다 — 한쪽만 올리면 손 흔들기의 변주로 읽힌다', () => {
     const { critter, animator } = stage(CHARACTERS[0])
     const { armL, armR } = critter.parts
     const restL = armL.rotation.z
@@ -137,8 +139,27 @@ describe('수줍음을 캐릭터에 입혔을 때', () => {
 
     animator.shy()
     run(animator, 0.5)
-    expect(armL.rotation.z).toBeGreaterThan(restL + 2)
-    expect(armR.rotation.z).toBeCloseTo(restR, 5)
+    expect(armL.rotation.z - restL).toBeGreaterThan(2)
+    // 오른팔은 거울처럼 반대로 돈다
+    expect(armR.rotation.z - restR).toBeCloseTo(-(armL.rotation.z - restL), 5)
+  })
+
+  it.each(CHARACTERS)('$key — 두 팔이 앞으로 나왔다가 제자리로 돌아온다', (spec) => {
+    const { critter, animator } = stage(spec)
+    const { armL, armR } = critter.parts
+    if (!armL || !armR) return
+
+    const baseZ = [armL.position.z, armR.position.z]
+
+    animator.shy()
+    run(animator, 0.5)
+    // 볼 앞을 지나려면 앞으로 밀려 나와 있어야 한다 — 각도만으로는 얼굴 옆에서 멈춘다
+    expect(armL.position.z).toBeGreaterThan(baseZ[0])
+    expect(armR.position.z).toBeGreaterThan(baseZ[1])
+
+    run(animator, SHY_DURATION + 0.5)
+    expect(armL.position.z).toBeCloseTo(baseZ[0], 6)
+    expect(armR.position.z).toBeCloseTo(baseZ[1], 6)
   })
 
   it('볼이 없는 캐릭터에서도 터지지 않는다', () => {

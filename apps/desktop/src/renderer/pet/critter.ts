@@ -311,7 +311,7 @@ function buildPandaEyePatches(
 const BLUSH_COLOR = 0xff6f7d
 
 /** 붉음이 덮는 각도(라디안). 빗금 무리보다 넉넉해야 뒤에서 번진 것으로 보인다. */
-const BLUSH_SPREAD = 0.27
+const BLUSH_SPREAD = 0.25
 
 function buildCheeks(
   head: THREE.Object3D,
@@ -370,7 +370,8 @@ function buildCheeks(
         depthWrite: false,
       }),
     )
-    blush.scale.set(1.2, 1, 0.85) // 빗금 무리를 덮도록 가로로 넓은 타원
+    // 가로로 길고 납작한 타원. 동그랗게 두었더니 볼 언저리를 넘어 얼굴을 덮었다.
+    blush.scale.set(1.55, 1, 0.5)
     aim.add(blush)
     parts[side < 0 ? 'blushR' : 'blushL'] = blush
 
