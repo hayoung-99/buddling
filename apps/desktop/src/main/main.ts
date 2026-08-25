@@ -169,6 +169,18 @@ const app = {
     electronApp.focus({ steal: true })
   },
 
+  /**
+   * 재우고 깨우는 자리는 셋이다 — 방 상세 창 · 트레이 메뉴 · 캐릭터 우클릭 메뉴.
+   * 트레이는 세션을 직접 알지 못하므로(`TrayHost`) 이 껍데기가 넘겨 준다.
+   */
+  isAsleep(teamId: string) {
+    return Boolean(app.session?.isAsleep(teamId))
+  },
+
+  setAsleep(teamId: string, asleep: boolean) {
+    app.session?.setAsleep(teamId, asleep)
+  },
+
   isPetVisible() {
     return Boolean(store.get('petVisible'))
   },

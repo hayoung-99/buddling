@@ -45,7 +45,18 @@ const TRACKS: { name: TrackName; label: string; constant: string }[] = [
   { name: 'wave', label: '손 흔들기', constant: 'WAVE_UNIT' },
   { name: 'shy', label: '수줍음', constant: 'SHY_UNIT' },
   { name: 'sulk', label: '앙탈', constant: 'SULK_UNIT' },
+  { name: 'doze', label: '잠들기', constant: 'DOZE_UNIT' },
+  { name: 'wake', label: '깨어나기', constant: 'WAKE_UNIT' },
 ]
+
+/**
+ * 양끝이 중립이 아닌 것이 **정상**인 트랙.
+ *
+ * 잠들기는 웅크린 자세에서 멈추고 깨어나기는 그 자세에서 시작한다. 자는 것은 한 번
+ * 하고 마는 동작이 아니라 상태라서 그렇다. 아래 경고는 유닛을 이어 붙이는 폴짝·춤의
+ * 이음매를 지키라고 있는 것이므로, 이 둘에는 띄우지 않는다.
+ */
+const HOLDS_POSE = new Set<TrackName>(['doze', 'wake'])
 
 /**
  * 필드마다 슬라이더가 훑는 범위 [최소, 최대, 눈금].
@@ -65,6 +76,12 @@ const RANGE: Record<string, [number, number, number]> = {
   sy: [0.5, 1.5, 0.01],
   armOne: [-0.5, 3.5, 0.01],
   shoulder: [-0.5, 1.5, 0.01],
+  // 잠들기·깨어나기. duck 과 ears 는 기지개에서 음수가 된다 (고개를 젖히고 귀를 세운다)
+  curl: [0, 1.2, 0.01],
+  duck: [-0.6, 1.2, 0.01],
+  ears: [-0.6, 1.2, 0.01],
+  shut: [0, 1, 0.01],
+  reach: [0, 1.2, 0.01],
 }
 const rangeOf = (field: string) => RANGE[field] ?? [-2, 2, 0.01]
 
@@ -141,6 +158,8 @@ function Editor() {
     wave: initialTrack('wave'),
     shy: initialTrack('shy'),
     sulk: initialTrack('sulk'),
+    doze: initialTrack('doze'),
+    wake: initialTrack('wake'),
   }))
   const [memos, setMemos] = useState<Record<TrackName, Record<number, string>>>({
     hop: {},
@@ -149,6 +168,8 @@ function Editor() {
     wave: {},
     shy: {},
     sulk: {},
+    doze: {},
+    wake: {},
   })
   const [selected, setSelected] = useState(0)
   const [species, setSpecies] = useState(CHARACTERS[0].key)
@@ -160,7 +181,10 @@ function Editor() {
   const fields = TRACK_FIELDS[track]
   const unitEnd = trackDuration(keys)
   const key = keys[Math.min(selected, keys.length - 1)]
-  const warnings = useMemo(() => neutralWarnings(keys, fields), [keys, fields])
+  const warnings = useMemo(
+    () => (HOLDS_POSE.has(track) ? [] : neutralWarnings(keys, fields)),
+    [keys, fields, track],
+  )
 
   useEffect(() => {
     const canvas = canvasRef.current
