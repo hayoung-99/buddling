@@ -64,7 +64,11 @@ export function createShadowCatcher(size = 12) {
  * 값을 바꾸면 그쪽이 함께 움직인다.
  */
 export const PET_CAMERA = {
-  fov: 26,
+  /**
+   * 세로 화각. **창 높이와 짝이다** — `main/pet-size.ts` 의 `PET_BASE_SIZE` 를 보라.
+   * 앙탈로 주저앉는 자세가 아래로 넘쳐 26 에서 31 로 넓히면서 높이도 함께 키웠다.
+   */
+  fov: 31,
   position: [0, 1.85, 7.4] as [number, number, number],
   target: [0, 1.25, 0] as [number, number, number],
   /** 캐릭터를 세워 두는 각도. `createStage` 의 기본값과 같다 */

@@ -44,6 +44,7 @@ const TRACKS: { name: TrackName; label: string; constant: string }[] = [
   { name: 'twitch', label: '움찔', constant: 'TWITCH_UNIT' },
   { name: 'wave', label: '손 흔들기', constant: 'WAVE_UNIT' },
   { name: 'shy', label: '수줍음', constant: 'SHY_UNIT' },
+  { name: 'sulk', label: '앙탈', constant: 'SULK_UNIT' },
 ]
 
 /**
@@ -139,6 +140,7 @@ function Editor() {
     twitch: initialTrack('twitch'),
     wave: initialTrack('wave'),
     shy: initialTrack('shy'),
+    sulk: initialTrack('sulk'),
   }))
   const [memos, setMemos] = useState<Record<TrackName, Record<number, string>>>({
     hop: {},
@@ -146,6 +148,7 @@ function Editor() {
     twitch: {},
     wave: {},
     shy: {},
+    sulk: {},
   })
   const [selected, setSelected] = useState(0)
   const [species, setSpecies] = useState(CHARACTERS[0].key)

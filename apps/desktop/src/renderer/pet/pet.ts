@@ -278,6 +278,9 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
       } else if (kind === 'wave') {
         animator?.wave()
         greet?.burst()
+      } else if (kind === 'sulk') {
+        // 앙탈에는 곁들이는 것이 없다. 기획서가 "몸짓만으로 말한다" 로 정해 두었다.
+        animator?.sulk()
       } else if (kind === 'heart') {
         // 수줍음은 움직이는 것이 넷이다 — 팔·몸통·볼은 애니메이터가, 말풍선은 이쪽이
         // 맡는다. 말풍선을 트랙에 넣지 않은 것은 그것이 캐릭터의 부위가 아니라
@@ -341,7 +344,11 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
   /** 신호로 시작한 동작이 아직 도는 중인가 (내가 눌러서 나는 움찔은 신호가 아니다) */
   function isPlayingSignal() {
     return Boolean(
-      animator?.isDancing || animator?.isHopping || animator?.isWaving || animator?.isShying,
+      animator?.isDancing ||
+        animator?.isHopping ||
+        animator?.isWaving ||
+        animator?.isShying ||
+        animator?.isSulking,
     )
   }
 
@@ -352,6 +359,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
         animator?.isHopping ||
         animator?.isWaving ||
         animator?.isShying ||
+        animator?.isSulking ||
         greet?.count ||
         heartBubble?.showing ||
         notes?.count ||
