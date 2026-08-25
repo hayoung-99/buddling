@@ -435,6 +435,27 @@ function createSession({
     },
 
     /**
+     * 이 방을 재우거나 깨운다.
+     *
+     * 신호 고르기와 똑같이 **서버로 나가지 않는다.** 재우는 것은 내 화면의 사정이라
+     * 방의 다른 멤버는 알 필요가 없고, 알게 되면 "왜 자고 있어?" 라고 물을 자리가
+     * 생긴다 — 그것이 이 제품이 없애려던 부담이다 (기획서 "잠재우기").
+     *
+     * **보내는 것은 막지 않는다.** `tap()` 은 이 값을 보지 않는다.
+     */
+    setAsleep(teamId: string, asleep: boolean) {
+      if (!memberships.has(teamId)) return snapshot()
+      store.setPet(teamId, { asleep })
+      commit()
+      return snapshot()
+    },
+
+    /** 그 방이 지금 재워져 있는가 (트레이·캐릭터 메뉴가 글자를 고를 때 본다) */
+    isAsleep(teamId: string) {
+      return Boolean(store.pet(teamId).asleep)
+    },
+
+    /**
      * 고른 언어를 저장하기만 한다.
      *
      * 알리는(publish) 일은 부르는 쪽이 한다 — 메인 프로세스가 번역기를 갈아끼운 뒤에

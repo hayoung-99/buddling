@@ -252,6 +252,55 @@ function SignalPicker({
   )
 }
 
+/**
+ * 이 방을 재우고 깨운다.
+ *
+ * **받는 쪽 이야기다.** 재워도 내 신호는 그대로 나가고, 방의 다른 멤버에게는 평소와
+ * 똑같이 보인다. 그래서 문구도 "알림 끄기" 가 아니라 재우고 깨우는 말이다 — 화면에
+ * 보이는 그림이 곧 껐다는 표시라, 껐다는 것을 잊고 "왜 아무도 안 찌르지" 하는 일이
+ * 생기지 않는다.
+ *
+ * 여기 말고 트레이 메뉴와 캐릭터 우클릭 메뉴에도 같은 것이 있다. 재우고 싶어지는
+ * 순간이 이 창 앞이 아니기 때문이다.
+ */
+function SleepRow({
+  teamId,
+  asleep,
+  t,
+  run,
+  toast,
+}: {
+  teamId: string
+  asleep: boolean
+  t: Translate
+  run: (action: () => Promise<unknown>) => Promise<void>
+  toast: (message: string) => void
+}) {
+  return (
+    <div className="flex items-center gap-[12px] bg-card rounded-card px-[14px] py-[12px]">
+      <div className="flex-1 min-w-0">
+        <div className="font-bold text-[13px]">
+          {asleep ? t('detail.sleeping') : t('detail.awake')}
+        </div>
+        <div className="text-[12px] text-ink-soft leading-[1.4] break-keep">
+          {asleep ? t('detail.sleepingHint') : t('detail.awakeHint')}
+        </div>
+      </div>
+      <button
+        className={asleep ? ui.buttonTiny : ui.buttonTinyGhost}
+        onClick={() =>
+          run(async () => {
+            await window.teamApi.setAsleep(teamId, !asleep)
+            toast(t(asleep ? 'toast.woke' : 'toast.slept'))
+          })
+        }
+      >
+        {asleep ? t('detail.wake') : t('detail.sleep')}
+      </button>
+    </div>
+  )
+}
+
 function CharacterPicker({
   teamId,
   selectedKey,
@@ -412,6 +461,17 @@ export function TeamDetail() {
         <h2 className={ui.h2}>{t('detail.mySignal')}</h2>
         <p className={ui.hint}>{t('detail.mySignalHint')}</p>
         <SignalPicker teamId={teamId} selected={toSignal(entry.pet.signal)} t={t} run={run} />
+      </section>
+
+      <section className={ui.section}>
+        <h2 className={ui.h2}>{t('detail.sleepSection')}</h2>
+        <SleepRow
+          teamId={teamId}
+          asleep={Boolean(entry.pet.asleep)}
+          t={t}
+          run={run}
+          toast={show}
+        />
       </section>
 
       <div className={ui.errorLine}>{error}</div>

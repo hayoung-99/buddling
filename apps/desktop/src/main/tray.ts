@@ -33,6 +33,8 @@ export interface TrayHost {
   openTeamDetail(teamId: string): void
   openSizePanel(teamId: string): void
   openSettings(): void
+  isAsleep(teamId: string): boolean
+  setAsleep(teamId: string, asleep: boolean): void
   isPetVisible(): boolean
   setPetVisible(visible: boolean): void
   quit(): void
@@ -62,13 +64,21 @@ function createTray(app: TrayHost): TrayHandle {
     const state = app.session?.snapshot()
     const memberships = state?.memberships ?? []
     const teamItems = memberships.length
-      ? memberships.map((entry) => ({
-          label: t('app.teamSummary', { name: entry.team.name, count: entry.members.length }),
-          submenu: [
-            { label: t('app.detail'), click: () => app.openTeamDetail(entry.team.id) },
-            { label: t('app.resize'), click: () => app.openSizePanel(entry.team.id) },
-          ],
-        }))
+      ? memberships.map((entry) => {
+          const asleep = app.isAsleep(entry.team.id)
+          return {
+            label: t('app.teamSummary', { name: entry.team.name, count: entry.members.length }),
+            submenu: [
+              { label: t('app.detail'), click: () => app.openTeamDetail(entry.team.id) },
+              { label: t('app.resize'), click: () => app.openSizePanel(entry.team.id) },
+              // 회의가 막 시작돼 지금 당장 조용히 하고 싶을 때 창을 찾아 여는 것은 늦다
+              {
+                label: asleep ? t('app.wake') : t('app.sleep'),
+                click: () => app.setAsleep(entry.team.id, !asleep),
+              },
+            ],
+          }
+        })
       : [{ label: t('app.noTeams'), enabled: false }]
 
     menu = Menu.buildFromTemplate([

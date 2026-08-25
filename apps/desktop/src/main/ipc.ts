@@ -88,6 +88,9 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
   handle('signal:set', ({ teamId, signal }: { teamId: string; signal: string }) =>
     session.setSignal(teamId, signal),
   )
+  handle('sleep:set', ({ teamId, asleep }: { teamId: string; asleep: boolean }) =>
+    session.setAsleep(teamId, Boolean(asleep)),
+  )
 
   handle('team:tap', (payload: { teamId: string; toMemberId?: string | null }) =>
     session.tap(payload),
@@ -115,6 +118,7 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
 
   ipcMain.on('pet:menu', (_event, { teamId }) => {
     const entry = session.snapshot().memberships.find((m) => m.team.id === teamId)
+    const asleep = session.isAsleep(teamId)
     Menu.buildFromTemplate([
       { label: entry ? entry.team.name : t('app.name'), enabled: false },
       { type: 'separator' },
@@ -123,6 +127,13 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
       { label: t('app.resize'), click: () => app.openSizePanel(teamId) },
       { label: t('app.settings'), click: () => app.openSettings() },
       { type: 'separator' },
+      // 재우고 싶어지는 순간이 방 창 앞이 아니라서 여기에도 둔다 (기획서 "잠재우기")
+      {
+        label: asleep ? t('app.wake') : t('app.sleep'),
+        click: () => {
+          session.setAsleep(teamId, !asleep)
+        },
+      },
       { label: t('app.hideAll'), click: () => app.setPetVisible(false) },
       { label: t('app.quit'), click: () => app.quit() },
     ]).popup({ window: app.petWindow(teamId) ?? undefined })

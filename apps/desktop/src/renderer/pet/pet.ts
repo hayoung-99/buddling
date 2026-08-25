@@ -14,6 +14,10 @@
  *
  * 셋을 따로 두었기 때문에 "겹칠 때"를 위한 별도 처리가 필요 없다.
  *
+ * 이 방을 **잠재워 두면** 위의 둘째 줄이 통째로 사라진다 — 웅크려 자는 자세로 있으면서
+ * 오는 신호에 아무 반응도 하지 않는다. 다만 **내가 누르는 것은 그대로**다. 자는 것은
+ * 내 화면의 사정이지 보내는 사람의 사정이 아니라서, 눌러도 깨지 않고 말풍선만 뜬다.
+ *
  * ── React 를 여기 들이지 않는 이유 ──
  *
  * 이 파일은 명령형이고, 앞으로도 그래야 한다. 아래 렌더 루프는 절전 단계에 따라 초당
@@ -29,7 +33,7 @@
 import * as THREE from 'three'
 import { getCharacter } from '@buddling/shared/characters'
 import { createTranslator } from '@buddling/shared/i18n'
-import { powerProfile } from '@buddling/shared/power'
+import { powerProfile, SLEEP_FPS } from '@buddling/shared/power'
 import type { PowerProfile } from '@buddling/shared/power'
 import type { AppState, Membership, TapPayload } from '@buddling/shared/state'
 import { createCritter, disposeCritter, scaleToStandardHeight } from './critter'
@@ -104,6 +108,13 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
    * 아무것도 안 하고 있으면 null 이다.
    */
   let playing: SignalKind | null = null
+  /**
+   * 이 방을 재워 두었는가. 아직 한 번도 상태를 못 받았으면 null 이다.
+   *
+   * null 과 false 를 갈라 두는 이유는 **전환 연출** 때문이다. 앱을 켤 때 이미 재워
+   * 둔 방이었다면 스르르 웅크리는 것이 아니라 처음부터 자고 있어야 한다.
+   */
+  let asleep: boolean | null = null
   /** 땅을 박차는 순간을 잡아 발밑에 먼지를 피운다. 규칙은 `takeoff.ts` 한 곳에 있다. */
   const takeoff = createTakeoff((strength) => puff?.burst(strength))
   /** 지금 쓰는 절전 프로필. 설정 창에서 바꾸면 갈아끼운다. */
@@ -142,6 +153,9 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
     heartBubble?.dispose()
     heartBubble = createHeartBubble(stage.stand, unit)
     playing = null
+    // 애니메이터가 새로 만들어졌으므로 자던 방이면 다시 재워 둔다. 안 하면 재워 놓은
+    // 방인데 캐릭터를 바꾼 순간 벌떡 일어난다.
+    if (asleep) animator.doze({ instant: true })
     updateHotZone()
   }
 
@@ -246,9 +260,15 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
     if (isInside(event.clientX, event.clientY)) window.petApi.openMenu()
   }
 
-  /** 내 캐릭터를 클릭했을 때 — 움찔하며 말풍선을 띄우고, 팀원들에게 신호를 보낸다 */
+  /**
+   * 내 캐릭터를 클릭했을 때 — 움찔하며 말풍선을 띄우고, 팀원들에게 신호를 보낸다.
+   *
+   * **자는 중에도 신호는 그대로 나간다.** 자는 것은 내 화면의 사정이라, 누르는 것이
+   * 곧 깨우기가 되면 보내려던 사람이 매번 재우기를 다시 눌러야 한다. 그래서 움찔만
+   * 건너뛰고 말풍선과 보내기는 평소와 똑같다.
+   */
   function tapSelf() {
-    animator?.twitch()
+    if (!asleep) animator?.twitch()
     bubble.show(tapText)
     window.petApi.tap()
   }
@@ -267,10 +287,16 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
    * 오거나, 나중에 신호가 더 늘었을 때를 위한 것이다.
    */
   function tapReceived({ fromNickname, signal }: Partial<TapPayload> = {}) {
+    // 재워 둔 방에서는 아무 일도 일어나지 않는다 — 동작도 이름표도 없고, 나중에
+    // 몰아서 보여 주지도 않는다. 기획서가 그렇게 정해 두었다.
+    if (asleep) return
+
     const kind = toSignal(signal)
 
     if (kind !== playing) {
-      animator?.stop()
+      // 재생 중인 것이 있을 때만 끈다. `stop()` 은 기지개까지 함께 끄기 때문에,
+      // 깨어나는 1.25초 사이에 신호가 오면 자세가 웅크린 채로 튄다.
+      if (playing) animator?.stop()
       playing = kind
       takeoff.reset()
       if (kind === 'hop') {
@@ -323,11 +349,35 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
     updateHotZone()
   }
 
+  /**
+   * 재우거나 깨운다.
+   *
+   * 처음 상태를 받는 순간에는 전환 없이 곧바로 웅크린 자세로 둔다. 앱을 켤 때마다
+   * 스르르 웅크리면 방금 누가 재운 것으로 읽히는데, 사실은 어제 재워 둔 방이다.
+   *
+   * 재우는 순간 재생 중이던 신호는 끊는다. 끝까지 추고 나서 웅크리면 "지금 당장
+   * 조용히 하고 싶다" 는 뜻과 어긋난다.
+   */
+  function setAsleep(next: boolean) {
+    if (next === asleep) return
+    const first = asleep === null
+    asleep = next
+    if (!animator) return
+    if (next) {
+      animator.stop()
+      playing = null
+      animator.doze({ instant: first })
+    } else if (!first) {
+      animator.wake()
+    }
+  }
+
   function applyState(state: AppState | null) {
     setPower(state?.power ?? null)
     tapText = bubbleText(state?.language)
     const mine = myMembership(state)
     if (mine) setCharacter(mine.member.characterKey)
+    setAsleep(Boolean(mine?.pet?.asleep))
   }
 
   // ── 렌더 루프 ──
@@ -360,6 +410,10 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
         animator?.isWaving ||
         animator?.isShying ||
         animator?.isSulking ||
+        // 웅크리는 중과 기지개를 켜는 중도 넉넉히 그린다. 이 둘은 재우고 깨운 사람이
+        // 눈으로 보고 있는 순간이라, 끊겨 보이면 자는 것보다 먼저 눈에 띈다.
+        animator?.isDozing ||
+        animator?.isWaking ||
         greet?.count ||
         heartBubble?.showing ||
         notes?.count ||
@@ -372,10 +426,20 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
 
   function frame() {
     const busy = isBusy()
-    const step = pacer.tick(clock.getDelta(), busy ? profile.activeFps : profile.idleFps)
+    /*
+     * 다 웅크리고 자는 동안은 절전 단계를 아예 지나친다.
+     *
+     * 남은 것이 느린 숨쉬기뿐이라, "부드럽게" 를 골라 두었다고 해서 그것을 초당
+     * 60번 그릴 이유가 없다. 그림자도 같은 이유로 단계와 무관하게 멈춰 세운다.
+     */
+    const dozing = Boolean(animator?.isAsleep) && !busy
+    const step = pacer.tick(
+      clock.getDelta(),
+      dozing ? SLEEP_FPS : busy ? profile.activeFps : profile.idleFps,
+    )
     if (step === null) return
 
-    stage.setShadowsLive(busy || profile.idleShadows)
+    stage.setShadowsLive(!dozing && (busy || profile.idleShadows))
 
     if (animator && critter) {
       animator.update(step)

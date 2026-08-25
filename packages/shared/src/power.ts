@@ -33,6 +33,18 @@ const PROFILES: Record<PowerLevel, PowerProfile> = {
   saver: { idleFps: 10, activeFps: 60, idleShadows: false, pixelRatioCap: 1 },
 }
 
+/**
+ * 잠재운 방의 캐릭터가 초당 몇 번 그릴지.
+ *
+ * **절전 단계와 무관하게 이 값을 쓴다.** 자는 캐릭터에 남은 것은 느린 숨쉬기뿐이라,
+ * "부드럽게" 를 골라 두었다고 해서 그것을 초당 60번 그릴 이유가 없다. 기획서도
+ * 잠재우기를 "그리는 양이 가장 적은 상태" 로 정해 두었다.
+ *
+ * 가장 아끼는 단계(`saver`)의 10보다 낮아야 그 말이 성립한다. 그 관계가 어긋나지
+ * 않는지는 `test/power.test.ts` 가 본다.
+ */
+export const SLEEP_FPS = 6
+
 /** 고른 값이 없거나 알 수 없으면 기본 단계로 간다 (저장 파일이 깨져도 앱은 뜬다) */
 export function resolvePower(level: string | null | undefined): PowerLevel {
   return level != null && level in PROFILES ? (level as PowerLevel) : DEFAULT_POWER

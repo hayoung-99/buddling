@@ -13,6 +13,8 @@
  *   BUDDLING_SCALE="1.5"            첫 캐릭터 크기를 바꾼다
  *   BUDDLING_SIZE_PANEL=1           크기 조절 패널을 띄운다
  *   BUDDLING_SELF_TAP=1             내가 캐릭터를 클릭한 것과 같은 경로를 태운다
+ *   BUDDLING_ASLEEP=1               방을 재워 놓고 찍는다 (`,` 로 이어 붙이면 팀 순서대로)
+ *   BUDDLING_WAKE_DELAY="740"       재운 방을 깨운 뒤 몇 ms 지난 순간을 찍을지 (기지개 확인용)
  *   BUDDLING_POKE="민수,수진"       팀원들이 콕 찌른 것처럼 만든다
  *   BUDDLING_POKE_TEAM="2"          그 순서의 팀만 찌른다 (없으면 전부)
  *   BUDDLING_POKE_DELAY="175"       찌른 뒤 몇 ms 지난 순간을 찍을지
@@ -136,6 +138,28 @@ async function captureIfRequested(app: AppShell, electronApp: Electron.App) {
   if (process.env.BUDDLING_SIZE_PANEL && firstTeamId()) {
     app.openSizePanel(firstTeamId())
     await wait(700)
+  }
+
+  /*
+   * 재워 놓고 찍는다. 자는 자세는 눈으로 볼 길이 이것뿐이다.
+   *
+   * `BUDDLING_WAKE_DELAY` 를 함께 주면 재운 뒤 곧바로 깨워, **기지개를 켜는 도중**을
+   * 잡는다. 그 자세가 창 위로 넘치는지는 테스트가 보지만, 실제로 어떻게 보이는지는
+   * 찍어 봐야 안다.
+   */
+  if (process.env.BUDDLING_ASLEEP) {
+    const flags = process.env.BUDDLING_ASLEEP.split(',')
+    for (const [index, [teamId]] of petWindows().entries()) {
+      if (flags[index] === '0') continue
+      if (flags.length > 1 && flags[index] === undefined) continue
+      session.setAsleep(teamId, true)
+    }
+    await wait(1400) // 다 웅크릴 때까지
+
+    if (process.env.BUDDLING_WAKE_DELAY) {
+      for (const [teamId] of petWindows()) session.setAsleep(teamId, false)
+      await wait(Number(process.env.BUDDLING_WAKE_DELAY))
+    }
   }
 
   if (process.env.BUDDLING_SELF_TAP && petWindows().length) {

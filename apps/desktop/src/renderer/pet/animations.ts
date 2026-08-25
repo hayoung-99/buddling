@@ -10,6 +10,12 @@
  *   twitch — 내가 눌렀을 때. 제자리에서 움찔한다.
  *   hop    — '폴짝' 신호를 받았을 때. 제자리에서 통통 뛴다.
  *   wave   — '손 흔들기' 신호를 받았을 때. 한쪽 팔을 들어 흔든다.
+ *   doze   — 이 방을 잠재웠을 때. 웅크린 자세까지 갔다가 **거기서 멈춰 있는다.**
+ *   wake   — 깨웠을 때. 웅크린 자세에서 기지개를 켜며 중립으로 돌아온다.
+ *
+ * **앞의 것들과 doze 는 성질이 다르다.** 다른 트랙은 한 번 재생하고 원래 자세로
+ * 돌아오지만, doze 는 마지막 키가 중립이 아니고 그 자세가 유지된다 — 자는 것은
+ * 동작이 아니라 상태이기 때문이다.
  *
  * 살아있어 보이게 만드는 장치:
  *   1) squash & stretch — 웅크렸다 늘어나고 딛을 때 찌부러진다
@@ -165,6 +171,57 @@ export const SULK_UNIT: Keyframe[] = [
 ]
 
 /**
+ * 잠들기(1.1초) — 스르르 웅크려 공처럼 앉는다.
+ *
+ *   curl  몸이 내려앉아 둥글어지는 정도 (0~1)
+ *   duck  고개를 묻는 정도 (0~1). 기지개에서는 음수가 되어 고개를 젖힌다
+ *   ears  귀를 눕히는 정도 (0~1). 기지개에서는 음수가 되어 쫑긋 선다
+ *   shut  눈이 감기는 정도 (0~1). 깜빡임과 같은 자리를 쓴다
+ *   reach 두 팔을 위로 뻗는 정도 (0~1). 기지개에만 쓰인다
+ *   sx·sy 부피. 웅크리면 옆으로 퍼지고 기지개에서는 위로 늘어난다
+ *
+ * **마지막 키가 중립이 아니다.** 다른 트랙은 전부 시작과 끝이 같은 자세라 몇 번을
+ * 이어 붙여도 이음매가 없는데, 이것은 웅크린 자세에서 **멈춰 그대로 있는다.** 자는
+ * 것은 한 번 하고 마는 동작이 아니라 깨울 때까지 이어지는 상태라서다.
+ *
+ * **고개가 먼저 내려온다.** 몸과 고개가 같이 내려가면 통째로 가라앉는 것처럼 보여서
+ * 졸음이 아니라 힘이 빠진 것으로 읽힌다. 고개와 귀가 먼저 처지고 몸이 뒤따라야
+ * "잠이 온다" 가 된다.
+ *
+ * 소품은 없다. 기획서가 잠재우기를 **그리는 양이 가장 적은 상태**로 정해 두었고,
+ * `zzz` 같은 것을 띄우면 그 자체가 매 프레임 도는 일이 된다.
+ */
+export const DOZE_UNIT: Keyframe[] = [
+  { t: 0.0, curl: 0.0, duck: 0.0, ears: 0.0, shut: 0.0, reach: 0.0, sx: 1.0, sy: 1.0, ease: 'easeInOutQuad' },
+  { t: 0.26, curl: 0.18, duck: 0.24, ears: 0.38, shut: 0.45, reach: 0.0, sx: 1.0, sy: 1.01, ease: 'easeInOutQuad' }, // 고개와 귀가 먼저 처진다
+  { t: 0.62, curl: 0.72, duck: 0.74, ears: 0.84, shut: 0.9, reach: 0.0, sx: 1.05, sy: 0.95, ease: 'easeInOutQuad' }, // 몸이 뒤따라 내려앉는다
+  { t: 0.88, curl: 1.0, duck: 1.0, ears: 1.0, shut: 1.0, reach: 0.0, sx: 1.15, sy: 0.85, ease: 'easeOutQuad' }, // 다 웅크렸다 — 조금 지나쳐서
+  { t: 1.1, curl: 1.0, duck: 1.0, ears: 1.0, shut: 1.0, reach: 0.0, sx: 1.12, sy: 0.88, ease: 'easeInOutQuad' }, // 자리를 잡는다. **여기서 멈춘다**
+]
+
+/**
+ * 깨어나기(1.25초) — 웅크린 자세에서 기지개를 켜며 일어난다.
+ *
+ * 필드는 `DOZE_UNIT` 과 같다. 한 벌의 코드로 부위에 바르기 위해서다.
+ *
+ * **첫 키가 웅크린 자세다.** 잠들기의 마지막 키와 같은 값이라야 깨우는 순간 자세가
+ * 튀지 않는다. 잠들기를 다듬을 때는 이쪽 첫 키도 함께 옮겨야 한다.
+ *
+ * **기지개가 이 동작의 전부다.** 그냥 되감아 펴면 일어난 것이 아니라 되돌린 것으로
+ * 보인다. 몸이 중립보다 위로 한 번 늘어나고, 두 팔이 올라가고, 고개가 젖혀지고,
+ * 귀가 쫑긋 서야 비로소 "깼다" 가 된다. 그 정점에서 눈을 다시 조금 찡그리는 것도
+ * 같은 이유다 — 기지개를 켤 때 눈을 뜨고 있는 사람은 없다.
+ */
+export const WAKE_UNIT: Keyframe[] = [
+  { t: 0.0, curl: 1.0, duck: 1.0, ears: 1.0, shut: 1.0, reach: 0.0, sx: 1.12, sy: 0.88, ease: 'easeInOutQuad' },
+  { t: 0.2, curl: 0.94, duck: 0.86, ears: 0.7, shut: 0.72, reach: 0.08, sx: 1.13, sy: 0.87, ease: 'easeInOutQuad' }, // 꿈틀 — 귀가 먼저 산다
+  { t: 0.52, curl: 0.24, duck: 0.08, ears: 0.1, shut: 0.3, reach: 0.78, sx: 0.95, sy: 1.09, ease: 'easeOutQuad' }, // 몸을 펴며 팔을 올린다
+  { t: 0.74, curl: 0.0, duck: -0.22, ears: -0.28, shut: 0.46, reach: 1.0, sx: 0.89, sy: 1.2, ease: 'easeOutQuad' }, // ── 기지개 정점 ──
+  { t: 1.0, curl: 0.0, duck: 0.0, ears: 0.0, shut: 0.06, reach: 0.3, sx: 1.05, sy: 0.96, ease: 'easeInOutQuad' }, // 풀며 살짝 눌린다
+  { t: 1.25, curl: 0.0, duck: 0.0, ears: 0.0, shut: 0.0, reach: 0.0, sx: 1.0, sy: 1.0, ease: 'easeOutQuad' },
+]
+
+/**
  * 움찔 한 번(0.46초). 제자리에서 몸을 좌우로 떨며 눌린 느낌을 낸다.
  * 뛰지 않으므로 y는 없고, 몸통을 기울이는 tilt 가 흔들림을 만든다.
  */
@@ -184,9 +241,11 @@ const TWITCH_FIELDS = ['sx', 'sy', 'tilt']
 const WAVE_FIELDS = ['armOne', 'shoulder', 'tilt']
 const SHY_FIELDS = ['armIn', 'shoulder', 'sway', 'tilt', 'blush']
 const SULK_FIELDS = ['sit', 'feet', 'armAlt', 'legAlt', 'tilt', 'sx', 'sy', 'squint']
+/** 잠들기와 깨어나기는 필드가 같다 — 한 벌의 코드로 부위에 바르기 위해서다 */
+const SLEEP_FIELDS = ['curl', 'duck', 'ears', 'shut', 'reach', 'sx', 'sy']
 
 /** 갈아끼울 수 있는 트랙 이름 */
-export type TrackName = 'hop' | 'dance' | 'twitch' | 'wave' | 'shy' | 'sulk'
+export type TrackName = 'hop' | 'dance' | 'twitch' | 'wave' | 'shy' | 'sulk' | 'doze' | 'wake'
 
 /**
  * 트랙마다 보간하는 필드와 지금 소스에 적혀 있는 유닛.
@@ -202,6 +261,8 @@ export const TRACK_FIELDS: Record<TrackName, string[]> = {
   wave: WAVE_FIELDS,
   shy: SHY_FIELDS,
   sulk: SULK_FIELDS,
+  doze: SLEEP_FIELDS,
+  wake: SLEEP_FIELDS,
 }
 
 export const TRACK_UNITS: Record<TrackName, Keyframe[]> = {
@@ -211,6 +272,8 @@ export const TRACK_UNITS: Record<TrackName, Keyframe[]> = {
   wave: WAVE_UNIT,
   shy: SHY_UNIT,
   sulk: SULK_UNIT,
+  doze: DOZE_UNIT,
+  wake: WAKE_UNIT,
 }
 
 /** 유닛 트랙의 길이 — 마지막 키의 시각이 곧 그 동작의 길이다. */
@@ -220,6 +283,8 @@ const TWITCH_DURATION = trackDuration(TWITCH_UNIT)
 const WAVE_DURATION = trackDuration(WAVE_UNIT)
 const SHY_DURATION = trackDuration(SHY_UNIT)
 const SULK_DURATION = trackDuration(SULK_UNIT)
+const DOZE_DURATION = trackDuration(DOZE_UNIT)
+const WAKE_DURATION = trackDuration(WAKE_UNIT)
 const DANCE_CYCLE = trackDuration(DANCE_UNIT)
 
 const HEIGHT_FALLOFF = 0.66 // 폴짝마다 높이 감쇠
@@ -288,6 +353,82 @@ const SHOULDER_LIFT = 0.055 // 그때 어깨가 올라가는 높이
 const SHOULDER_FORWARD = 0.85
 /** 그때 두 어깨가 가운데로 조금 모인다. 팔이 벌어진 채 올라가면 만세가 된다. */
 const SHOULDER_TUCK = 0.028
+
+/**
+ * 웅크릴 때 몸통이 내려가는 깊이 (캐릭터 키 기준 비율).
+ *
+ * 앙탈로 주저앉는 것(`SIT_DROP`)보다 얕다. 저쪽은 발을 앞으로 뻗어 **앉은** 자세라
+ * 몸이 그만큼 더 내려가야 하는데, 이쪽은 발을 안으로 말아 넣고 **웅크리는** 자세라
+ * 같은 깊이로 내리면 몸통이 발을 삼켜 버린다.
+ */
+const CURL_DROP = 0.15
+/**
+ * 그때 발이 앞으로 나가는 거리 — **몸통 깊이 기준이다.**
+ *
+ * 앙탈의 `FEET_FORWARD` 와 같은 값이고, 같은 이유로 키가 아니라 배의 두께를 기준으로
+ * 잡는다 — 넘어야 하는 것은 키가 아니라 배의 두께라서, 키를 기준으로 잡으면 몸통이
+ * 깊은 종에서 발이 배 밑에 그대로 남는다.
+ *
+ * 처음에는 이보다 훨씬 짧게(0.22) 두었다. 웅크리는 것은 발을 몸 밑으로 접어 넣는
+ * 일이라고 봤기 때문인데, 그렇게 하면 **내려앉은 몸통이 발을 통째로 삼킨다.** 발이
+ * 한 짝도 안 보이면 웅크린 것이 아니라 몸통만 남은 덩어리가 된다. 앙탈이 앞으로 뻗어
+ * 푼 것과 같은 문제이고, 같은 거리로 풀었다.
+ */
+const CURL_TUCK = 0.62
+/**
+ * 고개를 숙이는 각도(라디안).
+ *
+ * **더 숙이면 얼굴이 사라진다.** 0.62 로 두어 봤더니 정수리만 보이고 감은 눈이 턱
+ * 아래로 넘어가, 자는 것이 아니라 고장 난 것처럼 보였다. 고개를 **묻는** 일은 각도가
+ * 아니라 아래 `HEAD_SINK` 가 맡는다.
+ */
+const HEAD_TUCK = 0.34
+/**
+ * 그때 머리가 몸통 쪽으로 가라앉는 깊이 (캐릭터 키 기준 비율).
+ *
+ * **이것이 웅크린 실루엣을 만든다.** 이 캐릭터들은 머리와 몸통이 비슷한 크기의 공
+ * 둘이라, 가라앉히지 않으면 아무리 숙여도 몸통 위에 머리를 얹은 모양 그대로다.
+ * 겹쳐야 비로소 덩어리 하나가 된다.
+ */
+const HEAD_SINK = 0.1
+/**
+ * 귀를 뒤로 눕히는 각도(라디안). 귀가 서 있으면 자는 것으로 안 보인다.
+ *
+ * 고개를 숙인 만큼은 아래에서 따로 되돌리므로, 이 값은 **화면에서 실제로 눕는
+ * 각도**다 (약 45도).
+ */
+const EAR_FOLD = 0.8
+/**
+ * 그때 귀가 바깥으로 벌어지는 각도(라디안).
+ *
+ * **뒤로만 눕히면 정면에서 안 읽힌다.** 카메라가 거의 정면이라 뒤로 넘어간 귀는
+ * 각도가 아니라 길이가 짧아진 것으로만 보인다. 홉 버니의 긴 귀에서 특히 그랬다 —
+ * 45도나 눕혔는데 화면에서는 여전히 쫑긋 서 있었다. 옆으로 함께 벌려야 "귀를
+ * 낮췄다" 가 정면에서도 보인다.
+ */
+const EAR_SPLAY = 0.4
+/**
+ * 기지개를 켤 때 두 팔이 올라가는 각도(라디안).
+ *
+ * 손 흔들기의 정점(2.72)과 비슷하게 둔다. 팔이 짧고 뭉툭해서 각도를 아끼면 화면에서
+ * 그냥 옆으로 벌린 것으로 보인다 — 2.35 로 두어 봤더니 딱 그랬다.
+ */
+const ARM_REACH = 2.8
+/** 웅크릴 때 두 팔이 몸쪽으로 조금 접힌다. 팔이 늘어져 있으면 자는 게 아니라 쓰러진 것이다 */
+const ARM_TUCK = 0.3
+/**
+ * 잘 때 가만히 있는 것들이 느려지는 비율.
+ *
+ * **주기를 바꾸는 것이 아니라 시계를 늦춘다.** 호흡·몸 흔들림·꼬리는 전부 흐른 시간에
+ * 대한 사인파라, `sin(elapsed * 느린주기)` 로 바꾸면 주기가 달라지는 순간 위상이
+ * 통째로 건너뛰어 캐릭터가 움찔한다. 대신 `elapsed` 자체를 천천히 흐르게 하면 위상이
+ * 이어지고, 가만히 있는 것들이 **한꺼번에 같은 비율로** 느려진다.
+ */
+const SLEEP_TIME_SCALE = 0.42
+/** 잘 때 숨이 더 깊어지는 정도. 느려지기만 하면 숨을 쉬는지 알 수 없다 */
+const SLEEP_BREATH_DEPTH = 0.6
+/** 잘 때 꼬리가 잦아드는 정도 (1이면 완전히 멈춘다) */
+const SLEEP_TAIL_STILL = 0.85
 
 /** 폴짝 n번을 하나의 키프레임 트랙으로 이어붙인다. */
 export function buildHopTimeline(hops = HOP_COUNT, unit: Keyframe[] = HOP_UNIT): Timeline {
@@ -362,7 +503,25 @@ export function sampleSulk(t: number): Sampled {
   return sampleTrack(SULK_UNIT, SULK_FIELDS, t)
 }
 
-export { TWITCH_DURATION, WAVE_DURATION, SHY_DURATION, SULK_DURATION, DANCE_CYCLE }
+/** 잠들기를 시각 t에서 샘플링한다. → { curl, duck, ears, shut, reach, sx, sy } */
+export function sampleDoze(t: number): Sampled {
+  return sampleTrack(DOZE_UNIT, SLEEP_FIELDS, t)
+}
+
+/** 깨어나기를 시각 t에서 샘플링한다. 필드는 잠들기와 같다. */
+export function sampleWake(t: number): Sampled {
+  return sampleTrack(WAKE_UNIT, SLEEP_FIELDS, t)
+}
+
+export {
+  TWITCH_DURATION,
+  WAVE_DURATION,
+  SHY_DURATION,
+  SULK_DURATION,
+  DOZE_DURATION,
+  WAKE_DURATION,
+  DANCE_CYCLE,
+}
 
 const randomBetween = (min: number, max: number) => min + Math.random() * (max - min)
 
@@ -372,6 +531,8 @@ const REST_DANCE: Sampled = { x: 0, y: 0, tilt: 0, arm: 0, spread: 0, step: 0, s
 const REST_TWITCH: Sampled = { sx: 1, sy: 1, tilt: 0 }
 const REST_WAVE: Sampled = { armOne: 0, shoulder: 0, tilt: 0 }
 const REST_SHY: Sampled = { armIn: 0, shoulder: 0, sway: 0, tilt: 0, blush: 0 }
+/** 자지도 깨지도 않은 상태 — 서 있는 자세 */
+const REST_SLEEP: Sampled = { curl: 0, duck: 0, ears: 0, shut: 0, reach: 0, sx: 1, sy: 1 }
 const REST_SULK: Sampled = {
   sit: 0,
   feet: 0,
@@ -414,10 +575,16 @@ export function createAnimator(
   const units: Record<TrackName, Keyframe[]> = { ...TRACK_UNITS }
   let hopTimeline = buildHopTimeline(hops, units.hop)
   let danceTimeline = buildDanceTimeline(cycles, units.dance)
-  let twitchDuration = trackDuration(units.twitch)
-  let waveDuration = trackDuration(units.wave)
-  let shyDuration = trackDuration(units.shy)
-  let sulkDuration = trackDuration(units.sulk)
+  /*
+   * 유닛 하나의 길이. 폴짝과 춤은 유닛을 여러 번 이어 붙여 쓰므로 여기 값이 아니라
+   * 위 타임라인의 길이를 본다 (`durationOf`).
+   *
+   * 트랙마다 `let` 을 하나씩 두던 것을 표 하나로 모았다. 트랙이 여덟이 되면서
+   * "이름 → 길이" 를 고르는 삼항 사슬이 읽을 수 없게 길어졌기 때문이다.
+   */
+  const unitDuration = Object.fromEntries(
+    (Object.keys(units) as TrackName[]).map((name) => [name, trackDuration(units[name])]),
+  ) as Record<TrackName, number>
   const wags = spec.build.tail.type === TAIL.WAG
 
   const hopHeight = height * HOP_RATIO
@@ -426,6 +593,11 @@ export function createAnimator(
   const bobHeight = height * DANCE_BOB
   const stepLift = height * STEP_LIFT
   const sitDrop = height * SIT_DROP
+  const curlDrop = height * CURL_DROP
+  const headSink = height * HEAD_SINK
+
+  // 고개를 묻을 때 머리를 몸통 쪽으로 가라앉혀야 해서 원래 높이를 기억해 둔다
+  const headBaseY = parts.head.position.y
 
   // 다리는 원래 자리에서 위로만 살짝 들 것이므로 기준 높이를 기억해 둔다
   const legBaseY = parts.legL ? parts.legL.position.y : 0
@@ -450,6 +622,7 @@ export function createAnimator(
   const feetForward = bodyDepth * FEET_FORWARD
   const flailForward = bodyDepth * FLAIL_FORWARD
   const kickLift = height * KICK_LIFT
+  const curlTuck = bodyDepth * CURL_TUCK
   const shoulderTuck = height * SHOULDER_TUCK
 
   /**
@@ -487,6 +660,15 @@ export function createAnimator(
   let waveTime: number | null = null
   let shyTime: number | null = null
   let sulkTime: number | null = null
+  /**
+   * 자는 상태인가. 아래 `dozeTime` 과 짝이다.
+   *
+   * 이것이 참인 동안 `dozeTime` 은 길이에서 멈춰 **계속 그 자세를 샘플링한다.**
+   * 다른 트랙처럼 끝나면 null 로 꺼 버리면 자세가 풀려 캐릭터가 벌떡 일어난다.
+   */
+  let sleeping = false
+  let dozeTime: number | null = null
+  let wakeTime: number | null = null
   let previousY = 0
   let previousX = 0
 
@@ -529,18 +711,37 @@ export function createAnimator(
     sulkTime = 0
   }
 
+  /**
+   * 스르르 웅크려 잔다. 깨울 때까지 그 자세로 있는다.
+   *
+   * @param instant 웅크리는 과정을 건너뛰고 처음부터 자고 있는 것으로 둔다.
+   *   앱을 켰을 때와 캐릭터를 갈아 끼웠을 때 쓴다 — 그때마다 스르르 웅크리면 방금
+   *   누가 재운 것으로 읽히는데, 사실은 어제 재워 둔 방이다.
+   */
+  function doze({ instant = false }: { instant?: boolean } = {}) {
+    sleeping = true
+    wakeTime = null
+    dozeTime = instant ? unitDuration.doze : 0
+  }
+
+  /**
+   * 기지개를 켜며 일어난다.
+   *
+   * 자고 있지 않을 때 불러도 기지개는 재생된다. 미리보기의 편집기가 이 동작만 따로
+   * 돌려 볼 수 있어야 하기 때문이고, 앱 쪽은 재워 둔 방을 깨울 때만 부른다.
+   */
+  function wake() {
+    sleeping = false
+    dozeTime = null
+    wakeTime = 0
+  }
+
   const durationOf = (name: TrackName): number =>
     name === 'hop'
       ? hopTimeline.duration
       : name === 'dance'
         ? danceTimeline.duration
-        : name === 'twitch'
-          ? twitchDuration
-          : name === 'wave'
-            ? waveDuration
-            : name === 'shy'
-              ? shyDuration
-              : sulkDuration
+        : unitDuration[name]
 
   /**
    * 유닛 트랙을 갈아끼운다. 미리보기의 키프레임 편집기만 부른다.
@@ -549,17 +750,16 @@ export function createAnimator(
    */
   function setTrack(name: TrackName, keys: Keyframe[]) {
     units[name] = keys
+    unitDuration[name] = trackDuration(keys)
     if (name === 'hop') hopTimeline = buildHopTimeline(hops, keys)
     else if (name === 'dance') danceTimeline = buildDanceTimeline(cycles, keys)
-    else if (name === 'twitch') twitchDuration = trackDuration(keys)
-    else if (name === 'wave') waveDuration = trackDuration(keys)
-    else if (name === 'shy') shyDuration = trackDuration(keys)
-    else sulkDuration = trackDuration(keys)
   }
 
-  /** 재생 중인 것을 전부 끄고 기본 자세로 돌아간다. */
+  /** 재생 중인 것을 전부 끄고 기본 자세로 돌아간다. 자던 중이면 깨어난 채로 선다. */
   function stop() {
     hopTime = danceTime = twitchTime = waveTime = shyTime = sulkTime = null
+    sleeping = false
+    dozeTime = wakeTime = null
   }
 
   /**
@@ -577,19 +777,22 @@ export function createAnimator(
     else if (name === 'twitch') twitchTime = at
     else if (name === 'wave') waveTime = at
     else if (name === 'shy') shyTime = at
-    else sulkTime = at
+    else if (name === 'sulk') sulkTime = at
+    else if (name === 'doze') {
+      sleeping = true
+      dozeTime = at
+    } else wakeTime = at
     update(0)
   }
 
   function update(delta: number) {
-    elapsed += delta
-
     let frameHop: Sampled
     let frameDance: Sampled
     let frameTwitch: Sampled
     let frameWave: Sampled
     let frameShy: Sampled
     let frameSulk: Sampled
+    let frameWake: Sampled
     ;[hopTime, frameHop] = advance(
       hopTime,
       delta,
@@ -607,31 +810,62 @@ export function createAnimator(
     ;[twitchTime, frameTwitch] = advance(
       twitchTime,
       delta,
-      twitchDuration,
+      unitDuration.twitch,
       (t) => sampleTrack(units.twitch, TWITCH_FIELDS, t),
       REST_TWITCH,
     )
     ;[waveTime, frameWave] = advance(
       waveTime,
       delta,
-      waveDuration,
+      unitDuration.wave,
       (t) => sampleTrack(units.wave, WAVE_FIELDS, t),
       REST_WAVE,
     )
     ;[shyTime, frameShy] = advance(
       shyTime,
       delta,
-      shyDuration,
+      unitDuration.shy,
       (t) => sampleTrack(units.shy, SHY_FIELDS, t),
       REST_SHY,
     )
     ;[sulkTime, frameSulk] = advance(
       sulkTime,
       delta,
-      sulkDuration,
+      unitDuration.sulk,
       (t) => sampleTrack(units.sulk, SULK_FIELDS, t),
       REST_SULK,
     )
+    ;[wakeTime, frameWake] = advance(
+      wakeTime,
+      delta,
+      unitDuration.wake,
+      (t) => sampleTrack(units.wake, SLEEP_FIELDS, t),
+      REST_SLEEP,
+    )
+
+    /*
+     * 잠들기만 `advance` 를 쓰지 않는다.
+     *
+     * 저쪽은 길이에 닿으면 타이머를 끄고 기본 자세를 돌려주는데, 그러면 다 웅크린
+     * 순간 캐릭터가 벌떡 일어난다. 여기서는 시각을 길이에서 **멈춰 두고** 그 자리를
+     * 계속 샘플링해 자세를 유지한다.
+     */
+    if (sleeping && dozeTime !== null) {
+      dozeTime = Math.min(dozeTime + delta, unitDuration.doze)
+    }
+    const frameSleep =
+      sleeping && dozeTime !== null
+        ? sampleTrack(units.doze, SLEEP_FIELDS, dozeTime)
+        : frameWake
+
+    /*
+     * 잘 때는 시계가 천천히 흐른다.
+     *
+     * 가만히 있을 때의 것들(호흡·몸 흔들림·귀·꼬리)이 전부 `elapsed` 에 대한 사인파라,
+     * 시계 하나만 늦추면 **한꺼번에 같은 비율로** 느려지면서 위상도 이어진다.
+     * 주기를 바꿔 끼우면 그 순간 위상이 건너뛰어 캐릭터가 움찔한다.
+     */
+    elapsed += delta * (1 - frameSleep.curl * (1 - SLEEP_TIME_SCALE))
 
     const settled =
       hopTime === null &&
@@ -639,21 +873,39 @@ export function createAnimator(
       twitchTime === null &&
       waveTime === null &&
       shyTime === null &&
-      sulkTime === null
+      sulkTime === null &&
+      wakeTime === null &&
+      // 다 웅크리고 잠든 뒤는 "가만히 있는" 쪽이다 — 그래야 느린 숨쉬기가 온전히 산다
+      (!sleeping || dozeTime === unitDuration.doze)
 
     // ── 호흡 (다른 동작 중에는 거의 죽인다) ──
     const breathAmount = settled ? 1 : 0.2
-    const breath = Math.sin(elapsed * 2.1) * 0.022 * breathAmount
+    // 잘 때는 시계가 느려진 만큼 숨이 얕아 보여서, 대신 깊이를 조금 키운다
+    const breath =
+      Math.sin(elapsed * 2.1) *
+      0.022 *
+      breathAmount *
+      (1 + frameSleep.curl * SLEEP_BREATH_DEPTH)
 
     // ── 위치와 부피 (여러 동작이 곱해지고 더해진다) ──
     const x = frameDance.x * swayWidth + frameShy.sway * shySwayWidth
-    const y = frameHop.y * hopHeight + frameDance.y * bobHeight - frameSulk.sit * sitDrop
-    const wide = frameHop.sx * frameDance.sx * frameTwitch.sx * frameSulk.sx * (1 - breath * 0.5)
+    const y =
+      frameHop.y * hopHeight +
+      frameDance.y * bobHeight -
+      frameSulk.sit * sitDrop -
+      frameSleep.curl * curlDrop
+    const wide =
+      frameHop.sx *
+      frameDance.sx *
+      frameTwitch.sx *
+      frameSulk.sx *
+      frameSleep.sx *
+      (1 - breath * 0.5)
 
     root.position.set(x, y, 0)
     root.scale.set(
       wide,
-      frameHop.sy * frameDance.sy * frameTwitch.sy * frameSulk.sy * (1 + breath),
+      frameHop.sy * frameDance.sy * frameTwitch.sy * frameSulk.sy * frameSleep.sy * (1 + breath),
       wide,
     )
 
@@ -680,8 +932,12 @@ export function createAnimator(
 
     // ── 머리 (몸이 기울면 머리는 덜 기운다 — 중심을 잡으려는 느낌) ──
     parts.head.rotation.x =
-      Math.sin(elapsed * 2.1 + 0.5) * 0.026 * breathAmount - headLag.value * 0.16
+      Math.sin(elapsed * 2.1 + 0.5) * 0.026 * breathAmount -
+      headLag.value * 0.16 +
+      frameSleep.duck * HEAD_TUCK
     parts.head.rotation.z = -tilt * 0.45
+    // 숙이기만 하면 고개만 까딱한 것으로 보인다. 머리가 몸통 쪽으로 가라앉아야 묻힌다.
+    parts.head.position.y = headBaseY - frameSleep.duck * headSink
 
     /*
      * ── 팔 ──
@@ -695,20 +951,35 @@ export function createAnimator(
      */
     if (parts.armL && armBase.L) {
       parts.armL.rotation.z =
-        frameDance.spread + frameDance.arm + frameWave.armOne - frameShy.armIn + frameSulk.armAlt
+        frameDance.spread +
+        frameDance.arm +
+        frameWave.armOne -
+        frameShy.armIn +
+        frameSulk.armAlt +
+        frameSleep.reach * ARM_REACH -
+        frameSleep.curl * ARM_TUCK
       parts.armL.position.x =
-        armBase.L.x + frameWave.shoulder * shoulderReach - frameShy.shoulder * shoulderTuck
+        armBase.L.x +
+        (frameWave.shoulder + frameSleep.reach) * shoulderReach -
+        frameShy.shoulder * shoulderTuck
       parts.armL.position.y =
-        armBase.L.y + (frameWave.shoulder + frameShy.shoulder) * shoulderLift
+        armBase.L.y + (frameWave.shoulder + frameShy.shoulder + frameSleep.reach) * shoulderLift
       parts.armL.position.z =
         armBase.L.z + frameShy.shoulder * shoulderForward + Math.abs(frameSulk.armAlt) * flailForward
     }
     if (parts.armR && armBase.R) {
       // 두 팔에 **같은 부호**를 주면 좌우가 거울이라 하나가 오를 때 다른 하나가 내려간다
       parts.armR.rotation.z =
-        -frameDance.spread + frameDance.arm + frameShy.armIn + frameSulk.armAlt
-      parts.armR.position.x = armBase.R.x + frameShy.shoulder * shoulderTuck
-      parts.armR.position.y = armBase.R.y + frameShy.shoulder * shoulderLift
+        -frameDance.spread +
+        frameDance.arm +
+        frameShy.armIn +
+        frameSulk.armAlt -
+        frameSleep.reach * ARM_REACH +
+        frameSleep.curl * ARM_TUCK
+      parts.armR.position.x =
+        armBase.R.x + frameShy.shoulder * shoulderTuck - frameSleep.reach * shoulderReach
+      parts.armR.position.y =
+        armBase.R.y + (frameShy.shoulder + frameSleep.reach) * shoulderLift
       parts.armR.position.z =
         armBase.R.z + frameShy.shoulder * shoulderForward + Math.abs(frameSulk.armAlt) * flailForward
     }
@@ -720,8 +991,9 @@ export function createAnimator(
      * 몸통 안에서 같은 만큼 도로 올라와야 제자리에 남는다. 안 그러면 발이 바닥을
      * 뚫고 내려가 캐릭터가 땅에 박힌 것처럼 보인다.
      */
-    const sitBack = frameSulk.sit * sitDrop
-    const legZ = legBaseZ + frameSulk.feet * feetForward
+    // 몸통이 내려간 만큼 발은 도로 올라와야 제자리에 남는다 (앙탈·웅크림 둘 다)
+    const sitBack = frameSulk.sit * sitDrop + frameSleep.curl * curlDrop
+    const legZ = legBaseZ + frameSulk.feet * feetForward + frameSleep.curl * curlTuck
     /*
      * 앉은 채로 두 발을 번갈아 **차올린다.**
      *
@@ -751,7 +1023,8 @@ export function createAnimator(
       }
     } else {
       untilEarTwitch -= delta
-      if (untilEarTwitch <= 0 && settled) {
+      // 자는 동안에는 쫑긋하지 않는다. 귀를 눕혀 놓고 그 위에서 떠는 것으로 보인다.
+      if (untilEarTwitch <= 0 && settled && !sleeping) {
         earTwitchTime = 0
         earTwitchSide = Math.random() < 0.5 ? -1 : 1
       }
@@ -768,16 +1041,28 @@ export function createAnimator(
         const fade = 1 - earTwitchTime / 0.28
         flick = Math.sin(earTwitchTime * 52) * 0.16 * fade
       }
-      ear.rotation.x = -earLag.value
+      /*
+       * 웅크리면 귀를 뒤로 눕힌다. 귀가 서 있으면 자는 것으로 안 읽힌다.
+       *
+       * **고개를 숙인 만큼을 먼저 되돌린다.** 귀는 머리에 달려 있어서 머리가 앞으로
+       * 기울면 귀도 함께 기우는데, 그 위에 뒤로 눕히는 각도를 그냥 더하면 둘이
+       * 상쇄된다. 실제로 그렇게 나왔다 — 다 웅크렸는데 귀만 쫑긋 서 있었다.
+       */
+      ear.rotation.x =
+        -earLag.value - frameSleep.ears * EAR_FOLD - frameSleep.duck * HEAD_TUCK
       // 좌우로 흔들 때 귀가 한 박자 늦게 따라 흔들린다
       ear.rotation.z =
-        Math.sin(elapsed * 1.3 + side) * 0.026 * breathAmount + flick - earSway.value * 0.5
+        Math.sin(elapsed * 1.3 + side) * 0.026 * breathAmount +
+        flick -
+        earSway.value * 0.5 -
+        side * frameSleep.ears * EAR_SPLAY
     }
 
     // ── 꼬리 ──
     if (parts.tail) {
       const speed = wags ? 6.2 : 1.7
-      const amount = wags ? 0.42 : 0.13
+      // 잘 때는 꼬리도 잦아든다. 시계가 느려진 위에 폭까지 줄여야 몸에 붙은 것으로 보인다.
+      const amount = (wags ? 0.42 : 0.13) * (1 - frameSleep.curl * SLEEP_TAIL_STILL)
       parts.tail.rotation.y = Math.sin(elapsed * speed) * amount - earSway.value * 0.6
       parts.tail.rotation.x = earLag.value * 0.5
     }
@@ -804,9 +1089,18 @@ export function createAnimator(
      * 없어 그리는 쪽이 싫어하기 때문이다.
      */
     const open = Math.max(0.001, 1 - frameSulk.squint)
+    /*
+     * 자는 눈은 `> <` 가 아니라 **눌린 눈**이다.
+     *
+     * 꺾인 획 두 개는 힘줘 감은 것이라 떼쓰는 얼굴이고, 눈알을 위아래로 눌러 만든
+     * 가로 선 하나가 자는 얼굴이다 (`critter.ts` 의 `buildSquint` 주석). 그래서 앙탈이
+     * 쓰는 자리가 아니라 깜빡임과 같은 자리를 쓰고, **둘 중 더 감긴 쪽**을 택한다 —
+     * 감기는 도중에 깜빡임이 끼어도 서로 싸우지 않는다.
+     */
+    const lidsShut = Math.min(lids, 1 - frameSleep.shut * 0.94)
     for (const eye of [parts.eyeL, parts.eyeR]) {
       if (!eye) continue
-      eye.scale.set(open, lids * open, open)
+      eye.scale.set(open, lidsShut * open, open)
     }
     for (const shut of [parts.squintL, parts.squintR]) {
       if (shut) shut.scale.setScalar(frameSulk.squint)
@@ -820,6 +1114,8 @@ export function createAnimator(
     wave,
     shy,
     sulk,
+    doze,
+    wake,
     update,
     get isHopping() {
       return hopTime !== null
@@ -839,6 +1135,17 @@ export function createAnimator(
     get isSulking() {
       return sulkTime !== null
     },
+    /** 재워 둔 상태인가. 웅크리는 중과 다 웅크리고 자는 중을 모두 포함한다. */
+    get isAsleep() {
+      return sleeping
+    },
+    /** 아직 웅크리는 중인가 (다 웅크린 뒤에는 false 다) */
+    get isDozing() {
+      return sleeping && dozeTime !== null && dozeTime < unitDuration.doze
+    },
+    get isWaking() {
+      return wakeTime !== null
+    },
     get danceDuration() {
       return danceTimeline.duration
     },
@@ -849,14 +1156,7 @@ export function createAnimator(
     stop,
     /** 이어 붙인 뒤의 길이. 편집기의 스크럽 바가 이 값을 눈금으로 쓴다. */
     get durations(): Record<TrackName, number> {
-      return {
-        hop: hopTimeline.duration,
-        dance: danceTimeline.duration,
-        twitch: twitchDuration,
-        wave: waveDuration,
-        shy: shyDuration,
-        sulk: sulkDuration,
-      }
+      return { ...unitDuration, hop: hopTimeline.duration, dance: danceTimeline.duration }
     },
   }
 }
