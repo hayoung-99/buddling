@@ -377,11 +377,19 @@ function buildCheeks(
 
     const blush = new THREE.Mesh(
       /*
-       * 테두리가 매끄러워야 한다. 24조각으로 두었더니 가로로 1.4배 늘리는 순간
-       * 그 조각들이 눈에 보여 **가장자리가 울퉁불퉁**했다 — 늘어난 만큼 한 조각의
-       * 길이도 늘어나기 때문이다. 조각 수는 테두리에만 값을 하므로 가로만 넉넉히 준다.
+       * 테두리가 매끄러워야 한다. 두 가지가 걸렸다.
+       *
+       * 하나는 조각 수다. 24조각으로 두었더니 가로로 1.4배 늘리는 순간 그 조각들이
+       * 눈에 보였다 — 늘어난 만큼 한 조각의 길이도 늘어나기 때문이다. 조각 수는
+       * 테두리에만 값을 하므로 가로만 넉넉히 준다.
+       *
+       * 다른 하나가 진짜 원인이었다. **머리도 다면체다**(`ball` 은 30조각). 이상적인
+       * 구보다 안쪽으로 최대 1% 남짓 들어갔다 나오는데, 붉음을 그 위 0.4% 에 띄워
+       * 두었더니 머리의 봉우리가 군데군데 뚫고 나와 **테두리가 물결치듯 잘렸다.**
+       * 더 띄우면 빗금 밑으로 못 들어가므로, 띄우는 대신 깊이 검사에서 이기게 한다
+       * (`polygonOffset`) — 스티커를 붙일 때 쓰는 방법이다.
        */
-      new THREE.SphereGeometry(headR * 1.004, 72, 10, 0, Math.PI * 2, 0, BLUSH_SPREAD),
+      new THREE.SphereGeometry(headR * 1.001, 72, 10, 0, Math.PI * 2, 0, BLUSH_SPREAD),
       new THREE.MeshStandardMaterial({
         // 얼굴과 같은 정도로 빛을 받아야 얼굴에 번진 것으로 보인다. 무광으로 두었더니
         // 붉음만 어둡게 가라앉아 붙여 놓은 색종이처럼 보였다.
@@ -391,6 +399,10 @@ function buildCheeks(
         transparent: true,
         opacity: 0,
         depthWrite: false,
+        // 머리와 같은 자리에 겹쳐 있으므로 깊이 싸움에서 이겨야 한다
+        polygonOffset: true,
+        polygonOffsetFactor: -4,
+        polygonOffsetUnits: -4,
       }),
     )
     // 가로로 길고 납작한 타원(가로세로 3:1쯤). 동그랗게 두었더니 볼 언저리를 넘어
