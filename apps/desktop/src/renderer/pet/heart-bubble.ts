@@ -187,6 +187,8 @@ export function createHeartBubble(parent: THREE.Object3D, unit: number) {
     burst,
     update,
     dispose,
+    /** 말풍선 덩어리. 창에 들어오는지 재는 검사가 쓴다 */
+    object: group,
     /** 지금 떠 있는지. 절전 판정이 쓴다 */
     get showing() {
       return age !== null

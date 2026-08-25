@@ -61,13 +61,13 @@ describe('수줍음 타임라인', () => {
     expect(SHY_DURATION).toBeLessThan(2)
   })
 
-  it('팔을 다 올린 뒤에 살랑인다 — 올리는 도중에 흔들면 무슨 동작인지 안 읽힌다', () => {
-    const raised = sampleShy(0.44)
-    expect(raised.armIn).toBeGreaterThan(2.5)
+  it('팔을 다 모은 뒤에 살랑인다 — 모으는 도중에 흔들면 무슨 동작인지 안 읽힌다', () => {
+    const gathered = sampleShy(0.44)
+    expect(gathered.armIn).toBeGreaterThan(0.7)
 
     // 살랑이는 구간에서는 팔이 거의 그대로이고 몸통만 오간다
     const swings = [0.72, 1.0, 1.28].map((t) => sampleShy(t))
-    for (const swing of swings) expect(swing.armIn).toBeGreaterThan(2.5)
+    for (const swing of swings) expect(swing.armIn).toBeGreaterThan(0.7)
   })
 
   it('몸이 좌우로 세 번 넘게 오간다 — 한 번만 기울면 살랑임이 아니다', () => {
@@ -131,7 +131,7 @@ describe('수줍음을 캐릭터에 입혔을 때', () => {
     expect(armR.position.x).toBeCloseTo(base.rx, 6)
   })
 
-  it('두 팔이 대칭으로 올라간다 — 한쪽만 올리면 손 흔들기의 변주로 읽힌다', () => {
+  it('두 팔이 대칭으로 안쪽을 향한다 — 한쪽만 모으면 손 흔들기의 변주로 읽힌다', () => {
     const { critter, animator } = stage(CHARACTERS[0])
     const { armL, armR } = critter.parts
     const restL = armL.rotation.z
@@ -139,7 +139,8 @@ describe('수줍음을 캐릭터에 입혔을 때', () => {
 
     animator.shy()
     run(animator, 0.5)
-    expect(armL.rotation.z - restL).toBeGreaterThan(2)
+    // 왼팔(화면 오른쪽)은 안쪽으로 돌므로 각도가 줄어든다
+    expect(armL.rotation.z - restL).toBeLessThan(-0.6)
     // 오른팔은 거울처럼 반대로 돈다
     expect(armR.rotation.z - restR).toBeCloseTo(-(armL.rotation.z - restL), 5)
   })
@@ -153,7 +154,7 @@ describe('수줍음을 캐릭터에 입혔을 때', () => {
 
     animator.shy()
     run(animator, 0.5)
-    // 볼 앞을 지나려면 앞으로 밀려 나와 있어야 한다 — 각도만으로는 얼굴 옆에서 멈춘다
+    // 배 앞으로 나오려면 앞으로 밀려 있어야 한다 — 각도만으로는 몸통 옆면에 묻힌다
     expect(armL.position.z).toBeGreaterThan(baseZ[0])
     expect(armR.position.z).toBeGreaterThan(baseZ[1])
 
@@ -189,9 +190,16 @@ describe('수줍음을 캐릭터에 입혔을 때', () => {
 })
 
 describe('말풍선이 캐릭터 창 안에 들어온다', () => {
-  /** 창 비율 그대로의 카메라로 재어, 말풍선까지 담은 상자의 여덟 꼭짓점을 화면 좌표로 돌려준다 */
-  function cornersOf(spec: (typeof CHARACTERS)[number]): Vector3[] {
-    const { stand, unit, animator } = stage(spec)
+  /**
+   * 창 비율 그대로의 카메라로 재어, 그 덩어리를 감싼 상자의 여덟 꼭짓점을 화면
+   * 좌표로 돌려준다.
+   *
+   * **말풍선과 캐릭터를 따로 잰다.** 둘을 한 상자에 담으면 축에 나란한 상자라 아무것도
+   * 없는 모서리까지 생긴다 — 팔을 앞으로 더 밀었더니 그 빈 모서리가 카메라에 가까워져
+   * 말풍선이 잘린다고 잘못 걸렸다.
+   */
+  function cornersOf(spec: (typeof CHARACTERS)[number], which: 'bubble' | 'critter'): Vector3[] {
+    const { critter, stand, unit, animator } = stage(spec)
     const bubble = createHeartBubble(stand, unit)
 
     /*
@@ -214,7 +222,7 @@ describe('말풍선이 캐릭터 창 안에 들어온다', () => {
     camera.lookAt(...PET_CAMERA.target)
     camera.updateMatrixWorld(true)
 
-    const box = new Box3().setFromObject(stand)
+    const box = new Box3().setFromObject(which === 'bubble' ? bubble.object : critter.root)
     const corners: Vector3[] = []
     for (const x of [box.min.x, box.max.x]) {
       for (const y of [box.min.y, box.max.y]) {
@@ -227,10 +235,14 @@ describe('말풍선이 캐릭터 창 안에 들어온다', () => {
   }
 
   const highestReach = (spec: (typeof CHARACTERS)[number]) =>
-    Math.max(...cornersOf(spec).map((point) => point.y))
+    Math.max(...cornersOf(spec, 'bubble').map((point) => point.y))
 
   const widestReach = (spec: (typeof CHARACTERS)[number]) =>
-    Math.max(...cornersOf(spec).map((point) => Math.abs(point.x)))
+    Math.max(
+      ...[...cornersOf(spec, 'bubble'), ...cornersOf(spec, 'critter')].map((point) =>
+        Math.abs(point.x),
+      ),
+    )
 
   it.each(CHARACTERS)('$key — 말풍선 꼭대기가 잘리지 않는다', (spec) => {
     // 1 이 창 위 가장자리다. 0.94 로 두어 반올림에 여유를 남긴다.

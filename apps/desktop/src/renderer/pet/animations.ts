@@ -97,8 +97,9 @@ export const WAVE_UNIT: Keyframe[] = [
 /**
  * 수줍음(1.7초) — 팔 하나가 얼굴 옆으로 올라오고 몸이 살랑인다.
  *
- *   armIn    두 팔이 안쪽·위로 도는 각도 (라디안). 손 흔들기의 `armOne` 과 자리는 같지만
- *            뜻이 달라 따로 둔다 — 저쪽은 바깥으로 뻗어 흔들고 이쪽은 볼 앞에서 멈춘다
+ *   armIn    두 팔이 **안쪽·아래로** 도는 각도 (라디안). 손 흔들기의 `armOne` 과 자리는
+ *            같지만 뜻이 달라 따로 둔다 — 저쪽은 바깥으로 뻗어 흔들고 이쪽은 손끝이
+ *            배 앞으로 모인다 (`\ /`)
  *   shoulder 두 어깨를 옮기는 양. 위로 들면서 **앞으로 밀고** 가운데로 조금 모은다
  *   sway     몸통이 좌우로 살랑이는 폭 (춤의 절반이 안 되게 쓴다)
  *   tilt     살랑이는 쪽으로 몸이 기운다
@@ -108,19 +109,23 @@ export const WAVE_UNIT: Keyframe[] = [
  * 볼을 감싸려는 몸짓은 좌우가 대칭이어야 그 뜻이 되고, 거기에 몸통이 살랑이고 볼이
  * 붉어져야 비로소 그 감정이 된다.
  *
- * **팔은 볼에 닿지 않는다.** 관절이 없어서 감싸는 대신 볼 앞을 지나는 데서 멈춘다.
- * 거기까지가 이 리그로 되는 것이고, 리그를 고쳐서까지 맞추지는 않는다.
+ * **손은 실제로 맞잡히지 않는다.** 관절이 없어서 잡는 대신 배 앞에서 만나는 데서
+ * 멈춘다. 거기까지가 이 리그로 되는 것이고, 리그를 고쳐서까지 맞추지는 않는다.
+ *
+ * 팔을 얼굴까지 들어 볼 앞을 가리는 안도 만들어 나란히 재생해 보고 이쪽으로 정했다.
+ * 들어 올린 팔은 붉어진 볼을 가려서, 정작 수줍음을 말해 주는 것이 동작 내내 반쯤
+ * 가려져 있었다.
  *
  * 길이는 콕(1.7초)과 같다. 신호끼리 무게가 같아야 한다.
  */
 export const SHY_UNIT: Keyframe[] = [
   { t: 0.0, armIn: 0.0, shoulder: 0.0, sway: 0.0, tilt: 0.0, blush: 0.0, ease: 'easeOutQuad' },
-  { t: 0.22, armIn: 1.15, shoulder: 0.42, sway: -0.16, tilt: 0.04, blush: 0.3, ease: 'easeOutQuad' }, // 팔이 올라오기 시작
-  { t: 0.44, armIn: 2.62, shoulder: 0.95, sway: 0.3, tilt: -0.07, blush: 0.62, ease: 'easeOutBack' }, // 볼 앞까지 올라왔다
-  { t: 0.72, armIn: 2.72, shoulder: 1.0, sway: -0.32, tilt: 0.08, blush: 0.88, ease: 'easeInOutQuad' }, // ── 살랑살랑 ──
-  { t: 1.0, armIn: 2.64, shoulder: 0.96, sway: 0.31, tilt: -0.08, blush: 1.0, ease: 'easeInOutQuad' },
-  { t: 1.28, armIn: 2.72, shoulder: 1.0, sway: -0.24, tilt: 0.06, blush: 0.94, ease: 'easeInOutQuad' },
-  { t: 1.5, armIn: 1.25, shoulder: 0.42, sway: 0.08, tilt: -0.02, blush: 0.52, ease: 'easeInQuad' }, // 내린다
+  { t: 0.22, armIn: 0.32, shoulder: 0.45, sway: -0.16, tilt: 0.04, blush: 0.3, ease: 'easeOutQuad' }, // 팔이 모이기 시작
+  { t: 0.44, armIn: 0.78, shoulder: 0.95, sway: 0.3, tilt: -0.07, blush: 0.62, ease: 'easeOutBack' }, // 두 손이 배 앞에서 만났다
+  { t: 0.72, armIn: 0.84, shoulder: 1.0, sway: -0.32, tilt: 0.08, blush: 0.88, ease: 'easeInOutQuad' }, // ── 살랑살랑 ──
+  { t: 1.0, armIn: 0.8, shoulder: 0.96, sway: 0.31, tilt: -0.08, blush: 1.0, ease: 'easeInOutQuad' },
+  { t: 1.28, armIn: 0.84, shoulder: 1.0, sway: -0.24, tilt: 0.06, blush: 0.94, ease: 'easeInOutQuad' },
+  { t: 1.5, armIn: 0.34, shoulder: 0.45, sway: 0.08, tilt: -0.02, blush: 0.52, ease: 'easeInQuad' }, // 푼다
   { t: 1.7, armIn: 0.0, shoulder: 0.0, sway: 0.0, tilt: 0.0, blush: 0.0, ease: 'easeOutQuad' },
 ]
 
@@ -214,12 +219,16 @@ const STEP_LIFT = 0.035 // 발을 드는 높이
 const SHOULDER_REACH = 0.075 // 손 흔들 때 어깨가 바깥으로 나가는 거리
 const SHOULDER_LIFT = 0.055 // 그때 어깨가 올라가는 높이
 /**
- * 수줍을 때 두 팔이 **앞으로** 밀려 나가는 거리.
+ * 수줍을 때 두 팔이 **앞으로** 밀려 나가는 거리 — **몸통 깊이에 대한 비율이다.**
  *
- * 각도만으로는 팔이 얼굴 *옆* 에서 멈춘다 — 팔은 어깨를 축으로 몸통과 같은 평면에서만
- * 도니까. 볼 앞을 지나게 하려면 앞으로 밀어 주는 수밖에 없다.
+ * 각도만으로는 팔이 몸통 옆면을 벗어나지 못한다. 팔은 어깨를 축으로 몸통과 같은
+ * 평면에서만 도니까, 앞으로 밀어 주는 수밖에 없다.
+ *
+ * **키가 아니라 몸통 깊이를 기준으로 잡는다.** 처음에는 키의 몇 배로 두었는데, 그러면
+ * 몸통이 깊은 종(퍼지 판다·터비 독)에서 팔이 배 속에 파묻혀 반쯤만 보였다. 넘어야
+ * 하는 것은 키가 아니라 배의 두께다.
  */
-const SHOULDER_FORWARD = 0.135
+const SHOULDER_FORWARD = 0.85
 /** 그때 두 어깨가 가운데로 조금 모인다. 팔이 벌어진 채 올라가면 만세가 된다. */
 const SHOULDER_TUCK = 0.028
 
@@ -358,7 +367,10 @@ export function createAnimator(
   }
   const shoulderReach = height * SHOULDER_REACH
   const shoulderLift = height * SHOULDER_LIFT
-  const shoulderForward = height * SHOULDER_FORWARD
+  // 몸통은 반지름에 x·y·z 스케일을 곱한 타원체다. 앞으로 얼마나 나와야 배를 벗어나는지는
+  // 그 z 쪽 반지름이 정한다.
+  const bodyDepth = spec.build.bodyRadius * spec.build.bodyShape[2]
+  const shoulderForward = bodyDepth * SHOULDER_FORWARD
   const shoulderTuck = height * SHOULDER_TUCK
 
   /**
@@ -575,12 +587,12 @@ export function createAnimator(
      * 겹쳐서 재생되는 일이 없으므로 그냥 더해 두면 서로를 지우지 않는다.
      *
      * 각도만으로는 짧은 팔이 몸통 옆면에 묻히므로 어깨를 밀어 실루엣 밖으로 뺀다.
-     * 수줍음은 거기에 더해 **앞으로** 밀고 가운데로 조금 모은다 — 그래야 팔이 얼굴
-     * 옆이 아니라 볼 앞을 지난다.
+     * 수줍음은 거기에 더해 **앞으로** 밀고 가운데로 조금 모은다 — 그래야 팔이 몸통
+     * 옆면에 묻히지 않고 배 앞으로 나온다.
      */
     if (parts.armL && armBase.L) {
       parts.armL.rotation.z =
-        frameDance.spread + frameDance.arm + frameWave.armOne + frameShy.armIn
+        frameDance.spread + frameDance.arm + frameWave.armOne - frameShy.armIn
       parts.armL.position.x =
         armBase.L.x + frameWave.shoulder * shoulderReach - frameShy.shoulder * shoulderTuck
       parts.armL.position.y =
@@ -588,7 +600,7 @@ export function createAnimator(
       parts.armL.position.z = armBase.L.z + frameShy.shoulder * shoulderForward
     }
     if (parts.armR && armBase.R) {
-      parts.armR.rotation.z = -frameDance.spread + frameDance.arm - frameShy.armIn
+      parts.armR.rotation.z = -frameDance.spread + frameDance.arm + frameShy.armIn
       parts.armR.position.x = armBase.R.x + frameShy.shoulder * shoulderTuck
       parts.armR.position.y = armBase.R.y + frameShy.shoulder * shoulderLift
       parts.armR.position.z = armBase.R.z + frameShy.shoulder * shoulderForward
