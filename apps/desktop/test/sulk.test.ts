@@ -97,6 +97,13 @@ describe('앙탈 타임라인', () => {
     expect(sampleSulk(SULK_DURATION).squint).toBeCloseTo(0, 5)
   })
 
+  it('발은 팔과 반대 박자로 찬다 — 같은 박자면 온몸이 한 덩어리로 움직인다', () => {
+    for (const t of [0.46, 0.6, 0.74, 0.88]) {
+      const frame = sampleSulk(t)
+      expect(Math.sign(frame.legAlt)).toBe(-Math.sign(frame.armAlt))
+    }
+  })
+
   it('앉는 동안 팔을 젓는다 — 앉기와 젓기가 겹쳐야 한 동작으로 보인다', () => {
     const swinging = SULK_UNIT.filter((key) => Math.abs(Number(key.armAlt ?? 0)) > 0.5)
     for (const key of swinging) expect(Number(key.sit)).toBeGreaterThan(0.9)
@@ -177,6 +184,28 @@ describe('앙탈을 캐릭터에 입혔을 때', () => {
     const animator = createAnimator(bare)
     animator.sulk()
     expect(() => run(animator, SULK_DURATION + 0.2)).not.toThrow()
+  })
+
+  it('앉은 발을 번갈아 차올린다 — 차는 발만 오르고 다른 발은 바닥에 남는다', () => {
+    const { critter, animator } = stage(CHARACTERS[0])
+    const { legL, legR } = critter.parts
+
+    animator.sulk()
+    run(animator, 0.46) // legAlt 가 양수인 박자 — 왼발이 올라간다
+    const highL = legL.position.y
+    const lowR = legR.position.y
+    expect(highL).toBeGreaterThan(lowR)
+
+    run(animator, 0.14) // 다음 박자에는 뒤바뀐다
+    expect(legR.position.y).toBeGreaterThan(legL.position.y)
+
+    /*
+     * 내려간 발이 **바닥 아래로 내려가지 않는지**가 이 검사의 요점이다. 부호를 그대로
+     * 뒤집으면 앉느라 이미 내려간 몸통에서 발이 더 내려가 바닥을 뚫고 몸통에 묻힌다.
+     */
+    const seatedFloor = legL.position.y
+    run(animator, 0.14)
+    expect(legL.position.y).toBeGreaterThanOrEqual(seatedFloor - 1e-9)
   })
 
   it('발이 없는 캐릭터에서도 터지지 않는다', () => {
