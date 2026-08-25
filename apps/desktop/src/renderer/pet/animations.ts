@@ -130,6 +130,39 @@ export const SHY_UNIT: Keyframe[] = [
 ]
 
 /**
+ * 앙탈(1.7초) — 털썩 주저앉아 두 팔을 번갈아 휘젓는다.
+ *
+ *   sit    몸이 내려앉는 정도 (0~1). 발은 바닥에 그대로 두고 몸통만 내린다
+ *   feet   발이 앞으로 나가는 정도 (0~1). 앞으로 뻗은 다리의 실루엣을 만든다
+ *   armAlt 두 팔이 번갈아 젓는 각도 (라디안). 부호가 뒤집힐 때마다 한 번이다
+ *   tilt   젓는 쪽으로 몸이 살짝 기운다
+ *   sx·sy  닿는 순간의 찌부러짐. 다른 트랙의 것과 곱해진다
+ *
+ * **털썩 앉는 것이 이 동작의 무게를 만든다.** 스르륵 미끄러지듯 앉으면 앙탈이 아니라
+ * 늘어짐이 된다. 그래서 앉기 직전에 아주 잠깐 웅크렸다가(예비동작) 한 번에 떨어지고,
+ * 닿는 순간 한 번 찌부러졌다 돌아온다.
+ *
+ * **다리는 여전히 발뿐이다.** 앞으로 뻗은 다리는 발을 앞으로 옮기고 몸을 낮춰 만드는
+ * 실루엣이지 관절을 더하는 것이 아니다.
+ *
+ * 소품은 없다. 콕에는 음표, 폴짝에는 먼지, 손 흔들기에는 짝대기, 하트에는 말풍선이
+ * 붙지만 **앙탈은 몸짓만으로 말한다.**
+ */
+export const SULK_UNIT: Keyframe[] = [
+  { t: 0.0, sit: 0.0, feet: 0.0, armAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, ease: 'easeOutQuad' },
+  { t: 0.1, sit: 0.16, feet: 0.08, armAlt: 0.0, tilt: 0.0, sx: 1.02, sy: 0.97, ease: 'easeOutQuad' }, // 웅크린다
+  { t: 0.24, sit: 1.0, feet: 0.82, armAlt: 0.0, tilt: 0.0, sx: 1.13, sy: 0.87, ease: 'easeInQuad' }, // 털썩
+  { t: 0.33, sit: 0.95, feet: 1.0, armAlt: 1.0, tilt: 0.06, sx: 0.97, sy: 1.05, ease: 'easeOutQuad' }, // 튕겨 오른다
+  { t: 0.46, sit: 1.0, feet: 1.0, armAlt: -1.28, tilt: -0.06, sx: 1.01, sy: 0.99, ease: 'easeInOutQuad' }, // ── 휘젓기 넷 ──
+  { t: 0.6, sit: 1.0, feet: 1.0, armAlt: 1.28, tilt: 0.06, sx: 1.0, sy: 1.0, ease: 'easeInOutQuad' },
+  { t: 0.74, sit: 1.0, feet: 1.0, armAlt: -1.28, tilt: -0.06, sx: 1.0, sy: 1.0, ease: 'easeInOutQuad' },
+  { t: 0.88, sit: 1.0, feet: 1.0, armAlt: 1.28, tilt: 0.06, sx: 1.0, sy: 1.0, ease: 'easeInOutQuad' },
+  { t: 1.02, sit: 1.0, feet: 1.0, armAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, ease: 'easeOutQuad' }, // 멈춘다
+  { t: 1.3, sit: 1.0, feet: 1.0, armAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, ease: 'easeInOutQuad' }, // 잠깐 그대로
+  { t: 1.7, sit: 0.0, feet: 0.0, armAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, ease: 'easeInOutQuad' }, // 스르르 일어난다
+]
+
+/**
  * 움찔 한 번(0.46초). 제자리에서 몸을 좌우로 떨며 눌린 느낌을 낸다.
  * 뛰지 않으므로 y는 없고, 몸통을 기울이는 tilt 가 흔들림을 만든다.
  */
@@ -148,9 +181,10 @@ const DANCE_FIELDS = ['x', 'y', 'tilt', 'arm', 'spread', 'step', 'sx', 'sy']
 const TWITCH_FIELDS = ['sx', 'sy', 'tilt']
 const WAVE_FIELDS = ['armOne', 'shoulder', 'tilt']
 const SHY_FIELDS = ['armIn', 'shoulder', 'sway', 'tilt', 'blush']
+const SULK_FIELDS = ['sit', 'feet', 'armAlt', 'tilt', 'sx', 'sy']
 
 /** 갈아끼울 수 있는 트랙 이름 */
-export type TrackName = 'hop' | 'dance' | 'twitch' | 'wave' | 'shy'
+export type TrackName = 'hop' | 'dance' | 'twitch' | 'wave' | 'shy' | 'sulk'
 
 /**
  * 트랙마다 보간하는 필드와 지금 소스에 적혀 있는 유닛.
@@ -165,6 +199,7 @@ export const TRACK_FIELDS: Record<TrackName, string[]> = {
   twitch: TWITCH_FIELDS,
   wave: WAVE_FIELDS,
   shy: SHY_FIELDS,
+  sulk: SULK_FIELDS,
 }
 
 export const TRACK_UNITS: Record<TrackName, Keyframe[]> = {
@@ -173,6 +208,7 @@ export const TRACK_UNITS: Record<TrackName, Keyframe[]> = {
   twitch: TWITCH_UNIT,
   wave: WAVE_UNIT,
   shy: SHY_UNIT,
+  sulk: SULK_UNIT,
 }
 
 /** 유닛 트랙의 길이 — 마지막 키의 시각이 곧 그 동작의 길이다. */
@@ -181,6 +217,7 @@ export const trackDuration = (keys: Keyframe[]): number => keys[keys.length - 1]
 const TWITCH_DURATION = trackDuration(TWITCH_UNIT)
 const WAVE_DURATION = trackDuration(WAVE_UNIT)
 const SHY_DURATION = trackDuration(SHY_UNIT)
+const SULK_DURATION = trackDuration(SULK_UNIT)
 const DANCE_CYCLE = trackDuration(DANCE_UNIT)
 
 const HEIGHT_FALLOFF = 0.66 // 폴짝마다 높이 감쇠
@@ -216,6 +253,22 @@ const BLUSH_PEAK = 0.76
 const CHEEK_ON_BLUSH = 0xffe3e6
 const DANCE_BOB = 0.12 // 춤추며 통통 튀는 높이
 const STEP_LIFT = 0.035 // 발을 드는 높이
+/** 앙탈로 주저앉을 때 몸통이 내려가는 깊이 (캐릭터 키 기준 비율) */
+const SIT_DROP = 0.17
+/**
+ * 그때 발이 앞으로 나가는 거리 — **몸통 깊이에 대한 비율이다.**
+ *
+ * 팔을 앞으로 밀 때와 같은 이유다(`SHOULDER_FORWARD`). 넘어야 하는 것은 키가 아니라
+ * 배의 두께라, 키를 기준으로 잡으면 몸통이 깊은 종에서 발이 배 밑에 그대로 남는다.
+ */
+const FEET_FORWARD = 0.62
+/**
+ * 팔을 휘저을 때 앞으로 나오는 거리 — 이것도 몸통 깊이 기준이다.
+ *
+ * 각도만 주면 짧은 팔이 몸통 옆면을 따라 오르내려 실루엣 안에 묻힌다. 손 흔들기가
+ * 어깨를 바깥으로 밀어 푼 것과 같은 문제이고, 여기서는 앞으로 밀어 푼다.
+ */
+const FLAIL_FORWARD = 0.5
 const SHOULDER_REACH = 0.075 // 손 흔들 때 어깨가 바깥으로 나가는 거리
 const SHOULDER_LIFT = 0.055 // 그때 어깨가 올라가는 높이
 /**
@@ -300,7 +353,12 @@ export function sampleShy(t: number): Sampled {
   return sampleTrack(SHY_UNIT, SHY_FIELDS, t)
 }
 
-export { TWITCH_DURATION, WAVE_DURATION, SHY_DURATION, DANCE_CYCLE }
+/** 앙탈을 시각 t에서 샘플링한다. → { sit, feet, armAlt, tilt, sx, sy } */
+export function sampleSulk(t: number): Sampled {
+  return sampleTrack(SULK_UNIT, SULK_FIELDS, t)
+}
+
+export { TWITCH_DURATION, WAVE_DURATION, SHY_DURATION, SULK_DURATION, DANCE_CYCLE }
 
 const randomBetween = (min: number, max: number) => min + Math.random() * (max - min)
 
@@ -310,6 +368,7 @@ const REST_DANCE: Sampled = { x: 0, y: 0, tilt: 0, arm: 0, spread: 0, step: 0, s
 const REST_TWITCH: Sampled = { sx: 1, sy: 1, tilt: 0 }
 const REST_WAVE: Sampled = { armOne: 0, shoulder: 0, tilt: 0 }
 const REST_SHY: Sampled = { armIn: 0, shoulder: 0, sway: 0, tilt: 0, blush: 0 }
+const REST_SULK: Sampled = { sit: 0, feet: 0, armAlt: 0, tilt: 0, sx: 1, sy: 1 }
 
 /**
  * 타이머를 delta 만큼 진행시키고 이번 프레임의 값을 돌려준다.
@@ -345,6 +404,7 @@ export function createAnimator(
   let twitchDuration = trackDuration(units.twitch)
   let waveDuration = trackDuration(units.wave)
   let shyDuration = trackDuration(units.shy)
+  let sulkDuration = trackDuration(units.sulk)
   const wags = spec.build.tail.type === TAIL.WAG
 
   const hopHeight = height * HOP_RATIO
@@ -352,9 +412,12 @@ export function createAnimator(
   const shySwayWidth = height * SHY_SWAY
   const bobHeight = height * DANCE_BOB
   const stepLift = height * STEP_LIFT
+  const sitDrop = height * SIT_DROP
 
   // 다리는 원래 자리에서 위로만 살짝 들 것이므로 기준 높이를 기억해 둔다
   const legBaseY = parts.legL ? parts.legL.position.y : 0
+  // 주저앉을 때는 앞으로도 내보내야 해서 기준 깊이도 함께 들고 있는다
+  const legBaseZ = parts.legL ? parts.legL.position.z : 0
   /*
    * 옮겼다가 되돌려 놓아야 하는 어깨 자리.
    *
@@ -371,6 +434,8 @@ export function createAnimator(
   // 그 z 쪽 반지름이 정한다.
   const bodyDepth = spec.build.bodyRadius * spec.build.bodyShape[2]
   const shoulderForward = bodyDepth * SHOULDER_FORWARD
+  const feetForward = bodyDepth * FEET_FORWARD
+  const flailForward = bodyDepth * FLAIL_FORWARD
   const shoulderTuck = height * SHOULDER_TUCK
 
   /**
@@ -407,6 +472,7 @@ export function createAnimator(
   let twitchTime: number | null = null
   let waveTime: number | null = null
   let shyTime: number | null = null
+  let sulkTime: number | null = null
   let previousY = 0
   let previousX = 0
 
@@ -444,6 +510,11 @@ export function createAnimator(
     shyTime = 0
   }
 
+  /** 털썩 주저앉아 팔을 휘젓는다. '앙탈' 신호의 반응. */
+  function sulk() {
+    sulkTime = 0
+  }
+
   const durationOf = (name: TrackName): number =>
     name === 'hop'
       ? hopTimeline.duration
@@ -453,7 +524,9 @@ export function createAnimator(
           ? twitchDuration
           : name === 'wave'
             ? waveDuration
-            : shyDuration
+            : name === 'shy'
+              ? shyDuration
+              : sulkDuration
 
   /**
    * 유닛 트랙을 갈아끼운다. 미리보기의 키프레임 편집기만 부른다.
@@ -466,12 +539,13 @@ export function createAnimator(
     else if (name === 'dance') danceTimeline = buildDanceTimeline(cycles, keys)
     else if (name === 'twitch') twitchDuration = trackDuration(keys)
     else if (name === 'wave') waveDuration = trackDuration(keys)
-    else shyDuration = trackDuration(keys)
+    else if (name === 'shy') shyDuration = trackDuration(keys)
+    else sulkDuration = trackDuration(keys)
   }
 
   /** 재생 중인 것을 전부 끄고 기본 자세로 돌아간다. */
   function stop() {
-    hopTime = danceTime = twitchTime = waveTime = shyTime = null
+    hopTime = danceTime = twitchTime = waveTime = shyTime = sulkTime = null
   }
 
   /**
@@ -488,7 +562,8 @@ export function createAnimator(
     else if (name === 'dance') danceTime = at
     else if (name === 'twitch') twitchTime = at
     else if (name === 'wave') waveTime = at
-    else shyTime = at
+    else if (name === 'shy') shyTime = at
+    else sulkTime = at
     update(0)
   }
 
@@ -500,6 +575,7 @@ export function createAnimator(
     let frameTwitch: Sampled
     let frameWave: Sampled
     let frameShy: Sampled
+    let frameSulk: Sampled
     ;[hopTime, frameHop] = advance(
       hopTime,
       delta,
@@ -535,13 +611,21 @@ export function createAnimator(
       (t) => sampleTrack(units.shy, SHY_FIELDS, t),
       REST_SHY,
     )
+    ;[sulkTime, frameSulk] = advance(
+      sulkTime,
+      delta,
+      sulkDuration,
+      (t) => sampleTrack(units.sulk, SULK_FIELDS, t),
+      REST_SULK,
+    )
 
     const settled =
       hopTime === null &&
       danceTime === null &&
       twitchTime === null &&
       waveTime === null &&
-      shyTime === null
+      shyTime === null &&
+      sulkTime === null
 
     // ── 호흡 (다른 동작 중에는 거의 죽인다) ──
     const breathAmount = settled ? 1 : 0.2
@@ -549,14 +633,19 @@ export function createAnimator(
 
     // ── 위치와 부피 (여러 동작이 곱해지고 더해진다) ──
     const x = frameDance.x * swayWidth + frameShy.sway * shySwayWidth
-    const y = frameHop.y * hopHeight + frameDance.y * bobHeight
-    const wide = frameHop.sx * frameDance.sx * frameTwitch.sx * (1 - breath * 0.5)
+    const y = frameHop.y * hopHeight + frameDance.y * bobHeight - frameSulk.sit * sitDrop
+    const wide = frameHop.sx * frameDance.sx * frameTwitch.sx * frameSulk.sx * (1 - breath * 0.5)
 
     root.position.set(x, y, 0)
-    root.scale.set(wide, frameHop.sy * frameDance.sy * frameTwitch.sy * (1 + breath), wide)
+    root.scale.set(
+      wide,
+      frameHop.sy * frameDance.sy * frameTwitch.sy * frameSulk.sy * (1 + breath),
+      wide,
+    )
 
     // ── 몸통 ──
-    const tilt = frameDance.tilt + frameTwitch.tilt + frameWave.tilt + frameShy.tilt
+    const tilt =
+      frameDance.tilt + frameTwitch.tilt + frameWave.tilt + frameShy.tilt + frameSulk.tilt
     parts.body.rotation.z = Math.sin(elapsed * 1.05) * 0.018 * breathAmount + tilt
 
     // ── 볼 (수줍을 때만 붉어지고, 그 위에서 빗금이 밝아진다) ──
@@ -592,23 +681,41 @@ export function createAnimator(
      */
     if (parts.armL && armBase.L) {
       parts.armL.rotation.z =
-        frameDance.spread + frameDance.arm + frameWave.armOne - frameShy.armIn
+        frameDance.spread + frameDance.arm + frameWave.armOne - frameShy.armIn + frameSulk.armAlt
       parts.armL.position.x =
         armBase.L.x + frameWave.shoulder * shoulderReach - frameShy.shoulder * shoulderTuck
       parts.armL.position.y =
         armBase.L.y + (frameWave.shoulder + frameShy.shoulder) * shoulderLift
-      parts.armL.position.z = armBase.L.z + frameShy.shoulder * shoulderForward
+      parts.armL.position.z =
+        armBase.L.z + frameShy.shoulder * shoulderForward + Math.abs(frameSulk.armAlt) * flailForward
     }
     if (parts.armR && armBase.R) {
-      parts.armR.rotation.z = -frameDance.spread + frameDance.arm + frameShy.armIn
+      // 두 팔에 **같은 부호**를 주면 좌우가 거울이라 하나가 오를 때 다른 하나가 내려간다
+      parts.armR.rotation.z =
+        -frameDance.spread + frameDance.arm + frameShy.armIn + frameSulk.armAlt
       parts.armR.position.x = armBase.R.x + frameShy.shoulder * shoulderTuck
       parts.armR.position.y = armBase.R.y + frameShy.shoulder * shoulderLift
-      parts.armR.position.z = armBase.R.z + frameShy.shoulder * shoulderForward
+      parts.armR.position.z =
+        armBase.R.z + frameShy.shoulder * shoulderForward + Math.abs(frameSulk.armAlt) * flailForward
     }
 
-    // ── 다리 (춤출 때 번갈아 발을 든다) ──
-    if (parts.legL) parts.legL.position.y = legBaseY + Math.max(0, frameDance.step) * stepLift
-    if (parts.legR) parts.legR.position.y = legBaseY + Math.max(0, -frameDance.step) * stepLift
+    /*
+     * ── 다리 (춤출 때 번갈아 발을 들고, 앙탈로 앉을 때 앞으로 뻗는다) ──
+     *
+     * 앉을 때 **발은 바닥에 그대로 둔다.** 몸통 전체가 `sit` 만큼 내려가므로, 발은
+     * 몸통 안에서 같은 만큼 도로 올라와야 제자리에 남는다. 안 그러면 발이 바닥을
+     * 뚫고 내려가 캐릭터가 땅에 박힌 것처럼 보인다.
+     */
+    const sitBack = frameSulk.sit * sitDrop
+    const legZ = legBaseZ + frameSulk.feet * feetForward
+    if (parts.legL) {
+      parts.legL.position.y = legBaseY + Math.max(0, frameDance.step) * stepLift + sitBack
+      parts.legL.position.z = legZ
+    }
+    if (parts.legR) {
+      parts.legR.position.y = legBaseY + Math.max(0, -frameDance.step) * stepLift + sitBack
+      parts.legR.position.z = legZ
+    }
 
     // ── 귀 (가끔 한쪽만 쫑긋) ──
     if (earTwitchTime !== null) {
@@ -673,6 +780,7 @@ export function createAnimator(
     twitch,
     wave,
     shy,
+    sulk,
     update,
     get isHopping() {
       return hopTime !== null
@@ -688,6 +796,9 @@ export function createAnimator(
     },
     get isShying() {
       return shyTime !== null
+    },
+    get isSulking() {
+      return sulkTime !== null
     },
     get danceDuration() {
       return danceTimeline.duration
@@ -705,6 +816,7 @@ export function createAnimator(
         twitch: twitchDuration,
         wave: waveDuration,
         shy: shyDuration,
+        sulk: sulkDuration,
       }
     },
   }

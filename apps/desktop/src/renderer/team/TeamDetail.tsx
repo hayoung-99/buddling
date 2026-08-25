@@ -228,7 +228,9 @@ function SignalPicker({
   run: (action: () => Promise<unknown>) => Promise<void>
 }) {
   return (
-    <div className="flex gap-[7px]">
+    // 2열 격자다. 신호가 다섯이 되면서 가로 한 줄로는 한 칸이 66px 밖에 안 되어,
+    // 이름은 접히고 설명은 서너 줄이 된다. 여섯째가 생겨도 3+3 으로 버틴다.
+    <div className="grid grid-cols-2 gap-[7px]">
       {SIGNALS.map((kind) => (
         <button
           key={kind}
