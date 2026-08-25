@@ -113,7 +113,7 @@ export function createCritter(spec: CharacterSpec): Critter {
 
   buildSnout(head, parts, materials, headR, build.snout)
   if (build.patches.includes('pandaEyes')) buildPandaEyePatches(head, materials, headR)
-  buildEyes(head, parts, materials, headR)
+  buildEyes(head, parts, materials, headR, build.patches.includes('pandaEyes'))
   // 눈 무늬가 있는 종은 볼을 비켜 놓는다 — 아래 buildCheeks 주석 참고
   buildCheeks(head, parts, materials, headR, build.patches.includes('pandaEyes'))
   buildEars(head, parts, materials, headR, build.ears)
@@ -238,6 +238,7 @@ function buildEyes(
   parts: CritterParts,
   materials: CritterMaterials,
   headR: number,
+  onPatch = false,
 ) {
   const eyeR = headR * 0.15
   for (const side of [-1, 1]) {
@@ -250,6 +251,60 @@ function buildEyes(
     const highlight = ball(eyeR * 0.4, materials.highlight, 14)
     highlight.position.set(-side * eyeR * 0.3, eyeR * 0.36, eyeR * 0.68)
     eye.add(highlight)
+
+    buildSquint(head, parts, materials, eyeR, side, eye.position, onPatch)
+  }
+}
+
+/**
+ * 꽉 감은 눈 — `> <`.
+ *
+ * 앙탈을 부릴 때만 나온다. 눈알을 줄이면서 이것을 키워 바꿔 끼우는 식이라, 평소에는
+ * 크기가 0 이라 아무 자리도 차지하지 않는다.
+ *
+ * **눈 깜빡임으로는 이 표정이 안 나온다.** 깜빡임은 눈알을 위아래로 눌러 감기게 하는
+ * 것이라 아무리 눌러도 가로 선 하나이고, 그건 자는 얼굴이지 떼쓰는 얼굴이 아니다.
+ * 꺾인 획 두 개여야 눈을 **힘줘 감은** 것으로 읽힌다.
+ *
+ * 꼭짓점은 얼굴 안쪽(코 쪽)을 향한다 — 바깥을 향하면 `< >` 가 되어 화난 눈썹처럼
+ * 보인다.
+ */
+function buildSquint(
+  head: THREE.Object3D,
+  parts: CritterParts,
+  materials: CritterMaterials,
+  eyeR: number,
+  side: number,
+  eyeAt: THREE.Vector3,
+  onPatch: boolean,
+) {
+  const group = new THREE.Group()
+  // 눈알이 얼굴 밖으로 나온 만큼 앞에 세운다. 눈 피벗 자리는 아직 머리 구면 안쪽이다.
+  group.position.set(eyeAt.x, eyeAt.y, eyeAt.z + eyeR * 0.95)
+  group.scale.setScalar(0)
+  head.add(group)
+  parts[side < 0 ? 'squintR' : 'squintL'] = group
+
+  const length = eyeR * 1.25
+  const vertex = -side * eyeR * 0.42 // 안쪽(코 쪽)
+
+  for (const up of [-1, 1]) {
+    // 꼭짓점에서 바깥·위아래로 뻗는 획
+    const dx = side * 0.72
+    const dy = up * 0.7
+    /*
+     * 눈 둘레에 검은 무늬가 있는 종(퍼지 판다)은 획을 **밝게** 그린다. 검은 무늬 위에
+     * 검은 획을 얹으면 테두리 그림자로만 겨우 보여서, 눈을 감았는지 아닌지 알 수 없다.
+     */
+    const stroke = new THREE.Mesh(
+      new THREE.CapsuleGeometry(eyeR * 0.2, length, 4, 8),
+      onPatch ? materials.snout : materials.eye,
+    )
+    // 캡슐은 +Y 로 서 있다. (-sinθ, cosθ) 가 뻗는 방향이 되도록 돌린다.
+    stroke.rotation.z = Math.atan2(-dx, dy)
+    stroke.position.set(vertex + dx * length * 0.5, dy * length * 0.5, 0)
+    stroke.scale.z = 0.5 // 얼굴에 납작하게 눕힌다
+    group.add(stroke)
   }
 }
 

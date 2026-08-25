@@ -92,6 +92,11 @@ describe('앙탈 타임라인', () => {
     expect(sampleSulk(SULK_DURATION).sit).toBeCloseTo(0, 5)
   })
 
+  it('털썩 앉는 순간 눈이 꽉 감긴다 — 앉고 나서 감으면 두 가지 일로 보인다', () => {
+    expect(sampleSulk(0.24).squint).toBeCloseTo(1, 1)
+    expect(sampleSulk(SULK_DURATION).squint).toBeCloseTo(0, 5)
+  })
+
   it('앉는 동안 팔을 젓는다 — 앉기와 젓기가 겹쳐야 한 동작으로 보인다', () => {
     const swinging = SULK_UNIT.filter((key) => Math.abs(Number(key.armAlt ?? 0)) > 0.5)
     for (const key of swinging) expect(Number(key.sit)).toBeGreaterThan(0.9)
@@ -143,6 +148,35 @@ describe('앙탈을 캐릭터에 입혔을 때', () => {
     const movedR = armR.rotation.z - restR
     expect(Math.abs(movedL)).toBeGreaterThan(0.5)
     expect(movedL).toBeCloseTo(movedR, 5)
+  })
+
+  it.each(CHARACTERS)('$key — 눈이 `> <` 로 바뀌었다가 정확히 돌아온다', (spec) => {
+    const { critter, animator } = stage(spec)
+    const { eyeL, squintL } = critter.parts
+
+    expect(squintL.scale.x).toBe(0) // 평소에는 자리를 차지하지 않는다
+    const openEye = eyeL.scale.x
+
+    animator.sulk()
+    run(animator, SEATED)
+    expect(squintL.scale.x).toBeGreaterThan(0.8)
+    expect(eyeL.scale.x).toBeLessThan(0.2) // 눈알은 거의 사라진다
+
+    run(animator, SULK_DURATION + 0.5)
+    // 안 돌아오면 그 캐릭터는 영영 눈을 감고 서 있게 된다
+    expect(squintL.scale.x).toBeCloseTo(0, 5)
+    expect(eyeL.scale.x).toBeCloseTo(openEye, 5)
+  })
+
+  it('눈이 없는 캐릭터에서도 터지지 않는다', () => {
+    const bare = createCritter(CHARACTERS[0])
+    delete bare.parts.squintL
+    delete bare.parts.squintR
+    delete bare.parts.eyeL
+    delete bare.parts.eyeR
+    const animator = createAnimator(bare)
+    animator.sulk()
+    expect(() => run(animator, SULK_DURATION + 0.2)).not.toThrow()
   })
 
   it('발이 없는 캐릭터에서도 터지지 않는다', () => {

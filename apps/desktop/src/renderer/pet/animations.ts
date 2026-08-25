@@ -137,6 +137,7 @@ export const SHY_UNIT: Keyframe[] = [
  *   armAlt 두 팔이 번갈아 젓는 각도 (라디안). 부호가 뒤집힐 때마다 한 번이다
  *   tilt   젓는 쪽으로 몸이 살짝 기운다
  *   sx·sy  닿는 순간의 찌부러짐. 다른 트랙의 것과 곱해진다
+ *   squint 눈을 꽉 감는 정도 (0~1). 눈알이 줄어들면서 `> <` 가 커진다
  *
  * **털썩 앉는 것이 이 동작의 무게를 만든다.** 스르륵 미끄러지듯 앉으면 앙탈이 아니라
  * 늘어짐이 된다. 그래서 앉기 직전에 아주 잠깐 웅크렸다가(예비동작) 한 번에 떨어지고,
@@ -149,17 +150,17 @@ export const SHY_UNIT: Keyframe[] = [
  * 붙지만 **앙탈은 몸짓만으로 말한다.**
  */
 export const SULK_UNIT: Keyframe[] = [
-  { t: 0.0, sit: 0.0, feet: 0.0, armAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, ease: 'easeOutQuad' },
-  { t: 0.1, sit: 0.16, feet: 0.08, armAlt: 0.0, tilt: 0.0, sx: 1.02, sy: 0.97, ease: 'easeOutQuad' }, // 웅크린다
-  { t: 0.24, sit: 1.0, feet: 0.82, armAlt: 0.0, tilt: 0.0, sx: 1.13, sy: 0.87, ease: 'easeInQuad' }, // 털썩
-  { t: 0.33, sit: 0.95, feet: 1.0, armAlt: 1.0, tilt: 0.06, sx: 0.97, sy: 1.05, ease: 'easeOutQuad' }, // 튕겨 오른다
-  { t: 0.46, sit: 1.0, feet: 1.0, armAlt: -1.28, tilt: -0.06, sx: 1.01, sy: 0.99, ease: 'easeInOutQuad' }, // ── 휘젓기 넷 ──
-  { t: 0.6, sit: 1.0, feet: 1.0, armAlt: 1.28, tilt: 0.06, sx: 1.0, sy: 1.0, ease: 'easeInOutQuad' },
-  { t: 0.74, sit: 1.0, feet: 1.0, armAlt: -1.28, tilt: -0.06, sx: 1.0, sy: 1.0, ease: 'easeInOutQuad' },
-  { t: 0.88, sit: 1.0, feet: 1.0, armAlt: 1.28, tilt: 0.06, sx: 1.0, sy: 1.0, ease: 'easeInOutQuad' },
-  { t: 1.02, sit: 1.0, feet: 1.0, armAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, ease: 'easeOutQuad' }, // 멈춘다
-  { t: 1.3, sit: 1.0, feet: 1.0, armAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, ease: 'easeInOutQuad' }, // 잠깐 그대로
-  { t: 1.7, sit: 0.0, feet: 0.0, armAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, ease: 'easeInOutQuad' }, // 스르르 일어난다
+  { t: 0.0, sit: 0.0, feet: 0.0, armAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, squint: 0.0, ease: 'easeOutQuad' },
+  { t: 0.1, sit: 0.16, feet: 0.08, armAlt: 0.0, tilt: 0.0, sx: 1.02, sy: 0.97, squint: 0.4, ease: 'easeOutQuad' }, // 웅크리며 눈을 감기 시작
+  { t: 0.24, sit: 1.0, feet: 0.82, armAlt: 0.0, tilt: 0.0, sx: 1.13, sy: 0.87, squint: 1.0, ease: 'easeInQuad' }, // 털썩 — 이때 눈이 꽉 감긴다
+  { t: 0.33, sit: 0.95, feet: 1.0, armAlt: 1.0, tilt: 0.06, sx: 0.97, sy: 1.05, squint: 1.0, ease: 'easeOutQuad' }, // 튕겨 오른다
+  { t: 0.46, sit: 1.0, feet: 1.0, armAlt: -1.28, tilt: -0.06, sx: 1.01, sy: 0.99, squint: 1.0, ease: 'easeInOutQuad' }, // ── 휘젓기 넷 ──
+  { t: 0.6, sit: 1.0, feet: 1.0, armAlt: 1.28, tilt: 0.06, sx: 1.0, sy: 1.0, squint: 1.0, ease: 'easeInOutQuad' },
+  { t: 0.74, sit: 1.0, feet: 1.0, armAlt: -1.28, tilt: -0.06, sx: 1.0, sy: 1.0, squint: 1.0, ease: 'easeInOutQuad' },
+  { t: 0.88, sit: 1.0, feet: 1.0, armAlt: 1.28, tilt: 0.06, sx: 1.0, sy: 1.0, squint: 1.0, ease: 'easeInOutQuad' },
+  { t: 1.02, sit: 1.0, feet: 1.0, armAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, squint: 1.0, ease: 'easeOutQuad' }, // 멈춘다
+  { t: 1.3, sit: 1.0, feet: 1.0, armAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, squint: 1.0, ease: 'easeInOutQuad' }, // 잠깐 그대로
+  { t: 1.7, sit: 0.0, feet: 0.0, armAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, squint: 0.0, ease: 'easeInOutQuad' }, // 스르르 일어나며 눈을 뜬다
 ]
 
 /**
@@ -181,7 +182,7 @@ const DANCE_FIELDS = ['x', 'y', 'tilt', 'arm', 'spread', 'step', 'sx', 'sy']
 const TWITCH_FIELDS = ['sx', 'sy', 'tilt']
 const WAVE_FIELDS = ['armOne', 'shoulder', 'tilt']
 const SHY_FIELDS = ['armIn', 'shoulder', 'sway', 'tilt', 'blush']
-const SULK_FIELDS = ['sit', 'feet', 'armAlt', 'tilt', 'sx', 'sy']
+const SULK_FIELDS = ['sit', 'feet', 'armAlt', 'tilt', 'sx', 'sy', 'squint']
 
 /** 갈아끼울 수 있는 트랙 이름 */
 export type TrackName = 'hop' | 'dance' | 'twitch' | 'wave' | 'shy' | 'sulk'
@@ -368,7 +369,7 @@ const REST_DANCE: Sampled = { x: 0, y: 0, tilt: 0, arm: 0, spread: 0, step: 0, s
 const REST_TWITCH: Sampled = { sx: 1, sy: 1, tilt: 0 }
 const REST_WAVE: Sampled = { armOne: 0, shoulder: 0, tilt: 0 }
 const REST_SHY: Sampled = { armIn: 0, shoulder: 0, sway: 0, tilt: 0, blush: 0 }
-const REST_SULK: Sampled = { sit: 0, feet: 0, armAlt: 0, tilt: 0, sx: 1, sy: 1 }
+const REST_SULK: Sampled = { sit: 0, feet: 0, armAlt: 0, tilt: 0, sx: 1, sy: 1, squint: 0 }
 
 /**
  * 타이머를 delta 만큼 진행시키고 이번 프레임의 값을 돌려준다.
@@ -770,8 +771,22 @@ export function createAnimator(
     }
     const lids =
       blinkTime === null ? 1 : 1 - Math.sin((Math.PI * blinkTime) / BLINK_DURATION) * 0.92
-    if (parts.eyeL) parts.eyeL.scale.y = lids
-    if (parts.eyeR) parts.eyeR.scale.y = lids
+
+    /*
+     * 앙탈을 부리는 동안에는 눈알을 줄이고 `> <` 를 키워 바꿔 끼운다.
+     *
+     * 깜빡임(`lids`)은 그대로 곱해 두므로, 감기는 도중에 앙탈이 시작돼도 서로 싸우지
+     * 않는다. 0 까지 줄이지 않고 아주 작은 값을 남기는 것은 크기가 0 인 것에는 법선이
+     * 없어 그리는 쪽이 싫어하기 때문이다.
+     */
+    const open = Math.max(0.001, 1 - frameSulk.squint)
+    for (const eye of [parts.eyeL, parts.eyeR]) {
+      if (!eye) continue
+      eye.scale.set(open, lids * open, open)
+    }
+    for (const shut of [parts.squintL, parts.squintR]) {
+      if (shut) shut.scale.setScalar(frameSulk.squint)
+    }
   }
 
   return {
