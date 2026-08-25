@@ -694,8 +694,17 @@ export function createAnimator(
      * 옆면에 묻히지 않고 배 앞으로 나온다.
      */
     if (parts.armL && armBase.L) {
+      /*
+       * 앙탈의 팔은 **올라가기만 한다.** 부호를 그대로 쓰면 한쪽이 오를 때 다른 쪽이
+       * 수직을 넘어 안쪽으로 넘어가는데, 그러면 두 팔이 한 방향으로 쓸려 위아래가
+       * 아니라 **좌우로 흔드는 것**으로 보인다. 발을 차올리는 것과 같은 규칙이다.
+       */
       parts.armL.rotation.z =
-        frameDance.spread + frameDance.arm + frameWave.armOne - frameShy.armIn + frameSulk.armAlt
+        frameDance.spread +
+        frameDance.arm +
+        frameWave.armOne -
+        frameShy.armIn +
+        Math.max(0, frameSulk.armAlt)
       parts.armL.position.x =
         armBase.L.x + frameWave.shoulder * shoulderReach - frameShy.shoulder * shoulderTuck
       parts.armL.position.y =
@@ -706,7 +715,7 @@ export function createAnimator(
     if (parts.armR && armBase.R) {
       // 두 팔에 **같은 부호**를 주면 좌우가 거울이라 하나가 오를 때 다른 하나가 내려간다
       parts.armR.rotation.z =
-        -frameDance.spread + frameDance.arm + frameShy.armIn + frameSulk.armAlt
+        -frameDance.spread + frameDance.arm + frameShy.armIn + Math.min(0, frameSulk.armAlt)
       parts.armR.position.x = armBase.R.x + frameShy.shoulder * shoulderTuck
       parts.armR.position.y = armBase.R.y + frameShy.shoulder * shoulderLift
       parts.armR.position.z =

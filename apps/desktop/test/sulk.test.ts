@@ -135,19 +135,25 @@ describe('앙탈을 캐릭터에 입혔을 때', () => {
     expect(legL.position.y).toBeCloseTo(base.y, 6)
   })
 
-  it('두 팔이 번갈아 젓는다 — 같이 움직이면 만세가 된다', () => {
+  it('한 번에 한 팔만 올라간다 — 둘이 같이 오르면 만세가 된다', () => {
     const { critter, animator } = stage(CHARACTERS[0])
     const { armL, armR } = critter.parts
     const restL = armL.rotation.z
     const restR = armR.rotation.z
 
+    /*
+     * 올라가는 팔은 바깥·위로 돌고, 쉬는 팔은 **제자리에 그대로 있는다.** 부호를
+     * 그대로 뒤집어 한쪽을 내리면 그 팔이 수직을 넘어 안쪽으로 넘어가고, 그러면 두
+     * 팔이 한 방향으로 쓸려 위아래가 아니라 좌우로 흔드는 것으로 보인다.
+     */
     animator.sulk()
-    run(animator, 0.6)
-    // 좌우가 거울이라 같은 각도를 더해도 하나는 오르고 하나는 내려간다
-    const movedL = armL.rotation.z - restL
-    const movedR = armR.rotation.z - restR
-    expect(Math.abs(movedL)).toBeGreaterThan(0.5)
-    expect(movedL).toBeCloseTo(movedR, 5)
+    run(animator, 0.6) // armAlt 가 양수인 박자 — 왼팔(화면 오른쪽)이 올라간다
+    expect(armL.rotation.z - restL).toBeGreaterThan(0.5)
+    expect(armR.rotation.z).toBeCloseTo(restR, 5)
+
+    run(animator, 0.14) // 다음 박자
+    expect(armR.rotation.z - restR).toBeLessThan(-0.5)
+    expect(armL.rotation.z).toBeCloseTo(restL, 5)
   })
 
   it.each(CHARACTERS)('$key — 눈이 `> <` 로 바뀌었다가 정확히 돌아온다', (spec) => {
