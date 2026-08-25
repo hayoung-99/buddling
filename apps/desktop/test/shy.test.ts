@@ -162,6 +162,22 @@ describe('수줍음을 캐릭터에 입혔을 때', () => {
     expect(armR.position.z).toBeCloseTo(baseZ[1], 6)
   })
 
+  it.each(CHARACTERS)('$key — 빗금이 밝아졌다가 원래 색으로 정확히 돌아온다', (spec) => {
+    // 붉은 볼 위에서는 분홍 빗금이 배경에 묻히므로 밝은 자국으로 넘어간다.
+    // 돌아오지 않으면 그 캐릭터는 영영 흰 빗금을 달고 서 있게 된다.
+    const critter = createCritter(spec)
+    const animator = createAnimator(critter)
+    const material = critter.materials.cheek as THREE.MeshStandardMaterial
+    const rest = material.color.getHex()
+
+    animator.shy()
+    run(animator, SHY_DURATION * 0.6)
+    expect(material.color.getHex()).not.toBe(rest)
+
+    run(animator, SHY_DURATION)
+    expect(material.color.getHex()).toBe(rest)
+  })
+
   it('볼이 없는 캐릭터에서도 터지지 않는다', () => {
     const bare = createCritter(CHARACTERS[0])
     delete bare.parts.blushL

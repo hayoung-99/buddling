@@ -200,7 +200,15 @@ const SHY_SWAY = 0.075
  * 1로 두면 붉은 판이 얼굴에 붙은 것처럼 보인다. 볼이 붉어지는 것은 살갗이 비치는
  * 것이라 얼굴색이 조금 남아 있어야 한다.
  */
-const BLUSH_PEAK = 0.62
+const BLUSH_PEAK = 0.76
+
+/**
+ * 볼이 붉을 때 빗금이 넘어가는 색.
+ *
+ * 종마다 빗금 색이 다르지만 넘어가는 곳은 하나다 — 붉은 바탕 위의 밝은 자국은
+ * 어느 얼굴에서나 같은 것으로 읽힌다.
+ */
+const CHEEK_ON_BLUSH = 0xffe3e6
 const DANCE_BOB = 0.12 // 춤추며 통통 튀는 높이
 const STEP_LIFT = 0.035 // 발을 드는 높이
 const SHOULDER_REACH = 0.075 // 손 흔들 때 어깨가 바깥으로 나가는 거리
@@ -362,6 +370,20 @@ export function createAnimator(
   const blushes = [parts.blushL, parts.blushR]
     .filter(Boolean)
     .map((mesh) => (mesh as THREE.Mesh).material as THREE.MeshStandardMaterial)
+
+  /*
+   * 볼 빗금은 붉음이 번지는 동안 **밝은 쪽으로 넘어간다.**
+   *
+   * 평소에는 하얀 얼굴 위의 분홍 빗금이라 분홍이 어두운 쪽이다. 그런데 그 아래가
+   * 붉게 물들면 같은 분홍이 배경에 묻혀 빗금이 사라져 버린다. 붉은 볼 위에서는
+   * 빗금이 **밝은 자국**이어야 보인다.
+   *
+   * 이 재질은 볼 빗금만 쓴다(`critter.ts` 의 `materials.cheek`). 캐릭터마다 따로
+   * 만들어지므로 여기서 만져도 다른 캐릭터가 함께 변하지 않는다.
+   */
+  const cheekMaterial = critter.materials.cheek as THREE.MeshStandardMaterial | undefined
+  const cheekRest = cheekMaterial?.color.clone() ?? null
+  const cheekLit = cheekRest?.clone().setHex(CHEEK_ON_BLUSH) ?? null
 
   const earLag = createSpring({ stiffness: 170, damping: 15 })
   const headLag = createSpring({ stiffness: 240, damping: 20 })
@@ -525,8 +547,11 @@ export function createAnimator(
     const tilt = frameDance.tilt + frameTwitch.tilt + frameWave.tilt + frameShy.tilt
     parts.body.rotation.z = Math.sin(elapsed * 1.05) * 0.018 * breathAmount + tilt
 
-    // ── 볼 (수줍을 때만 붉어진다) ──
+    // ── 볼 (수줍을 때만 붉어지고, 그 위에서 빗금이 밝아진다) ──
     for (const blush of blushes) blush.opacity = frameShy.blush * BLUSH_PEAK
+    if (cheekMaterial && cheekRest && cheekLit) {
+      cheekMaterial.color.copy(cheekRest).lerp(cheekLit, frameShy.blush)
+    }
 
     // ── 속도로부터 지연(lag) 계산 ──
     const dt = Math.max(delta, 1 / 240)

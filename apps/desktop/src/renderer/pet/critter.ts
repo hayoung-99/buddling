@@ -308,10 +308,13 @@ function buildPandaEyePatches(
  * 옅게 골라져 있어서(터비 독은 갈색에 가깝다) 그대로 짙게 하면 볼이 붉어진 것이
  * 아니라 빗금이 커진 것으로 보인다. 붉어지는 것은 다섯 종이 같은 감정이다.
  */
-const BLUSH_COLOR = 0xff6f7d
+const BLUSH_COLOR = 0xff5b6d
 
 /** 붉음이 덮는 각도(라디안). 빗금 무리보다 넉넉해야 뒤에서 번진 것으로 보인다. */
-const BLUSH_SPREAD = 0.25
+const BLUSH_SPREAD = 0.26
+
+/** 축을 짜 맞출 때 쓰는 위쪽. 매번 새로 만들 이유가 없어 하나만 둔다. */
+const UP = new THREE.Vector3(0, 1, 0)
 
 function buildCheeks(
   head: THREE.Object3D,
@@ -354,24 +357,40 @@ function buildCheeks(
      * 반지름을 머리보다 아주 조금만(1.004배) 키워, 머리 위에 얹히되 그보다 더 바깥에
      * 있는 빗금 밑으로 들어가게 한다.
      */
-    const toward = new THREE.Vector3(x, y, z).normalize()
+    /*
+     * 얼굴 바깥을 향하게 돌리되 **어느 쪽이 가로인지까지 정해 준다.**
+     *
+     * `setFromUnitVectors` 로 법선만 맞추면 남는 회전(roll)을 three 가 알아서 고르는데,
+     * 그러면 납작하게 눌러 놓은 타원이 세로로 서 버린다. 실제로 그렇게 나와서, 법선과
+     * 가로·세로를 직접 짜 맞춘 축으로 바꿨다. 구면 조각은 +Y 를 축으로 만들어지므로
+     * Y 에 법선을, X 에 가로를, Z 에 세로를 준다.
+     */
+    const normal = new THREE.Vector3(x, y, z).normalize()
+    const across = new THREE.Vector3().crossVectors(UP, normal).normalize()
+    // 축의 손잡이(handedness)를 오른손으로 맞춘다. `normal × across` 로 두면 왼손
+    // 좌표계가 되어 면이 뒤집히고, 뒷면을 안 그리는 탓에 볼이 통째로 안 보인다.
+    const along = new THREE.Vector3().crossVectors(across, normal).normalize()
+
     const aim = new THREE.Group()
-    aim.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), toward)
+    aim.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(across, normal, along))
     head.add(aim)
 
     const blush = new THREE.Mesh(
       new THREE.SphereGeometry(headR * 1.004, 24, 14, 0, Math.PI * 2, 0, BLUSH_SPREAD),
       new THREE.MeshStandardMaterial({
+        // 얼굴과 같은 정도로 빛을 받아야 얼굴에 번진 것으로 보인다. 무광으로 두었더니
+        // 붉음만 어둡게 가라앉아 붙여 놓은 색종이처럼 보였다.
         color: BLUSH_COLOR,
-        roughness: 1,
+        roughness: 0.6,
         metalness: 0,
         transparent: true,
         opacity: 0,
         depthWrite: false,
       }),
     )
-    // 가로로 길고 납작한 타원. 동그랗게 두었더니 볼 언저리를 넘어 얼굴을 덮었다.
-    blush.scale.set(1.55, 1, 0.5)
+    // 가로로 길고 납작한 타원(가로세로 3:1쯤). 동그랗게 두었더니 볼 언저리를 넘어
+    // 얼굴을 덮었다. 빗금 무리는 이 타원의 가운데 절반쯤에 들어온다.
+    blush.scale.set(1.38, 1, 0.56)
     aim.add(blush)
     parts[side < 0 ? 'blushR' : 'blushL'] = blush
 
