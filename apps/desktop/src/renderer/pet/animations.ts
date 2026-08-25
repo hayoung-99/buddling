@@ -17,6 +17,7 @@
  *   3) 반대 방향 — 몸이 기울면 머리는 덜 기울어 중심을 잡는다
  */
 
+import type * as THREE from 'three'
 import { sampleTrack, createSpring, clamp } from './tween'
 import type { Keyframe, Sampled } from './tween'
 import { TAIL } from '@buddling/shared/characters'
@@ -94,6 +95,41 @@ export const WAVE_UNIT: Keyframe[] = [
 ]
 
 /**
+ * 수줍음(1.7초) — 팔 하나가 얼굴 옆으로 올라오고 몸이 살랑인다.
+ *
+ *   armIn    두 팔이 **안쪽·아래로** 도는 각도 (라디안). 손 흔들기의 `armOne` 과 자리는
+ *            같지만 뜻이 달라 따로 둔다 — 저쪽은 바깥으로 뻗어 흔들고 이쪽은 손끝이
+ *            배 앞으로 모인다 (`\ /`)
+ *   shoulder 두 어깨를 옮기는 양. 위로 들면서 **앞으로 밀고** 가운데로 조금 모은다
+ *   sway     몸통이 좌우로 살랑이는 폭 (춤의 절반이 안 되게 쓴다)
+ *   tilt     살랑이는 쪽으로 몸이 기운다
+ *   blush    볼이 붉어지는 정도 (0~1)
+ *
+ * **한 팔이 아니라 두 팔이다.** 한쪽만 올려 봤더니 손 흔들기의 어중간한 변주로 읽혔다.
+ * 볼을 감싸려는 몸짓은 좌우가 대칭이어야 그 뜻이 되고, 거기에 몸통이 살랑이고 볼이
+ * 붉어져야 비로소 그 감정이 된다.
+ *
+ * **손은 실제로 맞잡히지 않는다.** 관절이 없어서 잡는 대신 배 앞에서 만나는 데서
+ * 멈춘다. 거기까지가 이 리그로 되는 것이고, 리그를 고쳐서까지 맞추지는 않는다.
+ *
+ * 팔을 얼굴까지 들어 볼 앞을 가리는 안도 만들어 나란히 재생해 보고 이쪽으로 정했다.
+ * 들어 올린 팔은 붉어진 볼을 가려서, 정작 수줍음을 말해 주는 것이 동작 내내 반쯤
+ * 가려져 있었다.
+ *
+ * 길이는 콕(1.7초)과 같다. 신호끼리 무게가 같아야 한다.
+ */
+export const SHY_UNIT: Keyframe[] = [
+  { t: 0.0, armIn: 0.0, shoulder: 0.0, sway: 0.0, tilt: 0.0, blush: 0.0, ease: 'easeOutQuad' },
+  { t: 0.22, armIn: 0.32, shoulder: 0.45, sway: -0.16, tilt: 0.04, blush: 0.3, ease: 'easeOutQuad' }, // 팔이 모이기 시작
+  { t: 0.44, armIn: 0.78, shoulder: 0.95, sway: 0.3, tilt: -0.07, blush: 0.62, ease: 'easeOutBack' }, // 두 손이 배 앞에서 만났다
+  { t: 0.72, armIn: 0.84, shoulder: 1.0, sway: -0.32, tilt: 0.08, blush: 0.88, ease: 'easeInOutQuad' }, // ── 살랑살랑 ──
+  { t: 1.0, armIn: 0.8, shoulder: 0.96, sway: 0.31, tilt: -0.08, blush: 1.0, ease: 'easeInOutQuad' },
+  { t: 1.28, armIn: 0.84, shoulder: 1.0, sway: -0.24, tilt: 0.06, blush: 0.94, ease: 'easeInOutQuad' },
+  { t: 1.5, armIn: 0.34, shoulder: 0.45, sway: 0.08, tilt: -0.02, blush: 0.52, ease: 'easeInQuad' }, // 푼다
+  { t: 1.7, armIn: 0.0, shoulder: 0.0, sway: 0.0, tilt: 0.0, blush: 0.0, ease: 'easeOutQuad' },
+]
+
+/**
  * 움찔 한 번(0.46초). 제자리에서 몸을 좌우로 떨며 눌린 느낌을 낸다.
  * 뛰지 않으므로 y는 없고, 몸통을 기울이는 tilt 가 흔들림을 만든다.
  */
@@ -111,9 +147,10 @@ const HOP_FIELDS = ['y', 'sx', 'sy']
 const DANCE_FIELDS = ['x', 'y', 'tilt', 'arm', 'spread', 'step', 'sx', 'sy']
 const TWITCH_FIELDS = ['sx', 'sy', 'tilt']
 const WAVE_FIELDS = ['armOne', 'shoulder', 'tilt']
+const SHY_FIELDS = ['armIn', 'shoulder', 'sway', 'tilt', 'blush']
 
 /** 갈아끼울 수 있는 트랙 이름 */
-export type TrackName = 'hop' | 'dance' | 'twitch' | 'wave'
+export type TrackName = 'hop' | 'dance' | 'twitch' | 'wave' | 'shy'
 
 /**
  * 트랙마다 보간하는 필드와 지금 소스에 적혀 있는 유닛.
@@ -127,6 +164,7 @@ export const TRACK_FIELDS: Record<TrackName, string[]> = {
   dance: DANCE_FIELDS,
   twitch: TWITCH_FIELDS,
   wave: WAVE_FIELDS,
+  shy: SHY_FIELDS,
 }
 
 export const TRACK_UNITS: Record<TrackName, Keyframe[]> = {
@@ -134,6 +172,7 @@ export const TRACK_UNITS: Record<TrackName, Keyframe[]> = {
   dance: DANCE_UNIT,
   twitch: TWITCH_UNIT,
   wave: WAVE_UNIT,
+  shy: SHY_UNIT,
 }
 
 /** 유닛 트랙의 길이 — 마지막 키의 시각이 곧 그 동작의 길이다. */
@@ -141,6 +180,7 @@ export const trackDuration = (keys: Keyframe[]): number => keys[keys.length - 1]
 
 const TWITCH_DURATION = trackDuration(TWITCH_UNIT)
 const WAVE_DURATION = trackDuration(WAVE_UNIT)
+const SHY_DURATION = trackDuration(SHY_UNIT)
 const DANCE_CYCLE = trackDuration(DANCE_UNIT)
 
 const HEIGHT_FALLOFF = 0.66 // 폴짝마다 높이 감쇠
@@ -156,10 +196,41 @@ export const HOP_COUNT = 3
 /** 아래는 모두 "캐릭터 키의 몇 배" 단위라, 종·크기가 달라도 같은 비율로 움직인다. */
 const HOP_RATIO = 0.26 // 첫 폴짝 높이
 const DANCE_SWAY = 0.22 // 좌우로 벌어지는 폭
+/** 수줍을 때 살랑이는 폭. 춤보다 훨씬 좁아야 '들썩임'이 아니라 '살랑임'이 된다. */
+const SHY_SWAY = 0.075
+
+/**
+ * 볼이 가장 붉을 때의 진하기.
+ *
+ * 1로 두면 붉은 판이 얼굴에 붙은 것처럼 보인다. 볼이 붉어지는 것은 살갗이 비치는
+ * 것이라 얼굴색이 조금 남아 있어야 한다.
+ */
+const BLUSH_PEAK = 0.76
+
+/**
+ * 볼이 붉을 때 빗금이 넘어가는 색.
+ *
+ * 종마다 빗금 색이 다르지만 넘어가는 곳은 하나다 — 붉은 바탕 위의 밝은 자국은
+ * 어느 얼굴에서나 같은 것으로 읽힌다.
+ */
+const CHEEK_ON_BLUSH = 0xffe3e6
 const DANCE_BOB = 0.12 // 춤추며 통통 튀는 높이
 const STEP_LIFT = 0.035 // 발을 드는 높이
 const SHOULDER_REACH = 0.075 // 손 흔들 때 어깨가 바깥으로 나가는 거리
 const SHOULDER_LIFT = 0.055 // 그때 어깨가 올라가는 높이
+/**
+ * 수줍을 때 두 팔이 **앞으로** 밀려 나가는 거리 — **몸통 깊이에 대한 비율이다.**
+ *
+ * 각도만으로는 팔이 몸통 옆면을 벗어나지 못한다. 팔은 어깨를 축으로 몸통과 같은
+ * 평면에서만 도니까, 앞으로 밀어 주는 수밖에 없다.
+ *
+ * **키가 아니라 몸통 깊이를 기준으로 잡는다.** 처음에는 키의 몇 배로 두었는데, 그러면
+ * 몸통이 깊은 종(퍼지 판다·터비 독)에서 팔이 배 속에 파묻혀 반쯤만 보였다. 넘어야
+ * 하는 것은 키가 아니라 배의 두께다.
+ */
+const SHOULDER_FORWARD = 0.85
+/** 그때 두 어깨가 가운데로 조금 모인다. 팔이 벌어진 채 올라가면 만세가 된다. */
+const SHOULDER_TUCK = 0.028
 
 /** 폴짝 n번을 하나의 키프레임 트랙으로 이어붙인다. */
 export function buildHopTimeline(hops = HOP_COUNT, unit: Keyframe[] = HOP_UNIT): Timeline {
@@ -224,7 +295,12 @@ export function sampleWave(t: number): Sampled {
   return sampleTrack(WAVE_UNIT, WAVE_FIELDS, t)
 }
 
-export { TWITCH_DURATION, WAVE_DURATION, DANCE_CYCLE }
+/** 수줍음을 시각 t에서 샘플링한다. → { armIn, shoulder, sway, tilt, blush } */
+export function sampleShy(t: number): Sampled {
+  return sampleTrack(SHY_UNIT, SHY_FIELDS, t)
+}
+
+export { TWITCH_DURATION, WAVE_DURATION, SHY_DURATION, DANCE_CYCLE }
 
 const randomBetween = (min: number, max: number) => min + Math.random() * (max - min)
 
@@ -233,6 +309,7 @@ const REST_HOP: Sampled = { y: 0, sx: 1, sy: 1 }
 const REST_DANCE: Sampled = { x: 0, y: 0, tilt: 0, arm: 0, spread: 0, step: 0, sx: 1, sy: 1 }
 const REST_TWITCH: Sampled = { sx: 1, sy: 1, tilt: 0 }
 const REST_WAVE: Sampled = { armOne: 0, shoulder: 0, tilt: 0 }
+const REST_SHY: Sampled = { armIn: 0, shoulder: 0, sway: 0, tilt: 0, blush: 0 }
 
 /**
  * 타이머를 delta 만큼 진행시키고 이번 프레임의 값을 돌려준다.
@@ -267,20 +344,58 @@ export function createAnimator(
   let danceTimeline = buildDanceTimeline(cycles, units.dance)
   let twitchDuration = trackDuration(units.twitch)
   let waveDuration = trackDuration(units.wave)
+  let shyDuration = trackDuration(units.shy)
   const wags = spec.build.tail.type === TAIL.WAG
 
   const hopHeight = height * HOP_RATIO
   const swayWidth = height * DANCE_SWAY
+  const shySwayWidth = height * SHY_SWAY
   const bobHeight = height * DANCE_BOB
   const stepLift = height * STEP_LIFT
 
   // 다리는 원래 자리에서 위로만 살짝 들 것이므로 기준 높이를 기억해 둔다
   const legBaseY = parts.legL ? parts.legL.position.y : 0
-  // 손 흔들 때 옮겼다가 되돌려 놓아야 하는 어깨 자리. 흔드는 팔은 왼팔 하나뿐이다.
-  const armBaseX = parts.armL ? parts.armL.position.x : 0
-  const armBaseY = parts.armL ? parts.armL.position.y : 0
+  /*
+   * 옮겼다가 되돌려 놓아야 하는 어깨 자리.
+   *
+   * 손 흔들기는 왼팔 하나만 쓰지만 수줍음은 **두 팔**을 쓰므로 양쪽을 다 기억한다.
+   * 앞으로 미는 것도 수줍음에만 있어서 z 까지 들고 있어야 한다.
+   */
+  const armBase = {
+    L: parts.armL ? parts.armL.position.clone() : null,
+    R: parts.armR ? parts.armR.position.clone() : null,
+  }
   const shoulderReach = height * SHOULDER_REACH
   const shoulderLift = height * SHOULDER_LIFT
+  // 몸통은 반지름에 x·y·z 스케일을 곱한 타원체다. 앞으로 얼마나 나와야 배를 벗어나는지는
+  // 그 z 쪽 반지름이 정한다.
+  const bodyDepth = spec.build.bodyRadius * spec.build.bodyShape[2]
+  const shoulderForward = bodyDepth * SHOULDER_FORWARD
+  const shoulderTuck = height * SHOULDER_TUCK
+
+  /**
+   * 볼에 번지는 붉음. 재질을 미리 잡아 두고 투명도만 만진다.
+   *
+   * 매 프레임 `traverse` 로 찾으면 캐릭터 하나에 그 비용이 초당 60번씩 붙는다.
+   * 이 앱은 켜 둔 채로 쓰는 것이라 그런 것 하나가 곧 배터리다.
+   */
+  const blushes = [parts.blushL, parts.blushR]
+    .filter(Boolean)
+    .map((mesh) => (mesh as THREE.Mesh).material as THREE.MeshStandardMaterial)
+
+  /*
+   * 볼 빗금은 붉음이 번지는 동안 **밝은 쪽으로 넘어간다.**
+   *
+   * 평소에는 하얀 얼굴 위의 분홍 빗금이라 분홍이 어두운 쪽이다. 그런데 그 아래가
+   * 붉게 물들면 같은 분홍이 배경에 묻혀 빗금이 사라져 버린다. 붉은 볼 위에서는
+   * 빗금이 **밝은 자국**이어야 보인다.
+   *
+   * 이 재질은 볼 빗금만 쓴다(`critter.ts` 의 `materials.cheek`). 캐릭터마다 따로
+   * 만들어지므로 여기서 만져도 다른 캐릭터가 함께 변하지 않는다.
+   */
+  const cheekMaterial = critter.materials.cheek as THREE.MeshStandardMaterial | undefined
+  const cheekRest = cheekMaterial?.color.clone() ?? null
+  const cheekLit = cheekRest?.clone().setHex(CHEEK_ON_BLUSH) ?? null
 
   const earLag = createSpring({ stiffness: 170, damping: 15 })
   const headLag = createSpring({ stiffness: 240, damping: 20 })
@@ -291,6 +406,7 @@ export function createAnimator(
   let danceTime: number | null = null
   let twitchTime: number | null = null
   let waveTime: number | null = null
+  let shyTime: number | null = null
   let previousY = 0
   let previousX = 0
 
@@ -323,6 +439,11 @@ export function createAnimator(
     waveTime = 0
   }
 
+  /** 팔을 얼굴 옆으로 올리고 몸을 살랑이며 볼을 붉힌다. '하트' 신호의 반응. */
+  function shy() {
+    shyTime = 0
+  }
+
   const durationOf = (name: TrackName): number =>
     name === 'hop'
       ? hopTimeline.duration
@@ -330,7 +451,9 @@ export function createAnimator(
         ? danceTimeline.duration
         : name === 'twitch'
           ? twitchDuration
-          : waveDuration
+          : name === 'wave'
+            ? waveDuration
+            : shyDuration
 
   /**
    * 유닛 트랙을 갈아끼운다. 미리보기의 키프레임 편집기만 부른다.
@@ -342,12 +465,13 @@ export function createAnimator(
     if (name === 'hop') hopTimeline = buildHopTimeline(hops, keys)
     else if (name === 'dance') danceTimeline = buildDanceTimeline(cycles, keys)
     else if (name === 'twitch') twitchDuration = trackDuration(keys)
-    else waveDuration = trackDuration(keys)
+    else if (name === 'wave') waveDuration = trackDuration(keys)
+    else shyDuration = trackDuration(keys)
   }
 
   /** 재생 중인 것을 전부 끄고 기본 자세로 돌아간다. */
   function stop() {
-    hopTime = danceTime = twitchTime = waveTime = null
+    hopTime = danceTime = twitchTime = waveTime = shyTime = null
   }
 
   /**
@@ -363,7 +487,8 @@ export function createAnimator(
     if (name === 'hop') hopTime = at
     else if (name === 'dance') danceTime = at
     else if (name === 'twitch') twitchTime = at
-    else waveTime = at
+    else if (name === 'wave') waveTime = at
+    else shyTime = at
     update(0)
   }
 
@@ -374,6 +499,7 @@ export function createAnimator(
     let frameDance: Sampled
     let frameTwitch: Sampled
     let frameWave: Sampled
+    let frameShy: Sampled
     ;[hopTime, frameHop] = advance(
       hopTime,
       delta,
@@ -402,16 +528,27 @@ export function createAnimator(
       (t) => sampleTrack(units.wave, WAVE_FIELDS, t),
       REST_WAVE,
     )
+    ;[shyTime, frameShy] = advance(
+      shyTime,
+      delta,
+      shyDuration,
+      (t) => sampleTrack(units.shy, SHY_FIELDS, t),
+      REST_SHY,
+    )
 
     const settled =
-      hopTime === null && danceTime === null && twitchTime === null && waveTime === null
+      hopTime === null &&
+      danceTime === null &&
+      twitchTime === null &&
+      waveTime === null &&
+      shyTime === null
 
     // ── 호흡 (다른 동작 중에는 거의 죽인다) ──
     const breathAmount = settled ? 1 : 0.2
     const breath = Math.sin(elapsed * 2.1) * 0.022 * breathAmount
 
     // ── 위치와 부피 (여러 동작이 곱해지고 더해진다) ──
-    const x = frameDance.x * swayWidth
+    const x = frameDance.x * swayWidth + frameShy.sway * shySwayWidth
     const y = frameHop.y * hopHeight + frameDance.y * bobHeight
     const wide = frameHop.sx * frameDance.sx * frameTwitch.sx * (1 - breath * 0.5)
 
@@ -419,8 +556,14 @@ export function createAnimator(
     root.scale.set(wide, frameHop.sy * frameDance.sy * frameTwitch.sy * (1 + breath), wide)
 
     // ── 몸통 ──
-    const tilt = frameDance.tilt + frameTwitch.tilt + frameWave.tilt
+    const tilt = frameDance.tilt + frameTwitch.tilt + frameWave.tilt + frameShy.tilt
     parts.body.rotation.z = Math.sin(elapsed * 1.05) * 0.018 * breathAmount + tilt
+
+    // ── 볼 (수줍을 때만 붉어지고, 그 위에서 빗금이 밝아진다) ──
+    for (const blush of blushes) blush.opacity = frameShy.blush * BLUSH_PEAK
+    if (cheekMaterial && cheekRest && cheekLit) {
+      cheekMaterial.color.copy(cheekRest).lerp(cheekLit, frameShy.blush)
+    }
 
     // ── 속도로부터 지연(lag) 계산 ──
     const dt = Math.max(delta, 1 / 240)
@@ -437,14 +580,31 @@ export function createAnimator(
       Math.sin(elapsed * 2.1 + 0.5) * 0.026 * breathAmount - headLag.value * 0.16
     parts.head.rotation.z = -tilt * 0.45
 
-    // ── 팔 (춤출 때는 두 팔이 함께, 손 흔들 때는 왼팔만) ──
-    if (parts.armL) {
-      parts.armL.rotation.z = frameDance.spread + frameDance.arm + frameWave.armOne
-      // 각도만으로는 짧은 팔이 몸통 옆면에 묻힌다. 어깨를 잠깐 밀어 실루엣 밖으로 뺀다.
-      parts.armL.position.x = armBaseX + frameWave.shoulder * shoulderReach
-      parts.armL.position.y = armBaseY + frameWave.shoulder * shoulderLift
+    /*
+     * ── 팔 ──
+     *
+     * 춤은 두 팔이 함께, 손 흔들기는 왼팔만, 수줍음은 두 팔이 대칭으로 움직인다.
+     * 겹쳐서 재생되는 일이 없으므로 그냥 더해 두면 서로를 지우지 않는다.
+     *
+     * 각도만으로는 짧은 팔이 몸통 옆면에 묻히므로 어깨를 밀어 실루엣 밖으로 뺀다.
+     * 수줍음은 거기에 더해 **앞으로** 밀고 가운데로 조금 모은다 — 그래야 팔이 몸통
+     * 옆면에 묻히지 않고 배 앞으로 나온다.
+     */
+    if (parts.armL && armBase.L) {
+      parts.armL.rotation.z =
+        frameDance.spread + frameDance.arm + frameWave.armOne - frameShy.armIn
+      parts.armL.position.x =
+        armBase.L.x + frameWave.shoulder * shoulderReach - frameShy.shoulder * shoulderTuck
+      parts.armL.position.y =
+        armBase.L.y + (frameWave.shoulder + frameShy.shoulder) * shoulderLift
+      parts.armL.position.z = armBase.L.z + frameShy.shoulder * shoulderForward
     }
-    if (parts.armR) parts.armR.rotation.z = -frameDance.spread + frameDance.arm
+    if (parts.armR && armBase.R) {
+      parts.armR.rotation.z = -frameDance.spread + frameDance.arm + frameShy.armIn
+      parts.armR.position.x = armBase.R.x + frameShy.shoulder * shoulderTuck
+      parts.armR.position.y = armBase.R.y + frameShy.shoulder * shoulderLift
+      parts.armR.position.z = armBase.R.z + frameShy.shoulder * shoulderForward
+    }
 
     // ── 다리 (춤출 때 번갈아 발을 든다) ──
     if (parts.legL) parts.legL.position.y = legBaseY + Math.max(0, frameDance.step) * stepLift
@@ -512,6 +672,7 @@ export function createAnimator(
     dance,
     twitch,
     wave,
+    shy,
     update,
     get isHopping() {
       return hopTime !== null
@@ -524,6 +685,9 @@ export function createAnimator(
     },
     get isWaving() {
       return waveTime !== null
+    },
+    get isShying() {
+      return shyTime !== null
     },
     get danceDuration() {
       return danceTimeline.duration
@@ -540,6 +704,7 @@ export function createAnimator(
         dance: danceTimeline.duration,
         twitch: twitchDuration,
         wave: waveDuration,
+        shy: shyDuration,
       }
     },
   }

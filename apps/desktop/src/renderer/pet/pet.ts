@@ -41,6 +41,7 @@ import { createNameplate } from './nameplate'
 import { createNotes } from './notes'
 import { createPuff } from './puff'
 import { createGreet } from './greet'
+import { createHeartBubble } from './heart-bubble'
 import { createTakeoff } from './takeoff'
 import { toSignal } from '@buddling/shared/signals'
 import type { SignalKind } from '@buddling/shared/signals'
@@ -97,6 +98,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
   let notes: ReturnType<typeof createNotes> | null = null
   let puff: ReturnType<typeof createPuff> | null = null
   let greet: ReturnType<typeof createGreet> | null = null
+  let heartBubble: ReturnType<typeof createHeartBubble> | null = null
   /**
    * 지금 화면에서 재생 중인 신호. 다른 신호가 오면 갈아타야 해서 들고 있는다.
    * 아무것도 안 하고 있으면 null 이다.
@@ -137,6 +139,8 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
     puff = createPuff(stage.stand, unit)
     greet?.dispose()
     greet = createGreet(stage.stand, unit)
+    heartBubble?.dispose()
+    heartBubble = createHeartBubble(stage.stand, unit)
     playing = null
     updateHotZone()
   }
@@ -274,6 +278,12 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
       } else if (kind === 'wave') {
         animator?.wave()
         greet?.burst()
+      } else if (kind === 'heart') {
+        // 수줍음은 움직이는 것이 넷이다 — 팔·몸통·볼은 애니메이터가, 말풍선은 이쪽이
+        // 맡는다. 말풍선을 트랙에 넣지 않은 것은 그것이 캐릭터의 부위가 아니라
+        // 곁들이는 것이라서다 (음표·먼지·짝대기와 같은 결).
+        animator?.shy()
+        heartBubble?.burst()
       } else {
         animator?.dance()
         notes?.burst({ count: 6 })
@@ -330,7 +340,9 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
   /** 지금 눈에 띄게 움직이는 중인가 */
   /** 신호로 시작한 동작이 아직 도는 중인가 (내가 눌러서 나는 움찔은 신호가 아니다) */
   function isPlayingSignal() {
-    return Boolean(animator?.isDancing || animator?.isHopping || animator?.isWaving)
+    return Boolean(
+      animator?.isDancing || animator?.isHopping || animator?.isWaving || animator?.isShying,
+    )
   }
 
   function isBusy() {
@@ -339,7 +351,9 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
         animator?.isTwitching ||
         animator?.isHopping ||
         animator?.isWaving ||
+        animator?.isShying ||
         greet?.count ||
+        heartBubble?.showing ||
         notes?.count ||
         puff?.count ||
         interactive ||
@@ -365,6 +379,7 @@ export function startPet({ canvas, bubble: bubbleElement, nameplate: nameplateEl
       notes?.update(step)
       puff?.update(step)
       greet?.update(step)
+      heartBubble?.update(step)
     }
     stage.render()
   }
