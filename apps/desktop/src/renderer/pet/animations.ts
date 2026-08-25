@@ -135,6 +135,7 @@ export const SHY_UNIT: Keyframe[] = [
  *   sit    몸이 내려앉는 정도 (0~1). 발은 바닥에 그대로 두고 몸통만 내린다
  *   feet   발이 앞으로 나가는 정도 (0~1). 앞으로 뻗은 다리의 실루엣을 만든다
  *   armAlt 두 팔이 번갈아 젓는 각도 (라디안). 부호가 뒤집힐 때마다 한 번이다
+ *   legAlt 앉은 두 발이 번갈아 오르내리는 정도 (-1~1). 팔과 **반대 박자**로 움직인다
  *   tilt   젓는 쪽으로 몸이 살짝 기운다
  *   sx·sy  닿는 순간의 찌부러짐. 다른 트랙의 것과 곱해진다
  *   squint 눈을 꽉 감는 정도 (0~1). 눈알이 줄어들면서 `> <` 가 커진다
@@ -150,17 +151,17 @@ export const SHY_UNIT: Keyframe[] = [
  * 붙지만 **앙탈은 몸짓만으로 말한다.**
  */
 export const SULK_UNIT: Keyframe[] = [
-  { t: 0.0, sit: 0.0, feet: 0.0, armAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, squint: 0.0, ease: 'easeOutQuad' },
-  { t: 0.1, sit: 0.16, feet: 0.08, armAlt: 0.0, tilt: 0.0, sx: 1.02, sy: 0.97, squint: 0.4, ease: 'easeOutQuad' }, // 웅크리며 눈을 감기 시작
-  { t: 0.24, sit: 1.0, feet: 0.82, armAlt: 0.0, tilt: 0.0, sx: 1.13, sy: 0.87, squint: 1.0, ease: 'easeInQuad' }, // 털썩 — 이때 눈이 꽉 감긴다
-  { t: 0.33, sit: 0.95, feet: 1.0, armAlt: 1.0, tilt: 0.06, sx: 0.97, sy: 1.05, squint: 1.0, ease: 'easeOutQuad' }, // 튕겨 오른다
-  { t: 0.46, sit: 1.0, feet: 1.0, armAlt: -1.28, tilt: -0.06, sx: 1.01, sy: 0.99, squint: 1.0, ease: 'easeInOutQuad' }, // ── 휘젓기 넷 ──
-  { t: 0.6, sit: 1.0, feet: 1.0, armAlt: 1.28, tilt: 0.06, sx: 1.0, sy: 1.0, squint: 1.0, ease: 'easeInOutQuad' },
-  { t: 0.74, sit: 1.0, feet: 1.0, armAlt: -1.28, tilt: -0.06, sx: 1.0, sy: 1.0, squint: 1.0, ease: 'easeInOutQuad' },
-  { t: 0.88, sit: 1.0, feet: 1.0, armAlt: 1.28, tilt: 0.06, sx: 1.0, sy: 1.0, squint: 1.0, ease: 'easeInOutQuad' },
-  { t: 1.02, sit: 1.0, feet: 1.0, armAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, squint: 1.0, ease: 'easeOutQuad' }, // 멈춘다
-  { t: 1.3, sit: 1.0, feet: 1.0, armAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, squint: 1.0, ease: 'easeInOutQuad' }, // 잠깐 그대로
-  { t: 1.7, sit: 0.0, feet: 0.0, armAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, squint: 0.0, ease: 'easeInOutQuad' }, // 스르르 일어나며 눈을 뜬다
+  { t: 0.0, sit: 0.0, feet: 0.0, armAlt: 0.0, legAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, squint: 0.0, ease: 'easeOutQuad' },
+  { t: 0.1, sit: 0.16, feet: 0.08, armAlt: 0.0, legAlt: 0.0, tilt: 0.0, sx: 1.02, sy: 0.97, squint: 0.4, ease: 'easeOutQuad' }, // 웅크리며 눈을 감기 시작
+  { t: 0.24, sit: 1.0, feet: 0.82, armAlt: 0.0, legAlt: 0.0, tilt: 0.0, sx: 1.13, sy: 0.87, squint: 1.0, ease: 'easeInQuad' }, // 털썩 — 이때 눈이 꽉 감긴다
+  { t: 0.33, sit: 0.95, feet: 1.0, armAlt: 1.0, legAlt: -0.78, tilt: 0.06, sx: 0.97, sy: 1.05, squint: 1.0, ease: 'easeOutQuad' }, // 튕겨 오른다
+  { t: 0.46, sit: 1.0, feet: 1.0, armAlt: -1.28, legAlt: 1.0, tilt: -0.06, sx: 1.01, sy: 0.99, squint: 1.0, ease: 'easeInOutQuad' }, // ── 휘젓기 넷 ──
+  { t: 0.6, sit: 1.0, feet: 1.0, armAlt: 1.28, legAlt: -1.0, tilt: 0.06, sx: 1.0, sy: 1.0, squint: 1.0, ease: 'easeInOutQuad' },
+  { t: 0.74, sit: 1.0, feet: 1.0, armAlt: -1.28, legAlt: 1.0, tilt: -0.06, sx: 1.0, sy: 1.0, squint: 1.0, ease: 'easeInOutQuad' },
+  { t: 0.88, sit: 1.0, feet: 1.0, armAlt: 1.28, legAlt: -1.0, tilt: 0.06, sx: 1.0, sy: 1.0, squint: 1.0, ease: 'easeInOutQuad' },
+  { t: 1.02, sit: 1.0, feet: 1.0, armAlt: 0.0, legAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, squint: 1.0, ease: 'easeOutQuad' }, // 멈춘다
+  { t: 1.3, sit: 1.0, feet: 1.0, armAlt: 0.0, legAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, squint: 1.0, ease: 'easeInOutQuad' }, // 잠깐 그대로
+  { t: 1.7, sit: 0.0, feet: 0.0, armAlt: 0.0, legAlt: 0.0, tilt: 0.0, sx: 1.0, sy: 1.0, squint: 0.0, ease: 'easeInOutQuad' }, // 스르르 일어나며 눈을 뜬다
 ]
 
 /**
@@ -182,7 +183,7 @@ const DANCE_FIELDS = ['x', 'y', 'tilt', 'arm', 'spread', 'step', 'sx', 'sy']
 const TWITCH_FIELDS = ['sx', 'sy', 'tilt']
 const WAVE_FIELDS = ['armOne', 'shoulder', 'tilt']
 const SHY_FIELDS = ['armIn', 'shoulder', 'sway', 'tilt', 'blush']
-const SULK_FIELDS = ['sit', 'feet', 'armAlt', 'tilt', 'sx', 'sy', 'squint']
+const SULK_FIELDS = ['sit', 'feet', 'armAlt', 'legAlt', 'tilt', 'sx', 'sy', 'squint']
 
 /** 갈아끼울 수 있는 트랙 이름 */
 export type TrackName = 'hop' | 'dance' | 'twitch' | 'wave' | 'shy' | 'sulk'
@@ -270,6 +271,8 @@ const FEET_FORWARD = 0.62
  * 어깨를 바깥으로 밀어 푼 것과 같은 문제이고, 여기서는 앞으로 밀어 푼다.
  */
 const FLAIL_FORWARD = 0.5
+/** 앉은 채로 발을 차올리는 높이 (캐릭터 키 기준 비율) */
+const KICK_LIFT = 0.13
 const SHOULDER_REACH = 0.075 // 손 흔들 때 어깨가 바깥으로 나가는 거리
 const SHOULDER_LIFT = 0.055 // 그때 어깨가 올라가는 높이
 /**
@@ -369,7 +372,16 @@ const REST_DANCE: Sampled = { x: 0, y: 0, tilt: 0, arm: 0, spread: 0, step: 0, s
 const REST_TWITCH: Sampled = { sx: 1, sy: 1, tilt: 0 }
 const REST_WAVE: Sampled = { armOne: 0, shoulder: 0, tilt: 0 }
 const REST_SHY: Sampled = { armIn: 0, shoulder: 0, sway: 0, tilt: 0, blush: 0 }
-const REST_SULK: Sampled = { sit: 0, feet: 0, armAlt: 0, tilt: 0, sx: 1, sy: 1, squint: 0 }
+const REST_SULK: Sampled = {
+  sit: 0,
+  feet: 0,
+  armAlt: 0,
+  legAlt: 0,
+  tilt: 0,
+  sx: 1,
+  sy: 1,
+  squint: 0,
+}
 
 /**
  * 타이머를 delta 만큼 진행시키고 이번 프레임의 값을 돌려준다.
@@ -437,6 +449,7 @@ export function createAnimator(
   const shoulderForward = bodyDepth * SHOULDER_FORWARD
   const feetForward = bodyDepth * FEET_FORWARD
   const flailForward = bodyDepth * FLAIL_FORWARD
+  const kickLift = height * KICK_LIFT
   const shoulderTuck = height * SHOULDER_TUCK
 
   /**
@@ -709,12 +722,23 @@ export function createAnimator(
      */
     const sitBack = frameSulk.sit * sitDrop
     const legZ = legBaseZ + frameSulk.feet * feetForward
+    /*
+     * 앉은 채로 두 발을 번갈아 **차올린다.**
+     *
+     * 한쪽이 오를 때 다른 쪽은 내려가는 것이 아니라 **바닥에 그대로 있는다**
+     * (`Math.max(0, …)`). 부호를 그대로 쓰면 내려가는 발이 바닥을 뚫고 들어가 몸통에
+     * 묻히는데, 퍼지 판다처럼 배가 넓은 종에서는 발이 아예 안 보이게 된다.
+     * 춤출 때 발을 번갈아 드는 것과 같은 방식이다.
+     */
+    const kick = frameSulk.legAlt
     if (parts.legL) {
-      parts.legL.position.y = legBaseY + Math.max(0, frameDance.step) * stepLift + sitBack
+      parts.legL.position.y =
+        legBaseY + Math.max(0, frameDance.step) * stepLift + sitBack + Math.max(0, kick) * kickLift
       parts.legL.position.z = legZ
     }
     if (parts.legR) {
-      parts.legR.position.y = legBaseY + Math.max(0, -frameDance.step) * stepLift + sitBack
+      parts.legR.position.y =
+        legBaseY + Math.max(0, -frameDance.step) * stepLift + sitBack + Math.max(0, -kick) * kickLift
       parts.legR.position.z = legZ
     }
 
