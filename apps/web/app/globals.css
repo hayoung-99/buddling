@@ -101,6 +101,17 @@ h1 em { font-style: normal; font-weight: 800; letter-spacing: -0.03em; }
 h2 { font-size: clamp(1.5rem, 2.8vw, 2rem); font-weight: 300; letter-spacing: -0.02em; line-height: 1.25; }
 h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height: 1.35; }
 
+/*
+ * 작은 글자는 **세 단뿐이다** — 0.94 / 0.9 / 0.85rem.
+ *
+ * 한때 0.82 에서 0.96 사이에 서로 다른 단이 열 개 흩어져 있었다. 0.5px 차이라 화면에서는
+ * 구별되지 않으면서, 새 줄을 만들 때마다 "옆엣것과 몇 rem 이었더라" 를 다시 재게 만들었다.
+ * 하나로 모으면서 움직인 폭이 가장 큰 것도 0.03rem(0.5px)이라 화면은 그대로다.
+ *
+ *   0.94rem  줄 제목과 버튼 — 본문 다음으로 무거운 것
+ *   0.9rem   딸린 설명 — 사실 목록의 설명, 설치 단계
+ *   0.85rem  꼬리표성 글자 — 창 제목, 메타, 힌트, 꼬리말
+ */
 .label { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
 
 .skip { position: absolute; left: -9999px; top: 0; background: var(--ink); color: var(--panel); padding: 0.75rem 1.25rem; z-index: 30; }
@@ -145,8 +156,8 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
   border-radius: var(--r-window) var(--r-window) 0 0;
 }
 .lights { width: 42px; flex: none; }
-.titlebar .title { font-size: 0.86rem; font-weight: 700; letter-spacing: -0.01em; }
-.titlebar nav { margin-left: auto; display: flex; gap: 1.3rem; font-size: 0.86rem; }
+.titlebar .title { font-size: 0.85rem; font-weight: 700; letter-spacing: -0.01em; }
+.titlebar nav { margin-left: auto; display: flex; gap: 1.3rem; font-size: 0.85rem; }
 .titlebar nav a { text-decoration: none; color: var(--ink-soft); }
 .titlebar nav a:hover { color: var(--ink); }
 /* 언어 바꾸기는 같은 페이지 안을 오가는 링크가 아니다. 선을 그어 구분한다. */
@@ -162,9 +173,9 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
 .hero { padding-block: 62px 54px; }
 .hero .lead { margin-top: 18px; font-size: 1.06rem; color: var(--ink-soft); max-width: 28ch; }
 /* 받기 버튼보다 위에 둔다. 받고 나서 알면 늦는 문장이라 그렇다. */
-.hero .needs-two { margin-top: 12px; font-size: 0.92rem; color: var(--ink-soft); max-width: 30ch; }
+.hero .needs-two { margin-top: 12px; font-size: 0.94rem; color: var(--ink-soft); max-width: 30ch; }
 .actions { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 10px; }
-.hero .note { margin-top: 16px; font-size: 0.84rem; color: var(--ink-soft); }
+.hero .note { margin-top: 16px; font-size: 0.85rem; color: var(--ink-soft); }
 /* 두 줄이 잇달아 오므로 뒤엣것은 바짝 붙인다 — 한 덩어리로 읽혀야 한다 */
 .hero .note + .note { margin-top: 6px; }
 .hero .note a { color: var(--accent); }
@@ -188,7 +199,7 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
 
 .strip { margin-top: 26px; width: 100%; }
 .facts { margin-top: 26px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 22px; }
-.facts dt { font-weight: 700; font-size: 0.95rem; }
+.facts dt { font-weight: 700; font-size: 0.94rem; }
 .facts dd { margin-top: 5px; font-size: 0.9rem; color: var(--ink-soft); }
 
 /* ── 버튼 ─────────────────────────────────────────────── */
@@ -219,9 +230,9 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
 }
 .dl-row:hover { transform: translateY(-1px); border-color: var(--ink-soft); }
 .dl-row[data-recommended] { border-color: var(--accent); }
-.dl-row .name { font-weight: 700; font-size: 0.96rem; }
-.dl-row .meta { font-size: 0.82rem; color: var(--ink-soft); }
-.dl-row .btn { padding: 0.5rem 1.05rem; font-size: 0.86rem; }
+.dl-row .name { font-weight: 700; font-size: 0.94rem; }
+.dl-row .meta { font-size: 0.85rem; color: var(--ink-soft); }
+.dl-row .btn { padding: 0.5rem 1.05rem; font-size: 0.85rem; }
 
 .hint { margin-top: 18px; font-size: 0.85rem; color: var(--ink-soft); max-width: 62ch; }
 .hint a { color: var(--accent); }
@@ -248,7 +259,7 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
   align-items: start;
 }
 .qa { border-top: 1px solid var(--line); padding-top: 16px; }
-.qa p { margin-top: 6px; font-size: 0.93rem; color: var(--ink-soft); }
+.qa p { margin-top: 6px; font-size: 0.94rem; color: var(--ink-soft); }
 
 /* ── 받고 나면 이 창이 열려요 (리듬을 끊는 판) ─────────── */
 
@@ -285,7 +296,7 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
 .window footer {
   display: flex; flex-wrap: wrap; gap: 1rem 2rem; justify-content: space-between;
   padding: 22px 40px 26px; border-top: 1px solid var(--line);
-  font-size: 0.84rem; color: var(--ink-soft);
+  font-size: 0.85rem; color: var(--ink-soft);
 }
 .window footer nav { display: flex; gap: 1.2rem; }
 .window footer a { text-decoration: none; }
