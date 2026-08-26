@@ -6,7 +6,7 @@ export const ko: Copy = {
   other: { href: '/en/', lang: 'en', short: 'EN', long: 'English' },
 
   skipToContent: '본문으로 건너뛰기',
-  nav: { characters: '캐릭터', download: '받기', faq: '궁금한 것' },
+  nav: { characters: '캐릭터', download: '받기', install: '처음 열 때', faq: '궁금한 것' },
 
   hero: {
     lead: '바탕화면 위에',
@@ -16,6 +16,8 @@ export const ko: Copy = {
     needsTwo: '한 명만 불러 오면 시작돼요. 혼자서는 찌를 상대가 없거든요.',
     download: '받기',
     allVersions: '모든 버전',
+    warns: '처음 열 때 경고가 한 번 떠요.',
+    warnsLink: '넘기는 법 보기',
     note: '무료 · 가입 없음 · macOS와 Windows',
     imageAlt: '바탕화면 위에 서 있는 흰 고양이 캐릭터',
   },

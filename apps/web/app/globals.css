@@ -55,6 +55,24 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/*
+ * 가로로는 넘친 것을 잘라 낸다.
+ *
+ * 창 모서리를 밟고 선 고양이(`.escapee`)는 창 밖으로 나가라고 절대배치해 둔 것이라,
+ * 화면이 좁아지면 그 **상자**가 화면 오른쪽을 넘어간다 — 1024px 에서 67px, 1280px 에서
+ * 27px 만큼 진짜 가로 스크롤바가 생긴다. 스크롤해 보면 가운데 있던 창이 통째로 왼쪽으로
+ * 밀려 구도가 무너진다.
+ *
+ * **잘라 내도 잃는 것이 없다.** 넘어가는 부분은 그림의 투명 여백(오른쪽 32%)이고
+ * 고양이 자신은 어느 폭에서나 화면 안에 남는다 — `.escapee` 의 오프셋이 애초에 그
+ * 여백까지 계산에 넣고 잡혀 있다.
+ *
+ * **`hidden` 이 아니라 `clip` 이다.** `hidden` 은 스크롤 컨테이너를 만들어서, 빼꼼이
+ * 기대는 배치 좌표(`offsetTop`)와 위치 기준이 함께 달라진다. `clip` 은 잘라 주기만 하고
+ * 컨테이너를 만들지 않는다 (같은 이유가 아래 `.peekers` 에도 적혀 있다).
+ */
+html { overflow-x: clip; }
+
 html { scroll-behavior: smooth; scroll-padding-top: 5rem; -webkit-text-size-adjust: 100%; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
@@ -147,6 +165,9 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
 .hero .needs-two { margin-top: 12px; font-size: 0.92rem; color: var(--ink-soft); max-width: 30ch; }
 .actions { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 10px; }
 .hero .note { margin-top: 16px; font-size: 0.84rem; color: var(--ink-soft); }
+/* 두 줄이 잇달아 오므로 뒤엣것은 바짝 붙인다 — 한 덩어리로 읽혀야 한다 */
+.hero .note + .note { margin-top: 6px; }
+.hero .note a { color: var(--accent); }
 
 /*
  * 창 모서리를 밟고 서는 고양이. 이 한 장이 컨셉을 다 설명하므로 진짜로 넘어와야 한다.
@@ -248,7 +269,7 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
   border: 1px solid var(--line);
   box-shadow: 0 18px 40px -18px rgba(20, 18, 26, 0.42);
 }
-/* 원본이 800x1560 으로 아주 길다. 방 목록이 끝나는 데서 끊는다. */
+/* 원본이 800x1400 으로 아주 길다. 방 목록이 끝나는 데서 끊는다. */
 .app-shot {
   width: 100%;
   aspect-ratio: 3 / 2.75; /* 언어 고르는 줄 바로 아래에서 끊는다 */
@@ -271,6 +292,23 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
 .window footer a:hover { color: var(--ink); }
 
 /* ── 좁은 화면: 창틀을 없앤다 ─────────────────────────── */
+
+/*
+ * 좁은 화면에서는 제목줄에 **언어 바꾸기만** 남긴다.
+ *
+ * 내비가 줄바꿈도 축소도 하지 않는 한 줄이라, 영어판에서는 그 자체가 317px 이다.
+ * 390px 짜리 화면에서 쓸 수 있는 자리가 220px 남짓이라 그대로 두면 제목줄이 화면을
+ * 넘어가고, 페이지 전체에 가로 스크롤이 생긴다 (320px 에서 146px 넘쳤다). 한국어는
+ * 글자가 짧아 320px 에서만 걸리지만, 같은 자리에서 나는 같은 고장이다.
+ *
+ * **지우는 것은 안쪽으로 가는 링크 셋이다.** 이 폭에서는 페이지가 한 줄로 이어진
+ * 스크롤이라 굴리면 다 지나가지만, 언어 바꾸기는 여기 말고 갈 길이 꼬리말뿐이다.
+ * 남길 것을 고르면 그쪽이다.
+ */
+@media (max-width: 560px) {
+  .titlebar nav a:not(.lang) { display: none; }
+  .titlebar nav a.lang { border-left: 0; padding-left: 0; }
+}
 
 @media (max-width: 900px) {
   .shot-pane { grid-template-columns: 1fr; gap: 26px; }
