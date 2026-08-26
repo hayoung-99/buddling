@@ -51,9 +51,16 @@ jobs:
       pull-requests: write
 
     outputs:
-      # 릴리스 PR 이 머지되어 실제로 릴리스가 만들어졌을 때만 'true'
-      released: ${{ steps.release.outputs.release_created }}
-      tag: ${{ steps.release.outputs.tag_name }}
+      # 릴리스 PR 이 머지되어 실제로 릴리스가 만들어졌을 때만 'true'.
+      #
+      # release-please-action 은 경로가 '.' 일 때만 접두어 없는 flat 키를 쓴다
+      # (dist/index.js 의 setPathOutput). 우리 패키지 경로는 `apps/desktop` 이라
+      # 실제 출력 키는 `apps/desktop--release_created`·`apps/desktop--tag_name`
+      # 이다. 접두어 없는 이름을 그대로 썼다가 세 번(0.5.0·0.6.0·0.7.0) 연속
+      # 값이 항상 비어서 build·publish 가 건너뛰어지고 릴리스가 Draft 로
+      # 멈췄다.
+      released: ${{ steps.release.outputs['apps/desktop--release_created'] }}
+      tag: ${{ steps.release.outputs['apps/desktop--tag_name'] }}
 
     steps:
       # 기본 GITHUB_TOKEN 을 쓰면 만들어지는 릴리스 PR 의 액터가 github-actions[bot]
@@ -79,7 +86,7 @@ jobs:
       # 다시 훑고, 그렇게 나온 PR 은 늘 엉뚱한 버전을 제안한다. 릴리스 네 번 내내
       # 그랬고 그중 셋은 버전을 되돌리는 제안이었다(#12·#16·#18).
       # 그 경우는 태그가 생긴 뒤에 맨 아래 refresh 잡이 맡는다.
-      - if: steps.release.outputs.release_created != 'true'
+      - if: steps.release.outputs['apps/desktop--release_created'] != 'true'
         uses: googleapis/release-please-action@v5
         with:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
