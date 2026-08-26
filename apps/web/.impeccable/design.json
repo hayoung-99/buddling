@@ -1,0 +1,382 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-26T00:03:42.758Z",
+  "title": "Design System: Buddling Web",
+  "extensions": {
+    "colorMeta": {
+      "wall-top": {
+        "role": "neutral",
+        "displayName": "차가운 페리윙클 (위)",
+        "canonical": "#a9a5bd",
+        "tonalRamp": [
+          "#0c0818",
+          "#262234",
+          "#423f53",
+          "#625e74",
+          "#837f96",
+          "#a5a1b9",
+          "#c9c5de",
+          "#efecff"
+        ]
+      },
+      "wall-bottom": {
+        "role": "neutral",
+        "displayName": "차가운 페리윙클 (아래)",
+        "canonical": "#cbbfc0",
+        "tonalRamp": [
+          "#10090a",
+          "#2b2223",
+          "#493f40",
+          "#695e5f",
+          "#8a7f80",
+          "#ada2a3",
+          "#d2c6c7",
+          "#f7ebec"
+        ]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "종이",
+        "canonical": "#f7f5f1",
+        "tonalRamp": [
+          "#0c0b09",
+          "#262522",
+          "#43423f",
+          "#63615e",
+          "#84827e",
+          "#a7a5a1",
+          "#cbc9c5",
+          "#f0eeea"
+        ]
+      },
+      "sunk": {
+        "role": "neutral",
+        "displayName": "가라앉은 판",
+        "canonical": "#eae6de",
+        "tonalRamp": [
+          "#0d0b06",
+          "#28251f",
+          "#45423b",
+          "#64615a",
+          "#85827b",
+          "#a8a59d",
+          "#cdc9c1",
+          "#f2eee6"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "잉크",
+        "canonical": "#2b2733",
+        "tonalRamp": [
+          "#0d0913",
+          "#27232e",
+          "#443f4c",
+          "#635f6c",
+          "#84808e",
+          "#a7a2b1",
+          "#cbc6d6",
+          "#f1ebfc"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "옅은 잉크",
+        "canonical": "#615c6e",
+        "tonalRamp": [
+          "#0d0816",
+          "#272231",
+          "#443f50",
+          "#635e70",
+          "#847f92",
+          "#a7a1b5",
+          "#cbc5da",
+          "#f0ebff"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "[이름 미정 · 값도 임시]",
+        "canonical": "#9a5d18",
+        "tonalRamp": [
+          "#150700",
+          "#391d00",
+          "#613600",
+          "#8c5101",
+          "#b17232",
+          "#d69556",
+          "#fdb97a",
+          "#ffead9"
+        ]
+      },
+      "accent-dark": {
+        "role": "primary",
+        "displayName": "[이름 미정 · 어두운 모드 짝]",
+        "canonical": "#e8b06a",
+        "tonalRamp": [
+          "#140800",
+          "#361f00",
+          "#5c3900",
+          "#865500",
+          "#ab762e",
+          "#d09953",
+          "#f6bd77",
+          "#ffebd4"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "히어로 제목. 가늘게(300) 가다 한 구절만 굵어진다."
+      },
+      "display-emphasis": {
+        "displayName": "Display Emphasis",
+        "purpose": "제목 안의 단 한 구절. 기울이지 않고 굵힌다."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "판 제목."
+      },
+      "headline-quiet": {
+        "displayName": "Headline Quiet",
+        "purpose": "리듬을 끊는 판 하나에서만 쓰는 작은 판 제목. 그 판은 꼬리표가 없어 제목이 혼자 선다."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "판 안의 작은 제목·질문·설치 안내 소제목."
+      },
+      "lead": {
+        "displayName": "Lead",
+        "purpose": "히어로의 첫 문단. 본문보다 한 단 위인 자리는 여기뿐이다."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "본문. 부연은 28~46ch 로 묶는다."
+      },
+      "body-strong": {
+        "displayName": "Body Strong",
+        "purpose": "줄 제목과 버튼 — 본문 다음으로 무거운 것."
+      },
+      "body-small": {
+        "displayName": "Body Small",
+        "purpose": "딸린 설명 — 사실 목록의 설명, 설치 단계."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "꼬리표성 글자 — 창 제목, 메타, 힌트, 꼬리말."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "판 위 꼬리표. 유일하게 포인트 색을 쓰는 글자."
+      },
+      "metric": {
+        "displayName": "Metric",
+        "purpose": "어드민 숫자판. 이 화면에서 가장 큰 글자."
+      }
+    },
+    "shadows": [
+      {
+        "name": "window",
+        "value": "0 40px 90px -30px rgba(20,18,26,0.45), 0 2px 6px rgba(20,18,26,0.1)",
+        "purpose": "창이 벽지 위에 떠 있다는 사실. 두 겹이라야 떠 보인다."
+      },
+      {
+        "name": "app-frame",
+        "value": "0 18px 40px -18px rgba(20,18,26,0.42)",
+        "purpose": "창 안의 앱 스크린샷 액자. 창보다 얕아야 한다."
+      },
+      {
+        "name": "escapee",
+        "value": "drop-shadow(0 18px 30px rgba(20,18,26,0.28))",
+        "purpose": "창을 넘어온 캐릭터. box-shadow 로는 그림 상자가 드러난다."
+      },
+      {
+        "name": "peek",
+        "value": "drop-shadow(0 12px 20px rgba(43,39,51,0.22))",
+        "purpose": "벽지 위에 지는 그림자라 더 얕고 짧다. 어두운 모드는 rgba(0,0,0,0.5)."
+      }
+    ],
+    "motion": [
+      {
+        "name": "window-in",
+        "value": "420ms cubic-bezier(0.2, 0.9, 0.3, 1)",
+        "purpose": "창이 20px 아래에서 떠오르며 나타난다. 900px 아래에서는 끈다."
+      },
+      {
+        "name": "peek-in",
+        "value": "1200ms cubic-bezier(0.16, 0.84, 0.3, 1)",
+        "purpose": "빼꼼 등장. 느린 것이 이 연출의 전부다 — 빠르면 튀어나오는 것이 된다."
+      },
+      {
+        "name": "press",
+        "value": "120ms ease",
+        "purpose": "transform 계열. 누르면 1px 내려가고, 줄은 1px 떠오른다."
+      },
+      {
+        "name": "fade",
+        "value": "150ms ease",
+        "purpose": "opacity·border-color 계열."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "frameless",
+        "value": "900px"
+      },
+      {
+        "name": "escapee-small",
+        "value": "1180px"
+      },
+      {
+        "name": "peekers-on",
+        "value": "1440px"
+      },
+      {
+        "name": "peekers-large",
+        "value": "1900px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "받기·모든 버전 같은 주 행동. 조용히 있다가 누를 때만 반응한다.",
+      "html": "<a class=\"ds-btn\" href=\"#\">macOS용 받기</a>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; font: inherit; font-weight: 700; font-size: 0.94rem; text-decoration: none; padding: 0.68rem 1.35rem; border-radius: 8px; border: 1px solid transparent; background: var(--ink, #2b2733); color: var(--panel, #f7f5f1); cursor: pointer; transition: transform 120ms ease, opacity 150ms ease; } .ds-btn:hover { opacity: 0.9; } .ds-btn:active { transform: translateY(1px); } .ds-btn:focus-visible { outline: 2.5px solid var(--accent, #9a5d18); outline-offset: 3px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "보조 행동. 바탕 없이 1px 실선만 두르고, 호버에서 테두리만 진해진다.",
+      "html": "<a class=\"ds-btn-ghost\" href=\"#\">모든 버전</a>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; font: inherit; font-weight: 700; font-size: 0.94rem; text-decoration: none; padding: 0.68rem 1.35rem; border-radius: 8px; border: 1px solid rgba(43,39,51,0.1); background: transparent; color: var(--ink, #2b2733); cursor: pointer; transition: transform 120ms ease, border-color 150ms ease; } .ds-btn-ghost:hover { border-color: var(--ink-soft, #615c6e); } .ds-btn-ghost:active { transform: translateY(1px); } .ds-btn-ghost:focus-visible { outline: 2.5px solid var(--accent, #9a5d18); outline-offset: 3px; }"
+    },
+    {
+      "name": "Window Titlebar",
+      "kind": "nav",
+      "refersTo": "window-titlebar",
+      "description": "이 시스템의 서명. 신호등 셋이 글자 한 자 읽기 전에 \"바탕화면에 뜨는 것\"이라고 말한다.",
+      "html": "<header class=\"ds-titlebar\"><svg class=\"ds-lights\" viewBox=\"0 0 56 12\" aria-hidden=\"true\"><circle cx=\"6\" cy=\"6\" r=\"6\" fill=\"#ff5f57\"/><circle cx=\"26\" cy=\"6\" r=\"6\" fill=\"#febc2e\"/><circle cx=\"46\" cy=\"6\" r=\"6\" fill=\"#28c840\"/></svg><span class=\"ds-title\">Buddling</span><nav class=\"ds-nav\"><a href=\"#\">캐릭터</a><a href=\"#\">받기</a><a class=\"ds-lang\" href=\"#\">EN</a></nav></header>",
+      "css": ".ds-titlebar { display: flex; align-items: center; gap: 14px; padding: 0 22px; height: 52px; background: color-mix(in srgb, var(--panel, #f7f5f1) 88%, transparent); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(43,39,51,0.1); border-radius: 14px 14px 0 0; color: var(--ink, #2b2733); } .ds-lights { width: 42px; flex: none; } .ds-title { font-size: 0.86rem; font-weight: 700; letter-spacing: -0.01em; } .ds-nav { margin-left: auto; display: flex; gap: 1.3rem; font-size: 0.86rem; } .ds-nav a { text-decoration: none; color: var(--ink-soft, #615c6e); } .ds-nav a:hover { color: var(--ink, #2b2733); } .ds-lang { color: var(--ink, #2b2733) !important; border-left: 1px solid rgba(43,39,51,0.1); padding-left: 1.3rem; }"
+    },
+    {
+      "name": "Download Row",
+      "kind": "custom",
+      "refersTo": "download-row",
+      "description": "내려받기 한 줄. 추천 항목은 뱃지가 아니라 테두리 색으로만 표시한다.",
+      "html": "<div class=\"ds-dl-row ds-dl-recommended\"><div><div class=\"ds-dl-name\">macOS — 요즘 맥</div><div class=\"ds-dl-meta\">buddling-0.5.0-arm64.dmg · 117 MB</div></div><a class=\"ds-dl-btn\" href=\"#\">받기</a></div>",
+      "css": ".ds-dl-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 14px 16px; border: 1px solid rgba(43,39,51,0.1); border-radius: 10px; color: var(--ink, #2b2733); transition: transform 120ms ease, border-color 150ms ease; } .ds-dl-row:hover { transform: translateY(-1px); border-color: var(--ink-soft, #615c6e); } .ds-dl-recommended { border-color: var(--accent, #9a5d18); } .ds-dl-name { font-weight: 700; font-size: 0.96rem; } .ds-dl-meta { font-size: 0.82rem; color: var(--ink-soft, #615c6e); } .ds-dl-btn { display: inline-flex; align-items: center; font: inherit; font-weight: 700; font-size: 0.86rem; text-decoration: none; padding: 0.5rem 1.05rem; border-radius: 8px; background: var(--ink, #2b2733); color: var(--panel, #f7f5f1); }"
+    },
+    {
+      "name": "Section Label",
+      "kind": "chip",
+      "description": "판 위에 붙는 꼬리표. 페이지에서 유일하게 포인트 색을 쓰는 글자다.",
+      "html": "<p class=\"ds-label\">캐릭터</p>",
+      "css": ".ds-label { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent, #9a5d18); margin: 0; }"
+    },
+    {
+      "name": "Stat Card",
+      "kind": "card",
+      "refersTo": "stat-card",
+      "description": "어드민 숫자판. 꼬리표 → 숫자 → 부연 세 줄 고정, 그림자 없음.",
+      "html": "<div class=\"ds-stat\"><div class=\"ds-stat-label\">지금 켜 둔 사람</div><div class=\"ds-stat-value\">12</div><div class=\"ds-stat-sub\">최근 1시간</div></div>",
+      "css": ".ds-stat { background: var(--panel, #f7f5f1); border: 1px solid rgba(43,39,51,0.1); border-radius: 12px; padding: 18px 20px; color: var(--ink, #2b2733); } .ds-stat-label { font-size: 0.78rem; font-weight: 700; color: var(--ink-soft, #615c6e); } .ds-stat-value { font-size: 2.1rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; font-variant-numeric: tabular-nums; } .ds-stat-sub { font-size: 0.78rem; color: var(--ink-soft, #615c6e); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "어드민 로그인·거르기 칸. 글꼴은 본문을 그대로 물려받는다.",
+      "html": "<input class=\"ds-input\" type=\"email\" placeholder=\"메일 주소\" />",
+      "css": ".ds-input { font: inherit; width: 100%; padding: 0.6rem 0.75rem; border: 1px solid rgba(43,39,51,0.1); border-radius: 8px; background: var(--panel, #f7f5f1); color: var(--ink, #2b2733); } .ds-input::placeholder { color: var(--ink-soft, #615c6e); } .ds-input:focus-visible { outline: 2.5px solid var(--accent, #9a5d18); outline-offset: 3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "넘어오는 창",
+    "overview": "이 제품은 바탕화면 위에 사는 앱이다. 그래서 웹은 앱을 설명하지 않고 앱이 사는 자리를 그대로 재현한다 — 페이지 전체가 벽지 위에 떠 있는 창 한 장이고, 신호등 세 개가 달린 제목줄이 글자 한 자를 읽기 전에 \"이건 바탕화면에 뜨는 것\"이라고 말해 버린다.\n\n그리고 그 창은 캐릭터를 가두지 못한다. 히어로의 고양이는 창틀을 밟고 밖으로 나와 서 있고, 다섯 캐릭터는 화면 양 끝 모서리 뒤에서 몸을 기울여 얼굴을 내민다. 창이 한 번 쓰고 마는 장식이 되지 않는 것은 이 규칙 하나 덕분이고, 같은 이유로 900px 아래에서는 창틀을 아예 없앤다.\n\n성격은 장난기다. 다만 그 장난기는 화면이 시끄러워서 나오는 것이 아니라 조용한 틀 위에서만 읽힌다. 이 절제가 배경이기 때문에 창틀을 밟고 선 고양이 한 마리가 사건이 된다.",
+    "keyCharacteristics": [
+      "페이지 = 앱 창 한 장. 신호등 · 제목줄 · 창 모서리가 시그니처다",
+      "캐릭터는 창 안에 갇히지 않는다. 틀을 넘고, 모서리 뒤에서 내다본다",
+      "벽지는 차가운 페리윙클, 창 안은 따뜻한 크림. 이 온도차가 캐릭터를 살린다",
+      "바깥에서 받아오는 글꼴·아이콘 팩·스크립트가 하나도 없다",
+      "색은 한 점만. 나머지는 잉크와 종이다"
+    ],
+    "rules": [
+      {
+        "name": "The One Warm Point Rule",
+        "body": "유채색은 화면에 한 점만 있다. 색을 하나 더 들이고 싶어지면, 먼저 그것이 캐릭터가 가진 색과 다투지 않는지 보라 — 이 화면에서 색을 가질 자격이 있는 것은 캐릭터다.",
+        "section": "colors"
+      },
+      {
+        "name": "The Cold Wall Rule",
+        "body": "벽지는 차가워야 한다. 따뜻한 쪽으로 되돌리려면 다섯 종의 ΔE 와 명도비부터 다시 재라. 바닥색은 취향이 아니라 캐릭터가 보이느냐 마느냐의 문제다.",
+        "section": "colors"
+      },
+      {
+        "name": "The Provisional Accent Rule",
+        "body": "#9a5d18 은 다시 볼 값이다. 자리(어디에 쓰는가)는 확정이고 값만 임시다. 바꿀 때는 어두운 모드 짝(#e8b06a)을 함께 옮기고 초점 표시가 벽지·종이 양쪽에서 보이는지 확인하라.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Bold Phrase Rule",
+        "body": "가는 제목에 굵은 구절은 하나다. 둘이 되는 순간 어느 쪽도 강조가 아니게 된다.",
+        "section": "typography"
+      },
+      {
+        "name": "The Three Small Steps Rule",
+        "body": "본문보다 작은 글자는 셋뿐이다 — 0.94 · 0.9 · 0.85rem. 한때 0.82~0.96 사이에 서로 다른 단이 열 개 흩어져 있었는데, 0.5px 차이라 화면에서는 구별되지 않으면서 새 줄을 만들 때마다 옆엣것이 몇 rem 이었는지 다시 재게 만든다. 넷째 단이 필요해 보이면 그건 크기가 아니라 굵기나 색으로 풀 일이다.",
+        "section": "typography"
+      },
+      {
+        "name": "The Malgun Fallback Rule",
+        "body": "Windows 한국어(Malgun Gothic)에는 300 이 없어 400 으로 떨어진다. 알고 두는 것이다 — 그 환경에서 제목이 조금 두꺼워지는 것을 받아들이는 편이, 굵기 대비라는 장치를 통째로 버리는 것보다 낫다.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Broken Pane Rule",
+        "body": "판이 전부 같은 리듬이면 스크롤이 지루해진다. 그래서 딱 한 판만 바닥색을 바꾸고 2단으로 눕힌다. 두 판이 어긋나기 시작하면 그건 리듬이 아니라 무질서다.",
+        "section": "layout"
+      },
+      {
+        "name": "The Margin Belongs to the Characters Rule",
+        "body": "창은 940px 에서 멈춘다. 남는 여백은 본문을 늘리는 데 쓰지 않는다 — 그 자리는 빼꼼이 서는 자리다.",
+        "section": "layout"
+      },
+      {
+        "name": "The Only the Window Floats Rule",
+        "body": "그림자를 쓸 수 있는 것은 창과 창을 넘어온 것뿐이다. 카드에 그림자를 붙이고 싶어지면 1px 선이나 바닥색으로 풀라.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Dark Mode Border Rule",
+        "body": "어두운 모드에서는 창과 벽지의 밝기 차가 1.15:1 뿐이라 그림자만으로는 창이 사라진다. 그래서 어두울 때만 테두리가 0.06 → 0.12 로 진해진다.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Hairline Rule",
+        "body": "나누는 선은 1px 이다. 더 두꺼운 선이 필요해 보이면 그건 선이 아니라 바닥색을 바꿔야 할 자리다.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "벽지 위에는 잉크(#2b2733)만, 옅은 잉크(#615c6e)는 창 안에서만 쓴다. 5.9:1 은 종이 위에서의 값이다.",
+      "캐릭터를 창 밖으로 내보낸다. 창을 넘거나 모서리에 물리지 않는 캐릭터는 이 세계관에서 할 일이 없다.",
+      "그림을 다시 뜨면 빼꼼의 물리는 값을 다시 잰다. 눈 위치가 조금만 움직여도 곧바로 눈을 밟는다.",
+      "그림은 WebP 로, 화면에 걸릴 크기의 두 배로 뜬다. PNG 로 남는 것은 og.png 와 아이콘뿐이다.",
+      "랜딩 본문은 서버 컴포넌트로 둔다. 자바스크립트가 필요한 것은 빼꼼과 받기 단추 둘뿐이고, check-site.js 가 190KB 한도로 그걸 지킨다."
+    ],
+    "donts": [
+      "SaaS 랜딩페이지 문법을 들이지 않는다 — 보라색 그러데이션 히어로, 로고 띠, \"신뢰받는 팀들\" 줄, 3단 요금표. 이 제품은 팔 것이 아니라 받아 보라고 부르는 것이다.",
+      "업무용 협업 도구처럼 보이게 만들지 않는다. 파란 기업색 · 조직도 · 생산성 말투로 가면 5명 정원이 기능이 아니라 결함으로 읽힌다.",
+      "카드 한쪽에 굵은 색 띠를 두르지 않는다. 나누는 선은 1px 하나다.",
+      "색을 하나 더 들이지 않는다. 유채색은 화면에 한 점이다.",
+      "제목 안에서 두 구절을 굵히지 않는다. 하나가 아니면 강조가 아니다.",
+      "바깥에서 글꼴·아이콘 팩·스크립트를 받아오지 않는다.",
+      "벽지를 따뜻한 쪽으로 되돌리지 않는다. 그러려면 다섯 종의 ΔE 부터 다시 재야 한다."
+    ]
+  }
+}
