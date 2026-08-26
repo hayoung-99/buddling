@@ -195,7 +195,7 @@ export const en: Copy = {
   meta: {
     title: 'Buddling · A free desktop pet your teammates can feel',
     description:
-      "Put a 3D animal friend on your desktop. Tap yours and your teammates' characters dance on theirs. Free for macOS and Windows, no sign up, just a nickname and a six character code.",
+      "Put a 3D animal friend on your desktop. Tap yours and your teammates' characters dance on theirs. Free for macOS and Windows, no sign up needed.",
     ogDescription:
       'Tap your own character and your teammates’ characters dance. The lightest way to say I am here without saying anything.',
     imageAlt: 'Five characters standing in a row: a cat, a dog, a panda, a duck and a bunny',

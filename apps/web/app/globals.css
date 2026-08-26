@@ -119,6 +119,22 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
 
 :where(a, button):focus-visible { outline: 2.5px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
 
+/*
+ * 손가락으로 누르는 화면에서는 누를 것을 44px 로 키운다.
+ *
+ * 제목줄과 꼬리말의 링크는 글자 높이 그대로라 23px 이었다 — 권장치의 절반이다.
+ * 두 조건을 함께 건다. `pointer: coarse` 가 뜻으로는 맞는 조건이지만(입력 장치를
+ * 보는 것이지 화면 폭을 보는 것이 아니다) **자동화된 브라우저는 대개 `fine` 으로
+ * 답해서 그것만으로는 고쳤는지 확인할 길이 없다.** 창틀이 이미 사라진 900px 아래를
+ * 함께 걸어 두면 손으로도 재어 볼 수 있고, 좁은 창을 띄운 데스크톱이 조금 헐거워지는
+ * 것은 잃을 것이 없다.
+ */
+@media (pointer: coarse), (max-width: 900px) {
+  .titlebar nav a,
+  .window footer nav a { padding-block: 11px; }
+  .window footer nav { margin-block: -11px; } /* 늘어난 만큼 줄 높이가 자라지 않게 되돌린다 */
+}
+
 /* ── 창 ───────────────────────────────────────────────── */
 
 .stage { padding-block: 64px 96px; }
@@ -232,7 +248,8 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
 .dl-row[data-recommended] { border-color: var(--accent); }
 .dl-row .name { font-weight: 700; font-size: 0.94rem; }
 .dl-row .meta { font-size: 0.85rem; color: var(--ink-soft); }
-.dl-row .btn { padding: 0.5rem 1.05rem; font-size: 0.85rem; }
+/* 40.8px 이라 권장치에서 3px 모자랐다. 세로만 키운다 — 가로는 이미 넉넉하다 */
+.dl-row .btn { padding: 0.64rem 1.05rem; font-size: 0.85rem; }
 
 .hint { margin-top: 18px; font-size: 0.85rem; color: var(--ink-soft); max-width: 62ch; }
 .hint a { color: var(--accent); }
@@ -329,8 +346,24 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
   .titlebar { border-radius: 0; padding-inline: 20px; }
   .pane { padding: 36px 20px; }
   .window footer { padding: 20px; }
-  /* 창이 없으면 넘어올 창틀도 없다 */
-  .escapee { display: none; }
+
+  /*
+   * 창이 없으면 넘어올 창틀도 없다. 그렇다고 고양이까지 지우지는 않는다.
+   *
+   * 한동안 `display: none` 이었는데, 그러면 **폰으로 들어온 사람은 캐릭터를 한 마리도
+   * 못 본 채로 1,358px 을 내려가야** 캐릭터 줄을 만난다. 이 제품이 퍼지는 길이 친구가
+   * 보낸 링크이고 그 링크는 대개 폰에서 열리므로, 그 화면이 곧 첫인상이다.
+   *
+   * 그래서 자리만 바꾼다 — 창틀 대신 **화면 오른쪽 가장자리를 넘어오게** 두고,
+   * 글과 부딪히지 않도록 히어로 다음 줄로 내려 세운다. 그림은 어차피 받고 있었다
+   * (`fetchPriority="high"` 로 먼저 받는다). 숨겨 두는 동안은 그 값을 버리고 있었다.
+   */
+  .escapee {
+    position: static;
+    display: block;
+    width: min(230px, 62%);
+    margin: -6px -34px 0 auto; /* 오른쪽으로 흘러넘친다. html 의 overflow-x: clip 이 받는다 */
+  }
 }
 
 @media (max-width: 1180px) {
