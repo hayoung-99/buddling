@@ -137,8 +137,18 @@ jobs:
       # Supabase 없이도 도는 검사만 여기서 돌린다
       - run: npm test
 
-      # 굽는 것도 포장하는 것도 앱 워크스페이스 안에서 돈다.
+      # 굽는 것도 빌드하는 것도 포장하는 것도 앱 워크스페이스 안에서 돈다.
       # (설치는 루트에서 한 번만 한다 — workspaces 가 의존성을 루트로 올려 두기 때문이다)
+      #
+      # 로컬의 `npm run dist` 는 `build && bake-config && electron-builder` 순서다.
+      # 여기엔 그 가운데 `build` 가 빠져 있었다 — 워크스페이스로 나뉘기 전에는 화면이
+      # 빌드 없이 그대로 돌아서 필요 없었는데, 지금은 `dist-main`·`dist-renderer`·
+      # `dist-preload` 가 Vite 산출물이라 이 단계 없이는 electron-builder 가 그 폴더를
+      # 못 찾는다("Application entry file ... was not found in this archive"로 죽는다).
+      - name: 화면·preload·메인 빌드
+        working-directory: apps/desktop
+        run: npm run build
+
       - name: 접속 정보 굽기
         working-directory: apps/desktop
         env:
