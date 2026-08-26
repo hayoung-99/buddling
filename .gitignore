@@ -44,6 +44,12 @@ docs/PRODUCT.md
 docs/RELEASE.md
 docs/DEVELOPMENT.md
 
+# 같은 이유로 디자인 시스템 문서도 로컬에만 둡니다. DESIGN.md 는 새 화면을 만드는
+# 쪽이 "이 세계관에서 이건 되나" 를 판단할 때 보는 것이고, `.impeccable/` 은 그
+# 도구가 읽는 사본과 비평 기록입니다. 둘 다 저장소를 찾아온 사람이 읽을 것이 아닙니다.
+apps/*/DESIGN.md
+apps/*/.impeccable/
+
 # 데이터베이스 스키마도 같은 이유로 올리지 않습니다. 저장소를 찾아온 사람이 읽을
 # 것이 아니라 이 프로젝트를 굴리는 쪽이 Supabase 콘솔에 붙여넣는 파일입니다.
 # docs/SUPABASE_SETUP.md 는 앱이 접속 정보가 없을 때 가리키는 곳이라 남겨 두므로,
