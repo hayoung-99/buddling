@@ -64,6 +64,9 @@ const READY_TIMEOUT_MS = 15000
 const SHOTS = [
   { shot: 'hero', file: 'hero-cat.webp', width: 760, height: 900, transparent: true },
   { shot: 'characters', file: 'characters.webp', width: 1760, height: 460, transparent: true },
+  // "눌러 보면 이렇게 돼요" 장면의 두 창. 화면에 130px 안팎으로 걸리므로 두 배로 뜬다
+  { shot: 'duo-cat', file: 'duo-cat.webp', width: 320, height: 380, transparent: true },
+  { shot: 'duo-bunny', file: 'duo-bunny.webp', width: 320, height: 380, transparent: true },
   { shot: 'og', file: 'og.png', width: 1200, height: 630, transparent: false },
   { shot: 'peek-panda', file: 'peek-panda.webp', width: 612, height: 828, transparent: true },
   { shot: 'peek-bunny', file: 'peek-bunny.webp', width: 748, height: 1012, transparent: true },

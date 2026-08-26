@@ -69,6 +69,7 @@ export const ko: Copy = {
         meta: '두 번 눌러서 설치하는 파일이에요',
       },
     ],
+    mobileHint: '이 파일들은 컴퓨터에서 열어요. 지금 폰으로 보고 계시면 위 단추로 이 주소를 컴퓨터에 보내 두세요.',
     hint: (
       <>
         어느 쪽인지 모르겠다면 왼쪽 위 사과 메뉴에서 <strong>이 Mac에 관하여</strong>를 열어
@@ -157,13 +158,29 @@ export const ko: Copy = {
     ],
   },
 
+  try: {
+    label: '해 보면',
+    heading: '여기서 누르면 저기서 춤춰요',
+    sub: '보내는 쪽은 한 번 누르는 것이 전부이고, 받는 쪽은 아무것도 하지 않아도 돼요.',
+    mine: '내 화면',
+    theirs: '친구 화면',
+    altMine: '내 화면 속 하얀 고양이 캐릭터',
+    altTheirs: '친구 화면 속 분홍 토끼 캐릭터',
+    cta: '받으러 가기',
+  },
+
   footer: {
     tagline: 'Buddling · 무료로 쓰고 고칠 수 있어요',
     github: 'GitHub',
     releases: '릴리스',
   },
 
-  downloadStrings: { pending: '곧 올라와요', heroFor: '{target}용 받기', copied: '복사됨' },
+  downloadStrings: {
+    pending: '곧 올라와요',
+    heroFor: '{target}용 받기',
+    copied: '복사됨',
+    sendToComputer: '내 컴퓨터로 보내기',
+  },
 
   app: {
     description:

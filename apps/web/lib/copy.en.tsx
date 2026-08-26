@@ -76,6 +76,7 @@ export const en: Copy = {
         meta: 'Double click it to install',
       },
     ],
+    mobileHint: 'These open on a computer. If you are on a phone, use the button above to send yourself this link.',
     hint: (
       <>
         Not sure which one? Open the Apple menu and choose <strong>About This Mac</strong>. If it
@@ -164,6 +165,17 @@ export const en: Copy = {
     ],
   },
 
+  try: {
+    label: 'In practice',
+    heading: 'Tap here, they dance there',
+    sub: 'One tap is all you do, and the other side does not have to do anything at all.',
+    mine: 'Your screen',
+    theirs: 'Their screen',
+    altMine: 'A white cat character on your screen',
+    altTheirs: 'A pink bunny character on their screen',
+    cta: 'Get it',
+  },
+
   footer: {
     tagline: 'Buddling · Free to use and to change',
     github: 'GitHub',
@@ -174,6 +186,7 @@ export const en: Copy = {
     pending: 'Coming soon',
     heroFor: 'Download for {target}',
     copied: 'Copied',
+    sendToComputer: 'Send to my computer',
   },
 
   app: {
