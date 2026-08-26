@@ -33,6 +33,16 @@ interface Release {
 const formatSize = (bytes: number) => `${Math.round(bytes / 1024 / 1024)} MB`
 
 /**
+ * 그 줄에 서버가 그려 둔 설명("2020년 후반 이후에 나온 맥이에요").
+ *
+ * 처음 읽을 때 한 번 갈무리해 둔다 — 아래에서 덮어쓰고 나면 되찾을 데가 없다.
+ */
+function detailOf(row: HTMLElement, meta: Element | null): string {
+  if (row.dataset.detail === undefined) row.dataset.detail = meta?.textContent?.trim() ?? ''
+  return row.dataset.detail
+}
+
+/**
  * 어느 파일을 권할지 정한다.
  *
  * 맥의 칩 종류는 확실하게 알 수 없다. userAgentData 가 알려주면 그 값을 쓰고,
@@ -86,7 +96,20 @@ function applyRelease(release: Release): boolean {
     matched += 1
 
     link.href = asset.browser_download_url
-    if (meta) meta.textContent = `${asset.name} · ${formatSize(asset.size)}`
+    /*
+     * **원본 파일명을 그대로 쓰지 않는다.**
+     *
+     * 예전에는 `tap-tap-0.4.0-arm64.dmg · 117 MB` 처럼 자산 이름을 그대로 박았는데,
+     * 그 이름은 개명 전 것이라 Buddling 이라고 적힌 페이지에서 **제품 이름이 둘로**
+     * 보였다. 하필 서명 없는 바이너리를 받으라고 하는 순간이라, 그 자리에서 이름이
+     * 어긋나는 것은 그냥 어수선한 정도가 아니라 의심할 이유가 된다.
+     *
+     * 게다가 원본 파일명은 서버가 그려 둔 사람 말("2020년 후반 이후에 나온 맥이에요")을
+     * 지우고 그 자리에 들어앉는 것이라, 이름 문제가 없더라도 손해 보는 교환이었다.
+     * 설명은 그대로 두고 **크기만 덧붙인다.** 버전은 이 구역 머리의 꼬리표가 말한다.
+     */
+    const detail = detailOf(row, meta)
+    if (meta) meta.textContent = detail ? `${detail} · ${formatSize(asset.size)}` : formatSize(asset.size)
   }
 
   return matched > 0

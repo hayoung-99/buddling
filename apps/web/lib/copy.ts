@@ -55,7 +55,7 @@ export interface Copy {
   other: { href: string; lang: Locale; short: string; long: string }
 
   skipToContent: string
-  nav: { characters: string; download: string; faq: string }
+  nav: { characters: string; download: string; install: string; faq: string }
 
   hero: {
     /** 제목은 세 조각이다 — 앞줄, 강조, 뒷조각 */
@@ -63,6 +63,16 @@ export interface Copy {
     emphasis: string
     tail: string
     sub: string
+    /**
+     * 받기 버튼 바로 아래 한 줄. 처음 열 때 경고가 뜬다는 것을 **누르기 전에** 알려 준다.
+     *
+     * macOS 빌드에 서명이 없어서 첫 실행에 경고가 한 번 뜨는데, 넘기는 법은 두 판
+     * 아래 "처음 열 때" 에 있다. 받기 버튼은 파일을 내려받고 **페이지를 떠나므로**,
+     * 그 안내가 있다는 사실 자체를 여기서 알려 주지 않으면 아무도 다시 찾아오지 않는다.
+     */
+    warns: string
+    /** 그 안내로 가는 링크의 글자 */
+    warnsLink: string
     /**
      * 히어로 바로 아래 한 줄. 둘 이상이어야 시작된다는 것을 **받기 전에** 알려 준다.
      *

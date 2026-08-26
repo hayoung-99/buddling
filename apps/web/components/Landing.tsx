@@ -42,6 +42,9 @@ export function Landing({ copy }: { copy: Copy }) {
             <nav>
               <a href="#characters">{copy.nav.characters}</a>
               <a href="#download">{copy.nav.download}</a>
+              {/* 받기 버튼이 파일만 내려받고 페이지를 떠나므로, 경고를 만난 사람이
+                  돌아올 길이 내비에 있어야 한다 */}
+              <a href="#install">{copy.nav.install}</a>
               <a href="#faq">{copy.nav.faq}</a>
               <a
                 className="lang"
@@ -74,6 +77,13 @@ export function Landing({ copy }: { copy: Copy }) {
                     {copy.hero.allVersions}
                   </a>
                 </div>
+                {/*
+                  받기 버튼 **바로 아래**다. 경고 이야기가 두 판 아래에만 있으면,
+                  누르는 순간 페이지를 떠나는 사람에게는 없는 것과 같다.
+                */}
+                <p className="note">
+                  {copy.hero.warns} <a href="#install">{copy.hero.warnsLink}</a>
+                </p>
                 <p className="note">{copy.hero.note}</p>
               </div>
             </section>
@@ -100,7 +110,7 @@ export function Landing({ copy }: { copy: Copy }) {
                   src={copy.locale === 'en' ? '/assets/team-window-en.webp' : '/assets/team-window.webp'}
                   alt={copy.shot.imageAlt}
                   width={800}
-                  height={1560}
+                  height={1400}
                   loading="lazy"
                   decoding="async"
                 />

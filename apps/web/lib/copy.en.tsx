@@ -6,7 +6,7 @@ export const en: Copy = {
   other: { href: '/', lang: 'ko', short: '한국어', long: '한국어' },
 
   skipToContent: 'Skip to content',
-  nav: { characters: 'Characters', download: 'Download', faq: 'Questions' },
+  nav: { characters: 'Characters', download: 'Download', install: 'First launch', faq: 'Questions' },
 
   hero: {
     lead: 'A',
@@ -16,6 +16,8 @@ export const en: Copy = {
     needsTwo: 'It takes two — invite one friend and you are set.',
     download: 'Download',
     allVersions: 'All versions',
+    warns: 'Your Mac will warn you once, the first time.',
+    warnsLink: 'How to get past it',
     note: 'Free · No sign up · macOS and Windows',
     imageAlt: 'A white cat character standing on a desktop',
   },
