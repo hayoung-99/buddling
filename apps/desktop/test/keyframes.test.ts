@@ -90,10 +90,12 @@ describe('왕복 — 뽑아낸 소스가 파일에 적힌 것과 같다', () => 
    * 자릿수를 찍는 방식이나 필드 순서가 어긋나면 여기서 걸린다 — 그런 어긋남은 값이
    * 멀쩡해 보여서 눈으로는 알아채기 가장 어렵다.
    */
+  // Windows 러너는 체크아웃할 때 줄바꿈을 CRLF 로 바꾼다. serializeTrack() 은
+  // 항상 LF 만 쓰므로, 정규화하지 않으면 내용은 같아도 Windows 에서만 깨진다.
   const source = readFileSync(
     new URL('../src/renderer/pet/animations.ts', import.meta.url),
     'utf8',
-  )
+  ).replace(/\r\n/g, '\n')
 
   /** `const NAME: Keyframe[] = [ … ]` 한 덩어리를 소스에서 떼어 온다 */
   function blockOf(name: string): string {
