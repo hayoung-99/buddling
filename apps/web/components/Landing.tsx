@@ -175,6 +175,10 @@ export function Landing({ copy }: { copy: Copy }) {
                 ))}
               </div>
 
+              {/* 폰에서만 보인다. 여기 있는 셋 다 이 기기로는 열 수 없다는 것을 말해 준다 */}
+              <p className="hint" data-mobile-notice hidden>
+                {copy.download.mobileHint}
+              </p>
               <p className="hint">{copy.download.hint}</p>
               <p className="hint" data-pending-notice hidden>
                 {copy.download.pending}
@@ -220,6 +224,66 @@ export function Landing({ copy }: { copy: Copy }) {
                     <p>{item.answer}</p>
                   </div>
                 ))}
+              </div>
+            </section>
+            {/*
+              ── 해 보면 ──
+
+              이 제품의 단 하나뿐인 마법이 여기까지 **글자로만** 있었다. 화면 둘을
+              나란히 놓고 그 일이 실제로 일어나는 것을 보여 준다.
+
+              맨 끝에 두는 것은 두 가지를 한 번에 하기 위해서다 — 읽고 내려온 사람이
+              마지막으로 보는 것이 약속이 아니라 **그 약속이 지켜지는 장면**이고,
+              그 자리에 받기 단추가 다시 있다. 그 전까지는 꼬리말 앞 3,000px 동안
+              누를 것이 하나도 없었다.
+
+              움직임은 CSS 뿐이다. 자바스크립트는 한 줄도 늘지 않았고, 화면에 들어올 때
+              한 번 시작해 세 번 돌고 멈춘다 (`Peekers` 가 붙이는 `is-in` 을 함께 쓴다).
+            */}
+            <section className="pane try" id="try">
+              <p className="label">{copy.try.label}</p>
+              <h2>{copy.try.heading}</h2>
+              <p className="sub">{copy.try.sub}</p>
+
+              <div className="duo" data-reveal>
+                <figure className="duo-screen">
+                  <span className="duo-glass">
+                    <img
+                      src="/assets/duo-cat.webp"
+                      alt={copy.try.altMine}
+                      width={320}
+                      height={380}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    {/* 누르는 순간에 번지는 동그라미. 뜻은 위 캡션이 지고, 이건 몸짓만 한다 */}
+                    <span className="duo-tap" aria-hidden="true" />
+                  </span>
+                  <figcaption>{copy.try.mine}</figcaption>
+                </figure>
+
+                <span className="duo-arrow" aria-hidden="true" />
+
+                <figure className="duo-screen">
+                  <span className="duo-glass">
+                    <img
+                      className="duo-dancer"
+                      src="/assets/duo-bunny.webp"
+                      alt={copy.try.altTheirs}
+                      width={320}
+                      height={380}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </span>
+                  <figcaption>{copy.try.theirs}</figcaption>
+                </figure>
+              </div>
+
+              <div className="actions">
+                <a className="btn" href="#download">
+                  {copy.try.cta}
+                </a>
               </div>
             </section>
           </main>

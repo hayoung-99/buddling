@@ -20,7 +20,15 @@ const TRIGGER = 0.82
 
 export function Peekers() {
   useEffect(() => {
-    const peeks = [...document.querySelectorAll<HTMLElement>('.peek')].map((el) => ({
+    /*
+     * `.peek` 만 보던 것을 `[data-reveal]` 까지 넓혔다.
+     *
+     * 맨 끝의 "해 보면" 장면도 **화면에 들어올 때 한 번 시작해서 끝나면 멈추는** 것이
+     * 필요한데, 그건 여기 있는 규칙과 글자 하나 다르지 않다. 그 하나를 위해 관찰자를
+     * 새로 두면 랜딩에 클라이언트 컴포넌트가 셋이 되고, 지금 지키고 있는 자바스크립트
+     * 예산이 그만큼 깎인다.
+     */
+    const peeks = [...document.querySelectorAll<HTMLElement>('.peek, [data-reveal]')].map((el) => ({
       el,
       top: 0,
     }))

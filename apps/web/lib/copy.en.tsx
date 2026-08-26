@@ -76,6 +76,7 @@ export const en: Copy = {
         meta: 'Double click it to install',
       },
     ],
+    mobileHint: 'These open on a computer. If you are on a phone, use the button above to send yourself this link.',
     hint: (
       <>
         Not sure which one? Open the Apple menu and choose <strong>About This Mac</strong>. If it
@@ -164,6 +165,17 @@ export const en: Copy = {
     ],
   },
 
+  try: {
+    label: 'In practice',
+    heading: 'Tap here, they dance there',
+    sub: 'One tap is all you do, and the other side does not have to do anything at all.',
+    mine: 'Your screen',
+    theirs: 'Their screen',
+    altMine: 'A white cat character on your screen',
+    altTheirs: 'A pink bunny character on their screen',
+    cta: 'Get it',
+  },
+
   footer: {
     tagline: 'Buddling · Free to use and to change',
     github: 'GitHub',
@@ -174,6 +186,7 @@ export const en: Copy = {
     pending: 'Coming soon',
     heroFor: 'Download for {target}',
     copied: 'Copied',
+    sendToComputer: 'Send to my computer',
   },
 
   app: {
@@ -195,7 +208,7 @@ export const en: Copy = {
   meta: {
     title: 'Buddling · A free desktop pet your teammates can feel',
     description:
-      "Put a 3D animal friend on your desktop. Tap yours and your teammates' characters dance on theirs. Free for macOS and Windows, no sign up, just a nickname and a six character code.",
+      "Put a 3D animal friend on your desktop. Tap yours and your teammates' characters dance on theirs. Free for macOS and Windows, no sign up needed.",
     ogDescription:
       'Tap your own character and your teammates’ characters dance. The lightest way to say I am here without saying anything.',
     imageAlt: 'Five characters standing in a row: a cat, a dog, a panda, a duck and a bunny',

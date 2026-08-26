@@ -46,6 +46,20 @@ document.body.dataset.shot = shot
  */
 const LAYOUTS: Record<string, ShotLayout> = {
   hero: { specs: [getCharacter('cat')], spacing: 0, headroom: 1.35, lift: 0.0, yaw: -0.24 },
+
+  /*
+   * 랜딩의 "눌러 보면 이렇게 돼요" 장면에 서는 짝.
+   *
+   * 왼쪽 창이 내 화면, 오른쪽 창이 친구 화면이라 **서로 다른 종이어야** 한다 —
+   * 같은 종을 두 번 쓰면 화면 둘이 아니라 같은 그림 둘로 보이고, 방마다 다른
+   * 캐릭터를 고르는 제품의 성질도 함께 사라진다.
+   *
+   * `hero` 와 달리 정면을 본다(`yaw: 0`). 작은 창 안에 들어가는 그림이라 조금만
+   * 돌려도 얼굴이 옆으로 달아나고, 이 장면에서 읽혀야 하는 것은 자세가 아니라
+   * **둘이 같은 일을 겪고 있다**는 것이다.
+   */
+  'duo-cat': { specs: [getCharacter('cat')], spacing: 0, headroom: 1.3, lift: 0.0, yaw: 0 },
+  'duo-bunny': { specs: [getCharacter('bunny')], spacing: 0, headroom: 1.3, lift: 0.0, yaw: 0 },
   characters: { specs: CHARACTERS, spacing: 2.3, headroom: 1.28, lift: 0.0, yaw: -0.2 },
   // 공유 카드는 캔버스 자체가 오른쪽 아래로 밀려 있다 (index.html 참고)
   og: { specs: CHARACTERS, spacing: 2.3, headroom: 1.24, lift: 0.0, yaw: -0.2 },

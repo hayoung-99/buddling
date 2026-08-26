@@ -109,6 +109,8 @@ export interface Copy {
     button: string
     rows: DownloadRow[]
     hint: ReactNode
+    /** 폰에서만 보이는 줄 — 여기 있는 파일을 이 기기로는 열 수 없다는 것 */
+    mobileHint: ReactNode
     pending: ReactNode
   }
 
@@ -120,6 +122,27 @@ export interface Copy {
     windows: { title: string; howToName: string; steps: Step[]; hint: string }
   }
 
+  /**
+   * 맨 끝의 "해 보면 이래요" 장면.
+   *
+   * 이 제품의 단 하나뿐인 마법(내가 누르면 상대가 춤춘다)이 지금까지 **글자로만**
+   * 있었다. 화면 둘을 나란히 놓고 실제로 그 일이 일어나는 것을 보여 주는 자리이고,
+   * 마지막 받기 버튼도 여기 있다 — 그 전까지는 꼬리말 앞 3,000px 동안 누를 것이
+   * 하나도 없었다.
+   */
+  try: {
+    label: string
+    heading: string
+    sub: string
+    /** 왼쪽 창(내 화면)·오른쪽 창(친구 화면)에 붙는 이름 */
+    mine: string
+    theirs: string
+    altMine: string
+    altTheirs: string
+    /** 받기 구역으로 돌려보내는 마지막 단추 */
+    cta: string
+  }
+
   faq: {
     label: string
     heading: string
@@ -129,7 +152,13 @@ export interface Copy {
   footer: { tagline: string; github: string; releases: string }
 
   /** 받기 단추가 상태에 따라 바꿔 다는 말 (예전 `dl-strings` 스크립트가 하던 일) */
-  downloadStrings: { pending: string; heroFor: string; copied: string }
+  downloadStrings: {
+    pending: string
+    heroFor: string
+    copied: string
+    /** 폰에서는 받을 수 없으므로, 대신 이 주소를 컴퓨터로 보내게 한다 */
+    sendToComputer: string
+  }
 
   /** 구조화 데이터가 앱을 설명할 때 쓰는 말 (SoftwareApplication) */
   app: {
