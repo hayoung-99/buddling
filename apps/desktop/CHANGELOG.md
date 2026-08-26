@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.7.0](https://github.com/hayoung-99/buddling/compare/v0.6.0...v0.7.0) (2026-08-26)
+
+
+### 새로운 것
+
+* **admin:** rebuild the dashboard around now, real usage and new arrivals ([#51](https://github.com/hayoung-99/buddling/issues/51)) ([816fe11](https://github.com/hayoung-99/buddling/commit/816fe1114357545de311dedda46f202b9c3d76d5))
+* **app:** add the heart signal, as a shy one ([#77](https://github.com/hayoung-99/buddling/issues/77)) ([8d9c6ad](https://github.com/hayoung-99/buddling/commit/8d9c6ad03cb95ee332c78789f5fb6a3386961e16))
+* **app:** add the sulk signal ([#79](https://github.com/hayoung-99/buddling/issues/79)) ([7e51efa](https://github.com/hayoung-99/buddling/commit/7e51efa7fb81550046267f41dca25e4405310c7a))
+* **app:** add the wave signal ([#73](https://github.com/hayoung-99/buddling/issues/73)) ([473a58a](https://github.com/hayoung-99/buddling/commit/473a58a554b0f77ac2b24c920a66492688c49e80))
+* **app:** carry a signal kind with every poke, and add the hop signal ([#71](https://github.com/hayoung-99/buddling/issues/71)) ([c8c477a](https://github.com/hayoung-99/buddling/commit/c8c477a985d72f88383ba1d523e687989df70ee3))
+* **app:** let a room be put to sleep ([#82](https://github.com/hayoung-99/buddling/issues/82)) ([132336c](https://github.com/hayoung-99/buddling/commit/132336ca65965325557141b40fd6b5a3c8f3f46c))
+* call it a room on the landing page and in the admin ([#63](https://github.com/hayoung-99/buddling/issues/63)) ([6125b16](https://github.com/hayoung-99/buddling/commit/6125b16940a3d75c7497692a2ff6876bfd0755af))
+* **i18n:** call it a room, not a team ([#62](https://github.com/hayoung-99/buddling/issues/62)) ([5dcd795](https://github.com/hayoung-99/buddling/commit/5dcd79579a5136a7e19b05b5644220dd5802e559))
+* name an unnamed room in the user's own language ([#65](https://github.com/hayoung-99/buddling/issues/65)) ([2f3a5c4](https://github.com/hayoung-99/buddling/commit/2f3a5c4031399f3816267263eb6a1d955a99d8eb))
+* **pet:** give animations a one-armed wave, and widen the window to fit it ([#66](https://github.com/hayoung-99/buddling/issues/66)) ([89b6f5d](https://github.com/hayoung-99/buddling/commit/89b6f5dc2279bc4212c0667b881757e768ecf43a))
+* **preview:** build a keyframe editor into the preview window ([#70](https://github.com/hayoung-99/buddling/issues/70)) ([a63388a](https://github.com/hayoung-99/buddling/commit/a63388a1d72af9acb4f906b3db5e76f97661c1d2))
+* rename the product to Buddling ([#67](https://github.com/hayoung-99/buddling/issues/67)) ([cb07529](https://github.com/hayoung-99/buddling/commit/cb075291cd138451652ea18a3fdc3a2f644cd5b6))
+* **web:** add a read-only usage dashboard at /admin ([#48](https://github.com/hayoung-99/buddling/issues/48)) ([df2284f](https://github.com/hayoung-99/buddling/commit/df2284f32876d7084fc381c8d78667b7c27151fc))
+* **web:** show the thing the page has only been describing ([#89](https://github.com/hayoung-99/buddling/issues/89)) ([a08c4ae](https://github.com/hayoung-99/buddling/commit/a08c4ae6cfb4321db0e259a87e57e6fa68eceef6))
+
+
+### 고친 것
+
+* **app:** recover instead of failing when the account was cleaned up ([#54](https://github.com/hayoung-99/buddling/issues/54)) ([df3d716](https://github.com/hayoung-99/buddling/commit/df3d7169413f066f9e543632272e9c98fb51e5c9))
+
+
+### 빨라진 것
+
+* **web:** render the landing images at 2x and ship them as WebP ([#45](https://github.com/hayoung-99/buddling/issues/45)) ([1b6d224](https://github.com/hayoung-99/buddling/commit/1b6d2240d694b5dda35f565127ea60e2fcd272cf))
+
 ## [0.6.0](https://github.com/hayoung-99/buddling/compare/v0.5.0...v0.6.0) (2026-08-26)
 
 
