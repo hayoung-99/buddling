@@ -56,10 +56,17 @@ jobs:
       tag: ${{ steps.release.outputs.tag_name }}
 
     steps:
+      # 기본 GITHUB_TOKEN 을 쓰면 만들어지는 릴리스 PR 의 액터가 github-actions[bot]
+      # 이 되는데, 이 계정은 협력자가 아니라 "외부 협력자 승인 필요" 규칙에 걸려
+      # PR 의 CI 가 action_required 로 멈춘 채 영영 안 돈다(main 이 그 CI 통과를
+      # 요구하므로 머지 자체가 막힌다). write 권한을 가진 계정의 PAT 를 쓰면 액터가
+      # 그 계정이 되어 이 규칙을 안 타면서도, 진짜 낯선 포크 PR 에는 규칙이 그대로 남는다.
+      #
       # 릴리스 PR 이 머지된 실행이라면 여기서 (초안) 릴리스를 만든다.
       - uses: googleapis/release-please-action@v5
         id: release
         with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
           skip-github-pull-request: true
@@ -75,6 +82,7 @@ jobs:
       - if: steps.release.outputs.release_created != 'true'
         uses: googleapis/release-please-action@v5
         with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
           skip-github-release: true
@@ -193,6 +201,7 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v5
         with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
           skip-github-release: true
