@@ -9,7 +9,7 @@
  * 껍데기를 씌워 버려서, 그대로 두면 그 문구가 사용자 화면에 그대로 보인다.
  */
 
-import { ipcMain, Menu, shell } from 'electron'
+import { ipcMain, Menu, Notification, shell } from 'electron'
 import { toFriendlyError } from '../services/net'
 import { t } from './i18n'
 import { nextDefaultName } from './default-name'
@@ -33,6 +33,19 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
   // ── 세션 → 렌더러 ──
   session.on('teams', (snapshot) => broadcast('state', snapshot))
   session.on('error', (message) => broadcast('app-error', describe(new Error(message))))
+
+  /**
+   * 방장이 나를 내보냈다. 그 방 창은 이미 닫히고 있는 중이라(`syncPetWindows`),
+   * 어떤 창도 열려 있지 않을 수 있다. 그래서 창이 아니라 운영체제 알림으로 한 번
+   * 알린다 — 아무 말 없이 캐릭터가 사라지면 내보내진 것이 아니라 고장으로 읽힌다.
+   */
+  session.on('kicked', ({ teamName }) => {
+    if (!Notification.isSupported()) return
+    new Notification({
+      title: t('app.name'),
+      body: t('kicked.message', { teamName }),
+    }).show()
+  })
 
   // 캐릭터 관련 이벤트는 그 팀의 캐릭터 창에만 보낸다
   session.on('character', ({ teamId, characterKey }) =>
@@ -78,6 +91,9 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
   handle('team:refresh-invite', (teamId: string) => session.refreshInvite(teamId))
   handle('team:rename', ({ teamId, name }: { teamId: string; name: string }) =>
     session.renameTeam(teamId, name),
+  )
+  handle('team:kick', ({ teamId, memberId }: { teamId: string; memberId: string }) =>
+    session.kickMember(teamId, memberId),
   )
   handle('member:nickname', ({ teamId, nickname }: { teamId: string; nickname: string }) =>
     session.setNickname(teamId, nickname),
