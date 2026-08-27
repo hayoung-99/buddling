@@ -36,15 +36,22 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
 
   /**
    * 방장이 나를 내보냈다. 그 방 창은 이미 닫히고 있는 중이라(`syncPetWindows`),
-   * 어떤 창도 열려 있지 않을 수 있다. 그래서 창이 아니라 운영체제 알림으로 한 번
-   * 알린다 — 아무 말 없이 캐릭터가 사라지면 내보내진 것이 아니라 고장으로 읽힌다.
+   * 어떤 창도 열려 있지 않을 수 있다. 그래서 오류 줄과 같은 통로(`app-error`)로
+   * 지금 열려 있는 창 전부에 알린다 — 아무 말 없이 캐릭터가 사라지면 내보내진
+   * 것이 아니라 고장으로 읽힌다.
+   *
+   * 운영체제 알림도 함께 시도하지만 **거기에만 기대지 않는다.** 이 앱은 macOS
+   * 코드 서명이 없어서(`docs/PRODUCT.md` "당분간 하지 않는 것 — 코드 서명")
+   * `Notification.isSupported()` 가 true 여도 실제로는 권한이 거부되어 아무
+   * 일도 일어나지 않는 경우가 흔하다(`UNErrorDomain error 1`, 직접 겪었다).
+   * 창으로 보이는 쪽이 실패할 일이 없는 진짜 경로다.
    */
   session.on('kicked', ({ teamName }) => {
-    if (!Notification.isSupported()) return
-    new Notification({
-      title: t('app.name'),
-      body: t('kicked.message', { teamName }),
-    }).show()
+    broadcast('app-error', t('kicked.message', { teamName }))
+
+    if (Notification.isSupported()) {
+      new Notification({ title: t('app.name'), body: t('kicked.message', { teamName }) }).show()
+    }
   })
 
   // 캐릭터 관련 이벤트는 그 팀의 캐릭터 창에만 보낸다
