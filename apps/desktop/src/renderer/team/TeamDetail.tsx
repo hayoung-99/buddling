@@ -379,13 +379,15 @@ export function TeamDetail() {
             {entry.team.name}
           </h1>
           <button
-            className={ui.buttonTinyGhost}
+            className={`${ui.buttonTinyGhost} flex-none whitespace-nowrap`}
             onClick={() => startEdit('team', entry.team.name)}
           >
             {t('detail.rename')}
           </button>
         </div>
-        <span className={ui.quota}>{`${entry.members.length} / ${state.maxMembers}`}</span>
+        <span className={`${ui.quota} flex-none whitespace-nowrap`}>
+          {`${entry.members.length} / ${state.maxMembers}`}
+        </span>
       </div>
 
       {editing === 'team' ? (

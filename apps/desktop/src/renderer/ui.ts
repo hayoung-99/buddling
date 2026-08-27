@@ -89,7 +89,7 @@ export const row =
   'flex items-center gap-[12px] w-full px-[14px] py-[10px] rounded-row bg-card ' +
   'border-[1.5px] border-transparent text-ink text-left cursor-pointer hover:border-line'
 export const rowMain = 'flex-1 min-w-0 flex flex-col gap-[2px]'
-export const rowName = 'text-[15px] font-extrabold'
+export const rowName = 'text-[15px] font-extrabold truncate'
 export const rowSub = 'text-[12px] font-semibold text-ink-soft'
 export const rowArrow = 'flex-none text-[20px] text-ink-soft'
 export const rowList = 'mt-[16px] flex flex-col gap-[8px]'
