@@ -6,16 +6,20 @@ export const ko: Copy = {
   other: { href: '/en/', lang: 'en', short: 'EN', long: 'English' },
 
   skipToContent: '본문으로 건너뛰기',
-  nav: { characters: '캐릭터', download: '받기', install: '처음 열 때', faq: '궁금한 것' },
+  nav: { download: '다운로드' },
 
   hero: {
-    lead: '바탕화면 위에',
-    emphasis: '작은 친구',
-    tail: ' 한 마리',
-    sub: '멤버들을 콕콕 찔러 보세요. 내 캐릭터를 누르면 상대 화면에서 춤을 춰요.',
-    needsTwo: '한 명만 불러 오면 시작돼요. 혼자서는 찌를 상대가 없거든요.',
+    lead: '친구에게 말 대신,',
+    emphasis: '콕콕!',
+    tail: '',
+    sub: (
+      <>
+        내 방을 만들고, 멤버를 초대하고, 내 캐릭터를 골라요.
+        <br />
+        불필요한 말 없이, 오직 나와 친구의 캐릭터로 소통해요.
+      </>
+    ),
     download: '받기',
-    allVersions: '모든 버전',
     warns: '처음 열 때 경고가 한 번 떠요.',
     warnsLink: '넘기는 법 보기',
     note: '무료 · 가입 없음 · macOS와 Windows',
@@ -47,36 +51,22 @@ export const ko: Copy = {
   download: {
     label: '받기',
     heading: '내 컴퓨터에 맞는 파일',
+    sub: '버전마다 다시 받을 수 있어요. 평소에는 최신 버전이면 충분해요.',
+    metaTitle: 'Buddling · 받기',
+    metaDescription: 'macOS·Windows용 Buddling을 받아요. 지난 버전도 그대로 남아 있어요.',
+    ogDescription: '내 컴퓨터에 맞는 파일을 골라 받아요. 지난 버전도 여기서 다시 받을 수 있어요.',
+    backHome: 'Buddling으로 돌아가기',
     latest: '최신',
+    releaseNotes: '릴리스 노트 보기',
     button: '받기',
     rows: [
-      {
-        asset: 'mac-arm64',
-        label: 'macOS',
-        name: 'macOS — 요즘 맥',
-        meta: '2020년 후반 이후에 나온 맥이에요',
-      },
-      {
-        asset: 'mac-x64',
-        label: 'macOS',
-        name: 'macOS — 그 이전 맥',
-        meta: '2020년 중반 이전에 산 맥이에요',
-      },
-      {
-        asset: 'windows',
-        label: 'Windows',
-        name: 'Windows',
-        meta: '두 번 눌러서 설치하는 파일이에요',
-      },
+      { asset: 'mac-arm64', label: 'macOS', name: 'Mac (ARM64)' },
+      { asset: 'mac-x64', label: 'macOS', name: 'Mac (x64)' },
+      { asset: 'windows', label: 'Windows', name: 'Windows (x64)' },
     ],
-    mobileHint: '이 파일들은 컴퓨터에서 열어요. 지금 폰으로 보고 계시면 위 단추로 이 주소를 컴퓨터에 보내 두세요.',
-    hint: (
-      <>
-        어느 쪽인지 모르겠다면 왼쪽 위 사과 메뉴에서 <strong>이 Mac에 관하여</strong>를 열어
-        보세요. &quot;칩&quot;이라고 적혀 있으면 위쪽, &quot;프로세서&quot;라고 적혀 있으면
-        아래쪽이에요.
-      </>
-    ),
+    mobileGateHeading: '컴퓨터에서 열어 주세요',
+    mobileGateBody:
+      'Buddling은 macOS·Windows 데스크톱 앱이에요. 받는 파일도 컴퓨터에서만 열려요 — 지금 보고 있는 이 주소를 컴퓨터로 보내 두세요.',
     pending: (
       <>
         아직 올라온 파일이 없어요. 준비되면 여기에 나타나요.{' '}
@@ -170,7 +160,6 @@ export const ko: Copy = {
   },
 
   footer: {
-    tagline: 'Buddling · 무료로 쓰고 고칠 수 있어요',
     github: 'GitHub',
     releases: '릴리스',
   },
