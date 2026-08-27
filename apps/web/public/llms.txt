@@ -22,7 +22,7 @@ Korean, English, Japanese and Chinese.
   24 hours after it is issued and can be reissued at any time.
 - Limits: one person can belong to up to 3 teams; each team holds up to 5 people.
   One character appears on your desktop per team.
-- Characters: Happy Cat, Chubby Dog, Pudgy Panda, Dumb Duck, Hop Bunny.
+- Characters: Shy Cat, Crazy Dog, Cozy Panda, Whisky Duck, Just Bunny.
 - Interaction: clicks in the empty space around a character pass through to the
   desktop. Position and scale are remembered per team. It makes no sound, and the
   menu bar icon hides every character at once.

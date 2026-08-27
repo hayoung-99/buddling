@@ -28,7 +28,7 @@ Buddling은 그 사이를 채웁니다. 내가 내 캐릭터를 톡 누르면, �
 메신저를 하나 더 만드는 앱이 아니에요. **답을 요구하지 않는 것**이 이 앱의 전부입니다.
 
 <div align="center">
-<img src="apps/web/public/assets/characters.webp" alt="해피 캣, 터비 독, 퍼지 판다, 덤 덕, 홉 버니 다섯 캐릭터" width="640">
+<img src="apps/web/public/assets/characters.webp" alt="샤이 캣, 크레이지 독, 코지 판다, 위스키 덕, 저스트 버니 다섯 캐릭터" width="640">
 </div>
 
 ---

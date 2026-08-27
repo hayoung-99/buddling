@@ -164,7 +164,7 @@ describe('재운 캐릭터', () => {
   })
 
   it('귀를 눕힌다 — 귀가 서 있으면 자는 것으로 안 읽힌다', () => {
-    // 홉 버니는 귀가 길어 이 차이가 가장 잘 드러난다
+    // 저스트 버니는 귀가 길어 이 차이가 가장 잘 드러난다
     const bunny = CHARACTERS.find((spec) => spec.key === 'bunny')!
     const { critter, animator } = stage(bunny)
     const rest = critter.parts.earL.rotation.x
