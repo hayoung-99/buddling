@@ -24,6 +24,15 @@
   --color-accent: #e08a5c;
   --color-online: #6fc48a;
 
+  /* 온보딩 주 버튼 전용. --color-ink 와 일부러 분리해 두었다 — ink 는 버튼 말고도
+     슬라이더 손잡이·찔림 토스트 등 여러 곳에서 재사용되는데, 레퍼런스에서 확실히
+     달랐던 건 주 버튼 색뿐이라 거기만 바꾼다. */
+  --color-button-primary: #5c3a2a;
+
+  /* 온보딩 섹션 아이콘 배지 배경 2종 */
+  --color-chip-people: #f5c6c0;
+  --color-chip-key: #f6e27a;
+
   /* 알림과 오류 */
   --color-danger: #b4523a;
   --color-notice: #fff3d6;
@@ -33,14 +42,28 @@
   --font-ui: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', sans-serif;
   --font-code: ui-monospace, 'SF Mono', Menlo, monospace;
 
+  /* 창 제목에만 쓰는 디스플레이 서체. 본문은 시스템 폰트를 그대로 쓴다. */
+  --font-display: 'HakgyoansimDunggeunmiso', var(--font-ui);
+
   --radius-field: 12px; /* 글자 칸 · 버튼 */
   --radius-pick: 13px; /* 캐릭터 고르기 칸 */
   --radius-card: 14px; /* 초대코드 · 안내 · 멤버 목록 */
   --radius-row: 16px; /* 팀 한 줄 */
   --radius-adding: 18px; /* 팀 추가 상자 */
+  --radius-chip: 999px; /* 아이콘 배지용 완전한 원 */
 
   /* 찌른 사람 이름표. CSS 애니메이션이라 렌더 루프 밖에서 흐른다. */
   --animate-chip: chip-life 2000ms ease-out both;
+}
+
+/* 오프라인에서도 떠야 하는 앱이라 CDN 대신 로컬 파일을 번들한다.
+   라이선스는 apps/desktop/src/renderer/assets/fonts/LICENSE-HakgyoansimDunggeunmiso.txt 참고. */
+@font-face {
+  font-family: 'HakgyoansimDunggeunmiso';
+  src: url('./assets/fonts/hakgyoansim-dunggeunmiso-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
 }
 
 @keyframes chip-life {

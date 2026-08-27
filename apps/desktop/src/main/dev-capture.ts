@@ -50,8 +50,11 @@ async function captureIfRequested(app: AppShell, electronApp: Electron.App) {
   if (!session) return
 
   if (process.env.BUDDLING_LANG) {
+    // ipc.ts 의 settings:language 핸들러와 같은 순서 — publish() 를 빠뜨리면
+    // 저장은 되지만 이미 떠 있는 창에는 알려지지 않아 옛 언어로 찍힌다.
     session.setLanguage(process.env.BUDDLING_LANG)
     app.applyLanguage()
+    session.publish()
     await wait(500)
   }
 

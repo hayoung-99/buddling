@@ -16,7 +16,7 @@
 
 /** 크림색 바탕 위 어두운 버튼 */
 export const button =
-  'font-bold rounded-field px-[18px] py-[11px] bg-ink text-cream cursor-pointer ' +
+  'font-bold rounded-field px-[18px] py-[11px] bg-button-primary text-cream cursor-pointer ' +
   'transition-[transform,opacity] duration-100 active:scale-[0.975] ' +
   'disabled:opacity-45 disabled:cursor-default'
 
@@ -66,10 +66,17 @@ export const titlebar =
 /** 제목줄 아래 본문 */
 export const main = 'px-[22px] pt-[6px] pb-[28px]'
 
-export const h1 = 'text-[20px] font-extrabold tracking-[-0.01em]'
+export const h1 = 'font-display font-bold text-[22px] tracking-[0em]'
 export const h2 = 'text-[12px] font-bold tracking-[0.1em] text-ink-soft mb-[10px]'
 export const lead = 'text-ink-soft mt-[6px]'
 export const section = 'mt-[20px]'
+
+/** 온보딩 섹션 제목 줄 — 원형 아이콘 배지 + 라벨. ui.h2 는 TeamDetail 등 다른 화면에서도
+ *  그대로 쓰이므로 건드리지 않고, 이 조합은 온보딩에서만 쓴다. */
+export const sectionHeading = 'flex items-center gap-[8px] mb-[10px]'
+export const iconChip =
+  'flex-none w-[26px] h-[26px] rounded-chip flex items-center justify-center text-ink'
+export const sectionLabel = 'text-[12px] font-bold tracking-[0.1em] text-ink-soft'
 export const label = 'block text-[12px] font-bold text-ink-soft mb-[6px]'
 export const errorLine = 'text-danger text-[13px] mt-[12px] min-h-[20px]'
 export const footer = 'mt-[26px] text-center'
@@ -82,7 +89,7 @@ export const row =
   'flex items-center gap-[12px] w-full px-[14px] py-[10px] rounded-row bg-card ' +
   'border-[1.5px] border-transparent text-ink text-left cursor-pointer hover:border-line'
 export const rowMain = 'flex-1 min-w-0 flex flex-col gap-[2px]'
-export const rowName = 'text-[15px] font-extrabold'
+export const rowName = 'text-[15px] font-extrabold truncate'
 export const rowSub = 'text-[12px] font-semibold text-ink-soft'
 export const rowArrow = 'flex-none text-[20px] text-ink-soft'
 export const rowList = 'mt-[16px] flex flex-col gap-[8px]'
