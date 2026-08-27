@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import type { Copy } from './copy'
-import { BRAND, LOCALE_PATHS, OG_IMAGE, SITE_URL, absolute } from './site'
+import { BRAND, DOWNLOAD_PATHS, LOCALE_PATHS, OG_IMAGE, SITE_URL, absolute } from './site'
 
 /**
  * 나라말 한 벌에 딸린 `<head>` 를 만든다.
@@ -68,6 +68,59 @@ export function buildMetadata(copy: Copy): Metadata {
         { url: '/assets/icon-32.png', type: 'image/png', sizes: '32x32' },
       ],
       apple: '/assets/icon-180.png',
+    },
+  }
+}
+
+/**
+ * `/download`(영어는 `/en/download`)의 `<head>`.
+ *
+ * `buildMetadata()` 와 나누는 이유: 그쪽은 canonical·hreflang 을 `LOCALE_PATHS`
+ * (사이트 뿌리)로 고정해 두는데, 이 화면은 다른 주소(`DOWNLOAD_PATHS`)를 가리켜야
+ * 한다. 레이아웃의 `buildMetadata(copy)` 위에 이 값을 페이지 쪽에서 얹으면, 겹치는
+ * 키(`title`·`alternates`·`openGraph`·`twitter`)만 갈아 끼워진다 — `icons`·`robots`·
+ * `metadataBase` 는 레이아웃 값을 그대로 물려받는다.
+ */
+export function buildDownloadMetadata(copy: Copy): Metadata {
+  const path = DOWNLOAD_PATHS[copy.locale]
+  const url = absolute(path)
+  const image = {
+    url: absolute(OG_IMAGE.path),
+    width: OG_IMAGE.width,
+    height: OG_IMAGE.height,
+    alt: copy.meta.imageAlt,
+    type: 'image/png',
+  }
+
+  return {
+    title: copy.download.metaTitle,
+    description: copy.download.metaDescription,
+
+    alternates: {
+      canonical: url,
+      languages: {
+        ko: absolute(DOWNLOAD_PATHS.ko),
+        en: absolute(DOWNLOAD_PATHS.en),
+        'x-default': absolute(DOWNLOAD_PATHS.ko),
+      },
+    },
+
+    openGraph: {
+      type: 'website',
+      siteName: BRAND,
+      locale: copy.locale === 'ko' ? 'ko_KR' : 'en_US',
+      alternateLocale: copy.locale === 'ko' ? 'en_US' : 'ko_KR',
+      url,
+      title: copy.download.metaTitle,
+      description: copy.download.ogDescription,
+      images: [image],
+    },
+
+    twitter: {
+      card: 'summary_large_image',
+      title: copy.download.metaTitle,
+      description: copy.download.ogDescription,
+      images: [{ url: image.url, alt: image.alt }],
     },
   }
 }

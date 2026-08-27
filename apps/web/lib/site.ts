@@ -23,6 +23,8 @@ export const REPO_URL = `https://github.com/${REPO}`
 export const RELEASES_PAGE = `${REPO_URL}/releases`
 export const RELEASES_LATEST = `${RELEASES_PAGE}/latest`
 export const LATEST_API = `https://api.github.com/repos/${REPO}/releases/latest`
+/** 버전 히스토리 화면이 보는 목록. 최신 하나뿐인 `LATEST_API` 와 다르다. */
+export const RELEASES_LIST_API = `https://api.github.com/repos/${REPO}/releases`
 export const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`
 
 export const AUTHOR = { name: 'hayoung-99', url: 'https://github.com/hayoung-99' }
@@ -44,5 +46,17 @@ export const APP_VERSION = '0.4.0'
 
 /** 나라말별 주소 (hreflang · sitemap · canonical 이 함께 쓴다) */
 export const LOCALE_PATHS = { ko: '/', en: '/en/' } as const
+
+/**
+ * 버전 히스토리 화면의 나라말별 주소.
+ *
+ * 한국어가 기본(접두어 없음)·영어만 `/en/` 을 붙이는 `LOCALE_PATHS` 규칙을
+ * 그대로 따른다 — 이 화면만 다른 규칙을 쓰면 hreflang·canonical 이 한 곳만
+ * 어긋난다. **끝의 `/` 도 빠뜨리면 안 된다** — `next.config.ts` 의
+ * `trailingSlash: true` 때문에 슬래시 없는 주소는 308 로 리다이렉트되고,
+ * canonical·sitemap 이 리다이렉트 전 주소를 그대로 내보내면 실제 서빙 주소와
+ * 어긋난다.
+ */
+export const DOWNLOAD_PATHS = { ko: '/download/', en: '/en/download/' } as const
 
 export const absolute = (path: string) => new URL(path, SITE_URL).toString()

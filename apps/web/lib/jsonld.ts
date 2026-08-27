@@ -4,6 +4,7 @@ import {
   APP_VERSION,
   AUTHOR,
   BRAND,
+  DOWNLOAD_PATHS,
   LICENSE_URL,
   LOCALE_PATHS,
   MODIFIED,
@@ -110,7 +111,8 @@ export function buildJsonLd(copy: Copy) {
         applicationSubCategory: copy.app.subCategory,
         operatingSystem: 'macOS, Windows',
         downloadUrl: RELEASES_LATEST,
-        installUrl: `${page}#download`,
+        // 버전 히스토리가 별도 화면으로 옮겨 간 뒤로는 그 주소를 가리킨다(예전엔 `#download` 앵커였다).
+        installUrl: absolute(DOWNLOAD_PATHS[copy.locale]),
         softwareVersion: APP_VERSION,
         datePublished: PUBLISHED,
         dateModified: MODIFIED,

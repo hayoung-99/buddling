@@ -6,16 +6,14 @@ export const en: Copy = {
   other: { href: '/', lang: 'ko', short: '한국어', long: '한국어' },
 
   skipToContent: 'Skip to content',
-  nav: { characters: 'Characters', download: 'Download', install: 'First launch', faq: 'Questions' },
+  nav: { download: 'Download' },
 
   hero: {
-    lead: 'A',
-    emphasis: 'small friend',
-    tail: ' on your desktop',
+    lead: 'No words for your friend,',
+    emphasis: 'poke poke!',
+    tail: '',
     sub: 'Give your teammates a poke. Tap your character and theirs dances on their screen.',
-    needsTwo: 'It takes two — invite one friend and you are set.',
     download: 'Download',
-    allVersions: 'All versions',
     warns: 'Your Mac will warn you once, the first time.',
     warnsLink: 'How to get past it',
     note: 'Free · No sign up · macOS and Windows',
@@ -54,35 +52,22 @@ export const en: Copy = {
   download: {
     label: 'Download',
     heading: 'The file for your machine',
+    sub: 'Every version stays here. Most people just want the latest one.',
+    metaTitle: 'Buddling · Download',
+    metaDescription: 'Download Buddling for macOS and Windows. Older versions stay available too.',
+    ogDescription: 'Pick the file for your machine. Older versions are still here if you need them.',
+    backHome: 'Back to Buddling',
     latest: 'Latest',
+    releaseNotes: 'View release notes',
     button: 'Download',
     rows: [
-      {
-        asset: 'mac-arm64',
-        label: 'macOS',
-        name: 'macOS — newer Macs',
-        meta: 'Made from late 2020 onwards',
-      },
-      {
-        asset: 'mac-x64',
-        label: 'macOS',
-        name: 'macOS — older Macs',
-        meta: 'Bought before mid 2020',
-      },
-      {
-        asset: 'windows',
-        label: 'Windows',
-        name: 'Windows',
-        meta: 'Double click it to install',
-      },
+      { asset: 'mac-arm64', label: 'macOS', name: 'Mac (ARM64)' },
+      { asset: 'mac-x64', label: 'macOS', name: 'Mac (x64)' },
+      { asset: 'windows', label: 'Windows', name: 'Windows (x64)' },
     ],
-    mobileHint: 'These open on a computer. If you are on a phone, use the button above to send yourself this link.',
-    hint: (
-      <>
-        Not sure which one? Open the Apple menu and choose <strong>About This Mac</strong>. If it
-        says &quot;Chip&quot; take the top one. If it says &quot;Processor&quot; take the one below.
-      </>
-    ),
+    mobileGateHeading: 'Open this on a computer',
+    mobileGateBody:
+      'Buddling is a macOS and Windows desktop app, and the files here only open on a computer. Send yourself this link and open it there.',
     pending: (
       <>
         Nothing has been published yet. It will show up here as soon as it is ready.{' '}
@@ -177,7 +162,6 @@ export const en: Copy = {
   },
 
   footer: {
-    tagline: 'Buddling · Free to use and to change',
     github: 'GitHub',
     releases: 'Releases',
   },

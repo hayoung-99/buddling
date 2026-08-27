@@ -47,6 +47,8 @@ export function middleware(request: NextRequest) {
   const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL
   const connect = ['https://api.github.com']
   if (isAdmin && supabaseOrigin) connect.push(supabaseOrigin, supabaseOrigin.replace(/^https/, 'wss'))
+  // Turbopack 개발 서버가 청크 실행을 이 소켓과 맞추므로, 막히면 초기 렌더까지 늦어진다.
+  if (process.env.NODE_ENV !== 'production') connect.push('ws://localhost:*')
 
   /*
    * 어드민의 막대 그래프는 높이와 너비를 인라인 `style` 로 준다. 그래서 어드민에서만
@@ -66,12 +68,22 @@ export function middleware(request: NextRequest) {
   const style = ["'self'"]
   if (isAdmin) style.push("'unsafe-inline'")
 
+  /*
+   * `next dev`(Turbopack)는 클라이언트 컴포넌트 청크를 eval() 로 실행한다. `unsafe-eval`
+   * 이 없으면 그 청크가 콘솔 오류 하나 없이 조용히 실행되지 않아서, 빼꼼 캐릭터 같은
+   * 'use client' 컴포넌트의 useEffect 가 로컬에서만 영영 돌지 않는다 (`next build` 산출물은
+   * eval 을 쓰지 않으니 배포본에서는 멀쩡하다). 프로덕션 CSP 를 그대로 지키기 위해
+   * 개발 서버에서만 연다.
+   */
+  const script = ["'self'", "'unsafe-inline'"]
+  if (process.env.NODE_ENV !== 'production') script.push("'unsafe-eval'")
+
   const csp = [
     "default-src 'none'",
     "img-src 'self'",
     `style-src ${style.join(' ')}`,
     // 구워 둔 HTML 안의 인라인 스크립트(Next 의 RSC 페이로드)를 허용한다. 위 주석 참고.
-    "script-src 'self' 'unsafe-inline'",
+    `script-src ${script.join(' ')}`,
     // 받기 버튼이 최신 릴리스를 물어보는 곳 (어드민에서는 Supabase 도)
     `connect-src ${connect.join(' ')}`,
     "base-uri 'none'",

@@ -32,7 +32,7 @@ const FOREIGN_HOSTS = [
 ]
 
 /** 사람이 볼 주소 → 서버에서 받아 올 경로 */
-const PAGES = ['/', '/en/']
+const PAGES = ['/', '/en/', '/download/', '/en/download/']
 const TEXT_FILES = ['/sitemap.xml', '/robots.txt', '/llms.txt']
 
 const problems = []

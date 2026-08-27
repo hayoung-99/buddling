@@ -186,10 +186,17 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
 .pane > .label + h2 { margin-top: 8px; }
 .sub { margin-top: 10px; max-width: 46ch; color: var(--ink-soft); }
 
+/* 폰 안내 화면(`DownloadMobileGate`) — 그 화면 하나뿐이라 위아래 여백을 더 준다 */
+.pane.gate { padding-block: 72px 60px; }
+
 .hero { padding-block: 62px 54px; }
-.hero .lead { margin-top: 18px; font-size: 1.06rem; color: var(--ink-soft); max-width: 28ch; }
-/* 받기 버튼보다 위에 둔다. 받고 나서 알면 늦는 문장이라 그렇다. */
-.hero .needs-two { margin-top: 12px; font-size: 0.94rem; color: var(--ink-soft); max-width: 30ch; }
+/*
+ * 문장이 <br/> 로 두 줄을 직접 끊어 둔다 — 한 줄이 그 자체로 뜻을 이루는 절이라서다.
+ * 28ch 는 예전의 짧은 한 문장에 맞춘 폭이었는데, 그 폭으로 지금 문장을 또 접으면
+ * 이미 끊어 둔 한 줄이 두 번 더 접혀 넉 줄이 된다. 두 줄 중 긴 쪽이 그대로 한 줄에
+ * 들어가는 폭으로 넉넉히 잡는다.
+ */
+.hero .lead { margin-top: 18px; font-size: 1.06rem; color: var(--ink-soft); max-width: 44ch; }
 .actions { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 10px; }
 .hero .note { margin-top: 16px; font-size: 0.85rem; color: var(--ink-soft); }
 /* 두 줄이 잇달아 오므로 뒤엣것은 바짝 붙인다 — 한 덩어리로 읽혀야 한다 */
@@ -233,27 +240,65 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
 .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
 .btn.ghost:hover { border-color: var(--ink-soft); opacity: 1; }
 
-/* ── 받기 ─────────────────────────────────────────────── */
+/* ── 받기 화면(/download) ─────────────────────────────── */
 
 .pane-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
 .tag { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
 
-.dl-list { margin-top: 26px; display: grid; gap: 8px; }
-.dl-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-  padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px;
-  transition: transform 120ms ease, border-color 150ms ease;
-}
-.dl-row:hover { transform: translateY(-1px); border-color: var(--ink-soft); }
-.dl-row[data-recommended] { border-color: var(--accent); }
-.dl-row .name { font-weight: 700; font-size: 0.94rem; }
-.dl-row .meta { font-size: 0.85rem; color: var(--ink-soft); }
-/* 40.8px 이라 권장치에서 3px 모자랐다. 세로만 키운다 — 가로는 이미 넉넉하다 */
-.dl-row .btn { padding: 0.64rem 1.05rem; font-size: 0.85rem; }
-
 .hint { margin-top: 18px; font-size: 0.85rem; color: var(--ink-soft); max-width: 62ch; }
 .hint a { color: var(--accent); }
 .hint strong { color: var(--ink); font-weight: 700; }
+
+.versions { margin-top: 30px; }
+
+/*
+ * macOS · Windows 를 나란한 카드로 — OS 가 늘어도 auto-fit 이 알아서 접는다.
+ * 카드 안은 채움색 없이 테두리만 준다 — `--sunk` 는 "리듬을 끊는 판 하나"에만
+ * 쓰기로 해 둔 값이라 여기서 또 쓰면 그 뜻이 흐려진다.
+ */
+.dl-groups { margin-top: 22px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 22px; }
+.dl-group { border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+.dl-group h3 { font-size: 0.94rem; font-weight: 700; }
+
+/* 환경 이름 한 줄 + 받기 화살표뿐이다 — "요즘 맥" 같은 설명은 여기 붙이지 않는다 */
+.dl-list { margin-top: 10px; }
+.dl-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 13px 0; border-bottom: 1px solid var(--line);
+}
+.dl-row:last-child { border-bottom: none; padding-bottom: 0; }
+.dl-row:first-child { padding-top: 0; }
+.dl-row .name { font-size: 0.94rem; }
+
+.dl-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 32px; height: 32px; border-radius: 8px; color: var(--ink-soft);
+  transition: background 120ms ease, color 120ms ease;
+}
+.dl-icon-btn svg { width: 18px; height: 18px; }
+.dl-icon-btn:hover { background: var(--line); color: var(--ink); }
+
+.release-notes { display: inline-block; margin-top: 18px; font-size: 0.9rem; font-weight: 700; color: var(--accent); text-decoration: none; }
+.release-notes:hover { text-decoration: underline; }
+
+/*
+ * 옛 버전은 `<details>` 하나로 접고 편다 — 자바스크립트 없이 브라우저가 그냥 해 준다.
+ * `summary` 의 기본 화살표(`::marker`)를 지우고 오른쪽에 우리 것을 그린다. 회전은
+ * `[open]` 상태를 그대로 타므로 스크립트가 필요 없다.
+ */
+.version-older { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--line); }
+.version-older summary {
+  cursor: pointer; font-size: 1.1rem; font-weight: 700; list-style: none;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.version-older summary::-webkit-details-marker { display: none; }
+.version-older summary::after {
+  content: ''; width: 9px; height: 9px; flex: none;
+  border-right: 2px solid var(--ink-soft); border-bottom: 2px solid var(--ink-soft);
+  transform: rotate(45deg); transition: transform 150ms ease;
+}
+.version-older[open] summary::after { transform: rotate(-135deg); }
+.version-older .version-body { margin-top: 18px; }
 
 /* ── 처음 열 때 ───────────────────────────────────────── */
 
@@ -310,14 +355,16 @@ h3 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.005em; line-height
 
 /* ── 꼬리말 ───────────────────────────────────────────── */
 
+/* 태그라인과 언어 바꾸기를 뺀 뒤로는 이 nav 하나뿐이라, 오른쪽에 붙여 둔다 */
 .window footer {
-  display: flex; flex-wrap: wrap; gap: 1rem 2rem; justify-content: space-between;
+  display: flex; flex-wrap: wrap; gap: 1rem 2rem; justify-content: flex-end;
   padding: 22px 40px 26px; border-top: 1px solid var(--line);
   font-size: 0.85rem; color: var(--ink-soft);
 }
 .window footer nav { display: flex; gap: 1.2rem; }
-.window footer a { text-decoration: none; }
+.window footer a { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
 .window footer a:hover { color: var(--ink); }
+.window footer a svg { width: 15px; height: 15px; flex: none; }
 
 /* ── 좁은 화면: 창틀을 없앤다 ─────────────────────────── */
 

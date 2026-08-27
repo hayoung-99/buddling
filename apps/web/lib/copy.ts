@@ -34,12 +34,12 @@ export interface Fact {
 }
 
 export interface DownloadRow {
-  /** `download.tsx` 가 릴리스 자산을 짝지을 때 쓰는 열쇠 */
+  /** `releases.ts` 가 릴리스 자산을 짝지을 때 쓰는 열쇠 */
   asset: 'mac-arm64' | 'mac-x64' | 'windows'
-  /** 히어로 버튼이 "…용 받기" 로 바뀔 때 쓰는 이름 */
+  /** 같은 값끼리 macOS · Windows 카드로 묶을 때 쓰는 이름 */
   label: string
+  /** 카드 안 한 줄에 그대로 보이는 환경 이름. "요즘 맥" 같은 설명은 붙이지 않는다 */
   name: string
-  meta: string
 }
 
 export interface Question {
@@ -55,14 +55,21 @@ export interface Copy {
   other: { href: string; lang: Locale; short: string; long: string }
 
   skipToContent: string
-  nav: { characters: string; download: string; install: string; faq: string }
+  /** 제목줄의 유일한 안쪽 링크 — 캐릭터·처음 열 때·궁금한 것 앵커는 더 이상 안 건다 */
+  nav: { download: string }
 
   hero: {
     /** 제목은 세 조각이다 — 앞줄, 강조, 뒷조각 */
     lead: string
     emphasis: string
     tail: string
-    sub: string
+    /**
+     * 제목 바로 아래 문단. 방 만들기 → 멤버 초대 → 캐릭터 고르기 순서를 먼저
+     * 짚어서, 둘 이상이어야 시작된다는 것을 **받기 전에** 알려 준다 — 방이 없으면
+     * 캐릭터도 뜨지 않기 때문이다(기획서 "알고 둔 선택"). 예전에는 이 사실을
+     * 알리는 문장(`needsTwo`)이 따로 있었는데, 지금은 이 문단이 그 역할까지 한다.
+     */
+    sub: ReactNode
     /**
      * 받기 버튼 바로 아래 한 줄. 처음 열 때 경고가 뜬다는 것을 **누르기 전에** 알려 준다.
      *
@@ -73,16 +80,7 @@ export interface Copy {
     warns: string
     /** 그 안내로 가는 링크의 글자 */
     warnsLink: string
-    /**
-     * 히어로 바로 아래 한 줄. 둘 이상이어야 시작된다는 것을 **받기 전에** 알려 준다.
-     *
-     * 방이 없으면 캐릭터도 뜨지 않아서(기획서 "알고 둔 선택"), 이걸 모르고 받은 사람은
-     * 바탕화면의 친구 대신 입력 폼을 먼저 만난다. FAQ 안쪽에도 적혀 있지만 그 자리는
-     * 받기 버튼보다 한참 아래라 읽히지 않는다.
-     */
-    needsTwo: string
     download: string
-    allVersions: string
     note: string
     imageAlt: string
   }
@@ -102,16 +100,36 @@ export interface Copy {
     facts: Fact[]
   }
 
+  /**
+   * `/download`(영어는 `/en/download`) — 버전 히스토리를 보여 주는 별도 화면.
+   *
+   * 예전에는 이 사전이 랜딩 안의 "받기" 판 하나만 채웠는데, 그 판이 통째로 이
+   * 화면으로 옮겨 가면서 페이지 자체의 몫(`metaTitle`·`backHome` 등)이 늘었다.
+   */
   download: {
     label: string
     heading: string
+    /** 큰 제목 바로 아래 한 줄 */
+    sub: string
+    metaTitle: string
+    metaDescription: string
+    ogDescription: string
+    /** 창 제목줄에서 랜딩으로 돌아가는 링크 */
+    backHome: string
+    /** 맨 위 버전에 붙는 꼬리표 */
     latest: string
+    /** 버전마다 붙는, 그 버전의 깃허브 릴리스로 가는 링크 글자 */
+    releaseNotes: string
     button: string
     rows: DownloadRow[]
-    hint: ReactNode
-    /** 폰에서만 보이는 줄 — 여기 있는 파일을 이 기기로는 열 수 없다는 것 */
-    mobileHint: ReactNode
     pending: ReactNode
+    /**
+     * 폰으로 열었을 때 목록 대신 보여 주는 화면(`DownloadMobileGate`) 전용 문구.
+     * 이 화면이 이미 "컴퓨터에서 열라" 는 뜻을 지고 있어서, 목록 화면 쪽에는
+     * 더 이상 그 안내를 따로 두지 않는다.
+     */
+    mobileGateHeading: string
+    mobileGateBody: string
   }
 
   install: {
@@ -149,7 +167,7 @@ export interface Copy {
     items: Question[]
   }
 
-  footer: { tagline: string; github: string; releases: string }
+  footer: { github: string; releases: string }
 
   /** 받기 단추가 상태에 따라 바꿔 다는 말 (예전 `dl-strings` 스크립트가 하던 일) */
   downloadStrings: {

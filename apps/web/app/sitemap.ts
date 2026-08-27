@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { LOCALE_PATHS, MODIFIED, absolute } from '../lib/site'
+import { DOWNLOAD_PATHS, LOCALE_PATHS, MODIFIED, absolute } from '../lib/site'
 
 /**
  * 주소가 되풀이되는 곳이라 손으로 적지 않고 만들어 낸다.
@@ -17,6 +17,12 @@ const languages = {
   'x-default': absolute(LOCALE_PATHS.ko),
 }
 
+const downloadLanguages = {
+  ko: absolute(DOWNLOAD_PATHS.ko),
+  en: absolute(DOWNLOAD_PATHS.en),
+  'x-default': absolute(DOWNLOAD_PATHS.ko),
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
@@ -32,6 +38,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.8,
       alternates: { languages },
+    },
+    {
+      url: absolute(DOWNLOAD_PATHS.ko),
+      lastModified: MODIFIED,
+      changeFrequency: 'monthly',
+      priority: 0.9,
+      alternates: { languages: downloadLanguages },
+    },
+    {
+      url: absolute(DOWNLOAD_PATHS.en),
+      lastModified: MODIFIED,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+      alternates: { languages: downloadLanguages },
     },
   ]
 }
