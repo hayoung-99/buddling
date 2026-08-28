@@ -33,6 +33,7 @@ export interface TrayHost {
   openTeamDetail(teamId: string): void
   openSizePanel(teamId: string): void
   openSettings(): void
+  openNotifications(): void
   isAsleep(teamId: string): boolean
   setAsleep(teamId: string, asleep: boolean): void
   isPetVisible(): boolean
@@ -85,6 +86,7 @@ function createTray(app: TrayHost): TrayHandle {
       ...teamItems,
       { type: 'separator' },
       { label: t('app.openList'), click: () => app.openTeamWindow() },
+      { label: t('notifications.title'), click: () => app.openNotifications() },
       { label: t('app.settings'), click: () => app.openSettings() },
       {
         label: app.isPetVisible() ? t('app.hideAll') : t('app.showAll'),

@@ -9,6 +9,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AppState } from '@buddling/shared/state'
 
+/** 알림 화면과 함께 쓰는 갈고리라 거기로 옮겼다. 여기서는 자리만 지키며 다시 내보낸다. */
+export { useMinuteTick } from '../use-minute-tick'
+
 /**
  * 메인 프로세스가 보내 주는 상태를 따라간다.
  *
@@ -73,16 +76,4 @@ export function useToast() {
   useEffect(() => () => clearTimeout(timer.current), [])
 
   return { message, show }
-}
-
-/**
- * 초대코드 남은 시간이 창을 열어둔 채로 굳지 않도록 1분마다 다시 그리게 한다.
- * 값을 쓰지는 않고, 바뀐다는 사실만으로 다시 그려진다.
- */
-export function useMinuteTick() {
-  const [, setTick] = useState(0)
-  useEffect(() => {
-    const timer = setInterval(() => setTick((n) => n + 1), 60000)
-    return () => clearInterval(timer)
-  }, [])
 }

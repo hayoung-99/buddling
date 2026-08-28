@@ -141,6 +141,22 @@ async function main() {
     if (joined.team.id !== team.id) throw new Error('다른 팀에 들어갔습니다')
   })
 
+  // 알림 화면(get_my_events)은 단위 테스트가 닿지 못하는 곳이다 — team_events 는
+  // security definer RPC 뒤에 있어 fake-net 으로만 흉내 낼 수 있고, 진짜 필터가
+  // 맞는지는 여기서만 확인된다.
+  await step('남아 있는 사람에게 참여 알림이 간다 (RPC get_my_events)', async () => {
+    const events = await alice.getMyEvents()
+    const joined = events.find((e) => e.kind === 'joined' && e.nickname === `민수-${suffix}`)
+    if (!joined) throw new Error('들어왔다는 알림이 오지 않았습니다')
+    if (joined.teamId !== team.id) throw new Error('teamId 가 다릅니다')
+  })
+
+  await step('내가 만든 줄은 나에게 오지 않는다 (RPC get_my_events)', async () => {
+    const events = await bob.getMyEvents()
+    const own = events.find((e) => e.kind === 'joined' && e.nickname === `민수-${suffix}`)
+    if (own) throw new Error('내가 들어온 사건이 나에게도 왔습니다')
+  })
+
   await step('멤버 목록 조회 (RPC get_my_teams)', async () => {
     const [mine] = await alice.getMyTeams()
     if (mine.members.length !== 2) {

@@ -65,6 +65,46 @@ export interface UpdateInfo {
   url: string | null
 }
 
+/**
+ * 알림 화면에 쌓이는 사건 한 줄의 종류(기획서 "알림 화면").
+ *
+ * `kicked-me` 만 내 기기에 남는다 — 내가 내보내진 방은 이미 그 방의 멤버가 아니라
+ * 서버에서 읽을 수 없다. 나머지 셋은 서버가 적어 둔 줄을 그대로 받아 그린다.
+ */
+export type NotificationKind = 'kicked-me' | 'joined' | 'left' | 'kicked'
+
+/**
+ * 알림 화면에 쌓이는 사건 한 줄.
+ *
+ * **방마다 하나로 묶지 않는다.** 같은 방에서 두 번 내보내지면 줄도 둘이다 — 서로
+ * 다른 두 번의 일이고, 뒤의 것으로 앞의 것을 덮으면 아직 보지 못한 줄이 사라질 수
+ * 있다. `id` 가 있어야 그 여러 줄 중 하나만 지울 수 있다.
+ */
+export interface NotificationEntry {
+  id: string
+  kind: NotificationKind
+  teamId: string
+  /** 그때 그 방을 부르던 이름 — 그때 무엇이 있었는지 말하는 값이라, 나중에
+   *  팀 이름이 바뀌거나 같은 방에서 또 내보내져도 이 줄은 그대로다 */
+  teamName: string
+  /** 그 줄의 주인공. `kicked-me` 에는 없다 — 주인공이 나이기 때문이다 */
+  nickname?: string
+  /** 방장이 나가서 내가 방장이 된 줄에만 붙는다. 그 방에서의 내 닉네임 */
+  newHostNickname?: string | null
+  /** epoch ms. 서버 줄은 서버가 적은 때, `kicked-me` 는 앱이 알아챈 때. 정렬(최신이
+   *  위)과 안읽음 판정에 쓴다 */
+  at: number
+}
+
+/**
+ * 알림이 살아 있는 기간.
+ *
+ * **`supabase/schema.sql` 의 `cleanup_team_events` · `get_my_events` 와 짝이다.**
+ * SQL 은 이 상수를 읽지 못하므로 한쪽만 고치면 조용히 어긋난다
+ * (`CLAUDE.md` 의 "같은 숫자가 세 곳에 있다" 표 참고).
+ */
+export const NOTIFICATION_TTL_MS = 7 * 24 * 60 * 60 * 1000
+
 export interface AppState {
   /** Supabase 접속 정보가 있는가. 없으면 팀 창이 설정 방법을 안내한다. */
   configured: boolean
@@ -76,6 +116,10 @@ export interface AppState {
   maxMembers: number
   update: UpdateInfo | null
   memberships: Membership[]
+  /** 최신이 앞. 알림 창이 그대로 늘어놓는다 */
+  notifications: NotificationEntry[]
+  /** 지난번 알림 창을 연 뒤로 새로 온 것이 있는가 — 제목줄 아이콘의 빨간 점 */
+  hasUnreadNotifications: boolean
 }
 
 /** 신호를 받았을 때 캐릭터 창으로 오는 것 */

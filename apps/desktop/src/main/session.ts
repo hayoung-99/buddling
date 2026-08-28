@@ -10,10 +10,18 @@
  * store 와 net 은 갈아끼울 수 있게 인자로 받는다. 그래야 Electron 없이 테스트할 수 있다.
  */
 
+import { randomUUID } from 'node:crypto'
 import { createNet, createEmitter, toFriendlyError } from '../services/net'
-import type { ConnectionState, AppState, TapPayload, UpdateInfo } from '@buddling/shared/state'
+import type {
+  ConnectionState,
+  AppState,
+  NotificationEntry,
+  TapPayload,
+  UpdateInfo,
+} from '@buddling/shared/state'
+import { NOTIFICATION_TTL_MS } from '@buddling/shared/state'
 import { toSignal } from '@buddling/shared/signals'
-import type { Net, NetMembership } from '../services/net'
+import type { Net, NetEvent, NetMembership } from '../services/net'
 import type { Store } from './store'
 import defaultStore from './store'
 import { getLanguage } from './i18n'
@@ -75,6 +83,8 @@ export interface SessionOptions {
   store?: Store
   /** 테스트는 `fake-net` 을 꽂는다 */
   net?: Net | null
+  /** 알림 시각을 결정한다. 테스트가 순서를 확정적으로 만들 때 갈아끼운다. */
+  now?: () => number
 }
 
 function createSession({
@@ -82,6 +92,7 @@ function createSession({
   anonKey,
   store = defaultStore,
   net: injectedNet = null,
+  now = Date.now,
 }: SessionOptions) {
   const emitter = createEmitter<SessionEvents>()
 
@@ -92,6 +103,11 @@ function createSession({
   const connections = new Map<string, ConnectionState>()
   /** teamId → 마지막으로 보낸 시각 */
   const lastTapAt = new Map<string, number>()
+  /**
+   * 서버가 적어 둔 사건들 — 들어옴 · 나감 · 내보내짐(기획서 "알림 화면"). 메모리에만
+   * 두고 기기에 남기지 않는다. `syncEvents()` 가 채운다.
+   */
+  let serverEvents: NetEvent[] = []
   let update: UpdateInfo | null = null
   /** 다시 붙어 보기까지의 대기. 성공하면 처음으로 되돌린다. */
   let retryStep = 0
@@ -136,7 +152,30 @@ function createSession({
     })
   }
 
+  /**
+   * 기기 줄(내보내진 나 자신)과 서버 줄(들어옴·나감·내보내짐)을 합쳐 최신순으로 늘어놓는다.
+   *
+   * 7일 지난 기기 줄은 여기서 걸러 낸다 — 서버 줄은 `get_my_events()` 가 이미 그
+   * 조건으로 걸러 보내 준다.
+   */
   function snapshot(): AppState {
+    const cutoff = now() - NOTIFICATION_TTL_MS
+    const mine: NotificationEntry[] = store
+      .get('notifications')
+      .filter((entry) => entry.at > cutoff)
+      .map((entry) => ({ ...entry, kind: 'kicked-me' as const }))
+    const theirs: NotificationEntry[] = serverEvents.map((event) => ({
+      id: event.id,
+      kind: event.kind,
+      teamId: event.teamId,
+      teamName: event.teamName,
+      nickname: event.nickname,
+      newHostNickname: event.newHostNickname,
+      at: new Date(event.at).getTime(),
+    }))
+    const notifications = [...mine, ...theirs].sort((a, b) => b.at - a.at)
+    const seenAt = store.get('notificationsSeenAt') ?? 0
+
     return {
       configured: net !== null,
       configError: netError,
@@ -152,6 +191,45 @@ function createSession({
         connection: connections.get(entry.team.id) ?? 'idle',
         pet: store.pet(entry.team.id),
       })),
+      notifications,
+      hasUnreadNotifications: notifications.some((entry) => entry.at > seenAt),
+    }
+  }
+
+  /**
+   * 내가 내보내진 줄 하나를 기기에 남긴다(기획서 "알림 화면").
+   *
+   * 이제 이 표에 남는 것은 **이 한 줄뿐이다** — 들어옴·나감·내보내짐(남에게 일어난 일)은
+   * 서버가 들고 있다가 `syncEvents()` 로 온다. 내가 내보내진 것만은 서버에서 읽을 수
+   * 없다(이미 그 방의 멤버가 아니다) — 그래서 여전히 뺄셈으로 알아내 기기에 둔다.
+   *
+   * **방마다 하나로 묶지 않는다.** 같은 방에서 두 번 내보내지면 줄도 둘이다 — 서로
+   * 다른 두 번의 일이라, 뒤의 것으로 앞의 것을 덮으면 아직 확인하지 못한 줄이 사라질
+   * 수 있다. 몇 번 내보내졌는지 세는 화면이 아니라 각각을 한 번씩 말하는 화면이다.
+   */
+  function addNotification(teamId: string, teamName: string) {
+    const entry = { id: randomUUID(), teamId, teamName, at: now() }
+    // 저장할 때 함께 오래된 줄을 걸러 낸다 — 기기에 영영 쌓이게 두지 않는다.
+    const cutoff = now() - NOTIFICATION_TTL_MS
+    store.set({
+      notifications: [...store.get('notifications').filter((n) => n.at > cutoff), entry],
+    })
+  }
+
+  /**
+   * 서버가 적어 둔 사건들을 다시 받는다.
+   *
+   * **스키마는 사람이 콘솔에서 손으로 실행한다.** 앱이 먼저 나가고 스키마가 늦으면
+   * `get_my_events()` 가 서버에 아직 없어 여기서 실패한다. 그렇다고 던지면 팀 목록
+   * 갱신(`refresh()`)까지 통째로 막히므로, 여기서는 조용히 삼키고 마지막 값을 그대로
+   * 둔다 — 알림만 비어 보이고 나머지는 멀쩡하게 굴러간다.
+   */
+  async function syncEvents() {
+    if (!net) return
+    try {
+      serverEvents = await net.getMyEvents()
+    } catch {
+      // 위 설명대로 일부러 삼킨다.
     }
   }
 
@@ -198,19 +276,36 @@ function createSession({
       const removed = memberships.get(id)!
       await requireNet().disconnect(id)
       forget(id)
+      addNotification(id, removed.team.name)
       emitter.emit('kicked', { teamId: id, teamName: removed.team.name })
     }
     memberships = next
     commit()
   }
 
-  /** 서버에서 내 소속을 통째로 다시 불러온다 */
+  /**
+   * 서버에서 내 소속을 통째로 다시 불러온다.
+   *
+   * **알림을 먼저 받아 둔다.** `applyTeams()` 가 끝에서 `commit()` → `publish()` 를
+   * 부르므로, 그 전에 `serverEvents` 를 최신으로 맞춰 두면 그 한 번의 방송에
+   * 소속과 알림이 함께 실린다. 반대 순서로 두면 `publish()` 를 한 번 더 불러야
+   * 알림이 반영되는데, `state` IPC 가 roster 가 바뀔 때마다 두 번 나가는 것뿐이라
+   * 낭비였다.
+   *
+   * `net.getMyTeams()` 가 실패하면 `applyTeams()` 자체가 불리지 않아 그 안의
+   * `publish()` 도 없다 — 그때만 예외적으로 직접 불러서, 방금 받아 둔 알림이라도
+   * 화면에 반영되게 한다.
+   */
   async function refresh() {
     if (!net) return
+    // 소속을 다시 불러오는 자리마다 알림도 함께 새로 받는다 — roster 브로드캐스트
+    // 하나에 두 가지가 얹혀 있다 (기획서 "알림 화면"의 "만드는 쪽에게").
+    await syncEvents()
     try {
       await applyTeams(await net.getMyTeams())
     } catch (error) {
       emitter.emit('error', toFriendlyError(error).message)
+      publish()
     }
   }
 
@@ -266,6 +361,8 @@ function createSession({
       // 한 번 어긋난 뒤 처음 한 번만 말한다. 다시 붙으면 알림도 처음으로 돌아간다.
       if (retryStep === 0) emitter.emit('error', toFriendlyError(error).message)
     }
+    // 앱을 켤 때·절전에서 깨어날 때도 밀린 알림을 함께 받는다.
+    await syncEvents()
 
     const connected = new Set(net.connectedTeamIds())
     for (const entry of memberships.values()) {
@@ -429,9 +526,9 @@ function createSession({
      */
     async tap({ teamId, toMemberId = null }: { teamId: string; toMemberId?: string | null }) {
       if (!net || !memberships.has(teamId)) return false
-      const now = Date.now()
-      if (now - (lastTapAt.get(teamId) ?? 0) < TAP_THROTTLE_MS) return false
-      lastTapAt.set(teamId, now)
+      const sentAt = Date.now()
+      if (sentAt - (lastTapAt.get(teamId) ?? 0) < TAP_THROTTLE_MS) return false
+      lastTapAt.set(teamId, sentAt)
       try {
         await net.sendTap({ teamId, toMemberId, signal: toSignal(store.pet(teamId).signal) })
         return true
@@ -489,6 +586,24 @@ function createSession({
     /** 절전 강도. 창들은 상태로 받아 곧바로 반영한다. */
     setPower(level: string) {
       store.set({ power: level })
+      publish()
+      return snapshot()
+    },
+
+    /**
+     * 알림 창을 지금 열었다고 기록한다. 이 시각보다 나중 줄만 다음부터 안읽음이다.
+     *
+     * **부르는 시점이 중요하다** — 이미 열려 있는 창을 앞으로 가져오기만 할 때는
+     * 부르지 않는다. 거기서 부르면 지금 보고 있는 안읽음 색이 눈앞에서 사라진다
+     * (기획서 "알림 화면"). 그 구분은 메인 프로세스의 창 관리 쪽(`main.ts`)이 안다.
+     *
+     * **기기 시계와 서버 시계가 어긋나면 클램프한다.** 서버 줄의 `at` 은 서버 시각이고
+     * 이 값은 기기 시각이다. 기기 시계가 뒤처져 있으면 방금 눈으로 본 맨 위 줄이
+     * 계속 안읽음으로 남으므로, 최소한 그 줄까지는 반드시 읽음이 되게 한다.
+     */
+    markNotificationsSeen() {
+      const newest = snapshot().notifications[0]?.at ?? 0
+      store.set({ notificationsSeenAt: Math.max(now(), newest) })
       publish()
       return snapshot()
     },

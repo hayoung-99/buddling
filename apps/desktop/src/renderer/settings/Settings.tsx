@@ -20,6 +20,7 @@ import type { Translate } from '@buddling/shared/i18n'
 import { POWER_LEVELS, resolvePower } from '@buddling/shared/power'
 import type { AppState } from '@buddling/shared/state'
 import * as ui from '../ui'
+import { NotificationButton } from '../NotificationButton'
 
 /** 라디오 한 줄. 이름표 전체가 눌리는 카드다. */
 function Choice({
@@ -159,6 +160,11 @@ export function Settings() {
     <>
       <header className={ui.titlebar}>
         <span>{t('app.name')}</span>
+        <NotificationButton
+          state={state}
+          t={t}
+          onOpen={() => window.settingsApi.openNotifications()}
+        />
       </header>
       <main className={ui.main}>
         {item ? (

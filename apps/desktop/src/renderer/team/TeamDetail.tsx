@@ -16,6 +16,7 @@ import { characterThumbnails } from './thumbnails'
 import { inviteStatus } from './invite'
 import { useAppState, useMinuteTick, useRunner, useToast } from './hooks'
 import * as ui from '../ui'
+import { NotificationButton } from '../NotificationButton'
 
 /** 지금 무엇을 고쳐 쓰는 중인가 */
 type Editing = null | 'team' | 'nickname'
@@ -514,7 +515,14 @@ export function TeamDetail() {
       <div className={ui.footer}>
         <button
           className={ui.buttonQuiet}
-          onClick={() => run(() => window.teamApi.leaveTeam(teamId))}
+          onClick={() => {
+            // 마지막 사람이면 나가는 순간 방과 초대코드가 함께 영영 사라진다 — 그
+            // 사실을 서버에 물어볼 필요 없이 이미 들고 있는 멤버 목록으로 안다.
+            const prompt =
+              entry.members.length === 1 ? t('detail.leaveConfirmLast') : t('detail.leaveConfirm')
+            if (!window.confirm(prompt)) return
+            void run(() => window.teamApi.leaveTeam(teamId))
+          }}
         >
           {t('detail.leave')}
         </button>
@@ -526,6 +534,7 @@ export function TeamDetail() {
     <>
       <header className={ui.titlebar}>
         <span>{t('app.name')}</span>
+        <NotificationButton state={state} t={t} onOpen={() => window.teamApi.openNotifications()} />
       </header>
       <main className={ui.main}>{body}</main>
       <div

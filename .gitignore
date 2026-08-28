@@ -29,6 +29,14 @@ build/icon.iconset/
 .claude/plans/
 .claude/reports/
 
+# 기획→기술설계→개발→코드리뷰 파이프라인을 돌리는 서브에이전트 정의와, 그걸 잇는
+# /build-feature 명령. 브라우저 플랜서를 띄우는 render_doc.py 개인 경로(alice 상위
+# 폴더)를 그대로 참조하므로, 다른 사람이나 다른 기기에서 받으면 존재하지 않는 경로를
+# 부르게 된다. 이 저장소 밖의 개인 도구다. 이 파이프라인이 만드는 결과물
+# (docs/PRODUCT.md · docs/DEVELOPMENT.md · docs/design/*.md)은 그대로 커밋된다.
+.claude/agents/
+.claude/commands/
+
 # 메인 프로세스 빌드 산출물 (npm run build 로 언제든 다시 만든다)
 apps/*/dist-main/
 *.tsbuildinfo

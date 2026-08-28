@@ -22,6 +22,7 @@
  *   BUDDLING_DETAIL="1"             그 순서의 팀 상세 창을 열어 함께 찍는다
  *   BUDDLING_SETTINGS=1             설정 창을 열어 함께 찍는다 (목록 화면)
  *   BUDDLING_SETTINGS="power"       그 항목의 상세 화면까지 들어가서 찍는다 ("language" 도)
+ *   BUDDLING_NOTIFICATIONS=1        알림 창을 열어 함께 찍는다
  *   BUDDLING_POWER="saver"          절전 강도를 바꿔 놓고 찍는다
  *   BUDDLING_FAIL="create"|"join"   실패했을 때 사용자에게 보이는 문구를 확인한다
  *   BUDDLING_LANG="ja"              그 언어로 바꿔 놓고 찍는다
@@ -133,6 +134,11 @@ async function captureIfRequested(app: AppShell, electronApp: Electron.App) {
     }
   }
 
+  if (process.env.BUDDLING_NOTIFICATIONS) {
+    app.openNotifications()
+    await wait(1200)
+  }
+
   if (process.env.BUDDLING_SCALE && firstTeamId()) {
     app.setPetScale(firstTeamId(), Number(process.env.BUDDLING_SCALE))
     await wait(500)
@@ -242,6 +248,7 @@ async function captureIfRequested(app: AppShell, electronApp: Electron.App) {
     ]),
     ['size', app.sizeWindow],
     ['settings', app.settingsWindow],
+    ['notifications', app.notificationsWindow],
   ]
 
   for (const [name, window] of targets) {
