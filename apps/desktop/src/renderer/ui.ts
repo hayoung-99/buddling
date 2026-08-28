@@ -76,7 +76,9 @@ export const section = 'mt-[20px]'
 export const sectionHeading = 'flex items-center gap-[8px] mb-[10px]'
 export const iconChip =
   'flex-none w-[26px] h-[26px] rounded-chip flex items-center justify-center text-ink'
-export const sectionLabel = 'text-[12px] font-bold tracking-[0.1em] text-ink-soft'
+export const sectionLabel = 'text-[15px] font-bold tracking-[0.02em] text-ink'
+/** 섹션 제목 아래, 입력칸 위에 두는 한 줄 설명 */
+export const sectionDescription = 'text-[12px] text-ink-soft mb-[10px]'
 export const label = 'block text-[12px] font-bold text-ink-soft mb-[6px]'
 export const errorLine = 'text-danger text-[13px] mt-[12px] min-h-[20px]'
 export const footer = 'mt-[26px] text-center'

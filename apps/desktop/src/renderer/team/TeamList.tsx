@@ -56,6 +56,7 @@ function JoinForms({
           </span>
           <h2 className={ui.sectionLabel}>{t('form.createSection')}</h2>
         </div>
+        <p className={ui.sectionDescription}>{t('form.createDescription')}</p>
         <div>
           <label className={ui.label}>{t('form.teamName')}</label>
           <input
@@ -70,7 +71,7 @@ function JoinForms({
         <div className="flex gap-[10px] mt-[16px]">
           <button
             className={`${ui.button} flex-1 w-full`}
-            disabled={busy}
+            disabled={busy || !draft.teamName.trim()}
             onClick={() =>
               run(async () => {
                 await window.teamApi.createTeam({ name: draft.teamName, nickname: draft.nickname })
@@ -84,6 +85,12 @@ function JoinForms({
         </div>
       </section>
 
+      <div className="flex items-center gap-[10px] my-[4px]">
+        <div className="flex-1 border-t border-line" />
+        <span className="text-[12px] text-ink-soft">{t('form.or')}</span>
+        <div className="flex-1 border-t border-line" />
+      </div>
+
       <section className={ui.section}>
         <div className={ui.sectionHeading}>
           <span className={`${ui.iconChip} bg-chip-key`}>
@@ -91,6 +98,8 @@ function JoinForms({
           </span>
           <h2 className={ui.sectionLabel}>{t('form.joinSection')}</h2>
         </div>
+        <p className={ui.sectionDescription}>{t('form.joinDescription')}</p>
+        <label className={ui.label}>{t('form.inviteCode')}</label>
         <input
           type="text"
           className={`${ui.input} uppercase tracking-[0.28em] font-bold text-center`}
@@ -104,7 +113,7 @@ function JoinForms({
         <div className="flex gap-[10px] mt-[16px]">
           <button
             className={`${ui.buttonGhost} flex-1 w-full`}
-            disabled={busy}
+            disabled={busy || !draft.inviteCode.trim()}
             onClick={() =>
               run(async () => {
                 await window.teamApi.joinTeam({
