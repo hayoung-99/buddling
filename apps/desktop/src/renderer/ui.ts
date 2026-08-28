@@ -20,11 +20,18 @@ export const button =
   'transition-[transform,opacity] duration-100 active:scale-[0.975] ' +
   'disabled:opacity-45 disabled:cursor-default'
 
-/** 테두리만 있는 버튼 */
+/**
+ * 테두리만 있는 버튼.
+ *
+ * 비활성 스타일만은 `button`(채운 버튼)과 맞춘다 — 투명 배경에 옅은 테두리 위에
+ * 그냥 opacity 를 낮추면 테두리와 글자가 거의 안 보이는 수준까지 흐려져서, 채운
+ * 버튼의 "칠해진 채로 흐려진" 느낌과 달리 아예 지워진 것처럼 읽힌다.
+ */
 export const buttonGhost =
   'font-bold rounded-field px-[18px] py-[11px] bg-transparent text-ink border-[1.5px] border-line ' +
   'cursor-pointer transition-[transform,opacity] duration-100 active:scale-[0.975] ' +
-  'disabled:opacity-45 disabled:cursor-default'
+  'disabled:bg-button-primary disabled:text-cream disabled:border-transparent disabled:opacity-45 ' +
+  'disabled:cursor-default'
 
 /** 줄 안에 끼워 넣는 작은 알약 버튼 */
 export const buttonTiny =
@@ -76,7 +83,9 @@ export const section = 'mt-[20px]'
 export const sectionHeading = 'flex items-center gap-[8px] mb-[10px]'
 export const iconChip =
   'flex-none w-[26px] h-[26px] rounded-chip flex items-center justify-center text-ink'
-export const sectionLabel = 'text-[12px] font-bold tracking-[0.1em] text-ink-soft'
+export const sectionLabel = 'text-[15px] font-bold tracking-[0.02em] text-ink'
+/** 섹션 제목 아래, 입력칸 위에 두는 한 줄 설명 */
+export const sectionDescription = 'text-[12px] text-ink-soft mb-[10px]'
 export const label = 'block text-[12px] font-bold text-ink-soft mb-[6px]'
 export const errorLine = 'text-danger text-[13px] mt-[12px] min-h-[20px]'
 export const footer = 'mt-[26px] text-center'
