@@ -9,7 +9,7 @@
  * 껍데기를 씌워 버려서, 그대로 두면 그 문구가 사용자 화면에 그대로 보인다.
  */
 
-import { ipcMain, Menu, Notification, shell } from 'electron'
+import { ipcMain, Menu, shell } from 'electron'
 import { toFriendlyError } from '../services/net'
 import { t } from './i18n'
 import { nextDefaultName } from './default-name'
@@ -34,21 +34,10 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
   session.on('teams', (snapshot) => broadcast('state', snapshot))
   session.on('error', (message) => broadcast('app-error', describe(new Error(message))))
 
-  /**
-   * 방장이 나를 내보냈다. 그 방 창은 이미 닫히고 있는 중이라(`syncPetWindows`),
-   * 어떤 창도 열려 있지 않을 수 있다. 그래서 창이 아니라 운영체제 알림으로 한 번
-   * 알린다 — 아무 말 없이 캐릭터가 사라지면 내보내진 것이 아니라 고장으로 읽힌다.
-   *
-   * macOS 는 이 앱이 코드 서명이 없어서(`docs/PRODUCT.md` "당분간 하지 않는 것 —
-   * 코드 서명") `Notification.isSupported()` 가 true 여도 권한이 거부되어 뜨지
-   * 않을 수 있다(`UNErrorDomain error 1`, 직접 겪었다). 앱 화면에도 함께 띄우는
-   * 방법은 눈에 잘 안 띈다는 이유로 일부러 넣지 않았다 — 다른 자리에 넣기로
-   * 정해지면 그때 더한다.
-   */
-  session.on('kicked', ({ teamName }) => {
-    if (!Notification.isSupported()) return
-    new Notification({ title: t('app.name'), body: t('kicked.message', { teamName }) }).show()
-  })
+  // `kicked` 는 아직 아무도 듣지 않는다 — 운영체제 알림은 걷어냈다(macOS 는 이 앱이
+  // 코드 서명이 없어 권한이 거부되곤 했다). 대신 보여줄 알림 화면은 기획서 "알림 화면"
+  // 에서 정해졌고 다음 PR 에서 만든다. 세션이 이벤트를 내보내는 것 자체는 그대로 두는데,
+  // 그 화면이 그대로 구독해서 쓸 것이기 때문이다.
 
   // 캐릭터 관련 이벤트는 그 팀의 캐릭터 창에만 보낸다
   session.on('character', ({ teamId, characterKey }) =>
