@@ -361,6 +361,16 @@ npm run check:site  # 스스로 어긋나지 않았는지 (CI 도 이걸 돌린�
 
 ---
 
+## 기능별 설계 문서
+
+기획서에서 정해진 것을 **어떻게 만들지**는 기능마다 문서 하나로 둡니다.
+
+| 기능 | 문서 | 상태 |
+|---|---|---|
+| 알림 화면 | [docs/design/notifications-screen.md](design/notifications-screen.md) | 설계 중 |
+
+---
+
 ## 알아두면 좋은 점
 
 - 로그인 화면이 없습니다. 대신 Supabase 익명 로그인으로 기기마다 계정을 하나 만들어 두고,
