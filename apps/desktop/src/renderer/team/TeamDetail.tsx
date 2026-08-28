@@ -16,6 +16,7 @@ import { characterThumbnails } from './thumbnails'
 import { inviteStatus } from './invite'
 import { useAppState, useMinuteTick, useRunner, useToast } from './hooks'
 import * as ui from '../ui'
+import { PawIcon } from '../icons'
 import { NotificationButton } from '../NotificationButton'
 import { OfflineScreen } from '../OfflineScreen'
 
@@ -534,6 +535,7 @@ export function TeamDetail() {
   return (
     <>
       <header className={ui.titlebar}>
+        <PawIcon className="mr-[4px]" />
         <span>{t('app.name')}</span>
         <NotificationButton state={state} t={t} onOpen={() => window.teamApi.openNotifications()} />
       </header>

@@ -19,6 +19,7 @@ import type { AppState, NotificationEntry } from '@buddling/shared/state'
 import { ago } from './ago'
 import { useMinuteTick } from '../use-minute-tick'
 import * as ui from '../ui'
+import { PawIcon } from '../icons'
 
 /** 종류별로 다른 문구를 고른다. 문구 아래 작은 글씨로 "얼마나 지났는지"를 함께 적는다. */
 function labelFor(entry: NotificationEntry, t: ReturnType<typeof createTranslator>): string {
@@ -89,6 +90,7 @@ export function Notifications() {
   return (
     <>
       <header className={ui.titlebar}>
+        <PawIcon className="mr-[4px]" />
         <span>{t('app.name')}</span>
       </header>
       <main className={ui.main}>
