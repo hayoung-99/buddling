@@ -11,6 +11,8 @@
  *   power       절전 강도. 캐릭터가 가만히 있을 때 얼마나 게으르게 그릴지를 정한다.
  *   lastUpdateCheck  새 버전을 마지막으로 확인한 날. 앱을 껐다 켜도 하루 한 번을 지키려면
  *               기억해 둬야 한다.
+ *   notifications       알림 화면에 쌓인 사건들 (지금은 내보내진 것뿐이다)
+ *   notificationsSeenAt 알림 창을 마지막으로 연 시각. 안읽음 판정의 기준이다
  *
  * 쓰기는 잠깐 모았다 한 번에 한다 (SAVE_DELAY). 앱을 끄기 직전처럼 미룰 수 없을 때는
  * `flush()` 로 그 자리에서 끝낸다.
@@ -21,7 +23,7 @@ import path from 'node:path'
 import { app } from 'electron'
 import { legacyStorePath } from './legacy-store'
 import { writeJsonAtomically } from './write-json'
-import type { Member, PetSettings, Team } from '@buddling/shared/state'
+import type { Member, NotificationEntry, PetSettings, Team } from '@buddling/shared/state'
 import { DEFAULT_SIGNAL } from '@buddling/shared/signals'
 
 /**
@@ -53,6 +55,12 @@ export interface StoredState {
   power: string | null
   /** 새 버전을 마지막으로 확인한 날 'YYYY-MM-DD'. 하루 한 번만 보려고 남긴다. */
   lastUpdateCheck: string | null
+  /** 알림 화면에 쌓인 사건들 (지금은 내보내진 것 하나뿐이다). 최신이 앞이 아니어도 된다 —
+   *  정렬은 내보낼 때(session.ts) 한다 */
+  notifications: NotificationEntry[]
+  /** 알림 창을 마지막으로 연 시각(epoch ms). 한 번도 안 열었으면 null — 그때는 있는
+   *  것 전부가 안읽음이다 */
+  notificationsSeenAt: number | null
 }
 
 const DEFAULTS: StoredState = {
@@ -64,6 +72,8 @@ const DEFAULTS: StoredState = {
   language: null,
   power: null,
   lastUpdateCheck: null,
+  notifications: [],
+  notificationsSeenAt: null,
 }
 
 const DEFAULT_PET: PetSettings = { position: null, scale: 1, signal: DEFAULT_SIGNAL }

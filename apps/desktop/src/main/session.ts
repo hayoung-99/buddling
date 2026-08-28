@@ -75,6 +75,8 @@ export interface SessionOptions {
   store?: Store
   /** 테스트는 `fake-net` 을 꽂는다 */
   net?: Net | null
+  /** 알림 시각을 결정한다. 테스트가 순서를 확정적으로 만들 때 갈아끼운다. */
+  now?: () => number
 }
 
 function createSession({
@@ -82,6 +84,7 @@ function createSession({
   anonKey,
   store = defaultStore,
   net: injectedNet = null,
+  now = Date.now,
 }: SessionOptions) {
   const emitter = createEmitter<SessionEvents>()
 
@@ -137,6 +140,9 @@ function createSession({
   }
 
   function snapshot(): AppState {
+    const notifications = [...store.get('notifications')].sort((a, b) => b.at - a.at)
+    const seenAt = store.get('notificationsSeenAt') ?? 0
+
     return {
       configured: net !== null,
       configError: netError,
@@ -152,7 +158,19 @@ function createSession({
         connection: connections.get(entry.team.id) ?? 'idle',
         pet: store.pet(entry.team.id),
       })),
+      notifications,
+      hasUnreadNotifications: notifications.some((entry) => entry.at > seenAt),
     }
+  }
+
+  /**
+   * 알림 화면에 사건 한 줄을 남긴다(기획서 "알림 화면").
+   * 같은 방 줄이 이미 있으면 시각만 새로 써서 하나로 유지한다 — 몇 번 내보내졌는지
+   * 세는 화면이 되면 안 된다.
+   */
+  function addNotification(teamId: string, teamName: string) {
+    const rest = store.get('notifications').filter((entry) => entry.teamId !== teamId)
+    store.set({ notifications: [...rest, { teamId, teamName, at: now() }] })
   }
 
   function publish() {
@@ -198,6 +216,7 @@ function createSession({
       const removed = memberships.get(id)!
       await requireNet().disconnect(id)
       forget(id)
+      addNotification(id, removed.team.name)
       emitter.emit('kicked', { teamId: id, teamName: removed.team.name })
     }
     memberships = next
@@ -429,9 +448,9 @@ function createSession({
      */
     async tap({ teamId, toMemberId = null }: { teamId: string; toMemberId?: string | null }) {
       if (!net || !memberships.has(teamId)) return false
-      const now = Date.now()
-      if (now - (lastTapAt.get(teamId) ?? 0) < TAP_THROTTLE_MS) return false
-      lastTapAt.set(teamId, now)
+      const sentAt = Date.now()
+      if (sentAt - (lastTapAt.get(teamId) ?? 0) < TAP_THROTTLE_MS) return false
+      lastTapAt.set(teamId, sentAt)
       try {
         await net.sendTap({ teamId, toMemberId, signal: toSignal(store.pet(teamId).signal) })
         return true
@@ -489,6 +508,26 @@ function createSession({
     /** 절전 강도. 창들은 상태로 받아 곧바로 반영한다. */
     setPower(level: string) {
       store.set({ power: level })
+      publish()
+      return snapshot()
+    },
+
+    /**
+     * 알림 창을 지금 열었다고 기록한다. 이 시각보다 나중 줄만 다음부터 안읽음이다.
+     *
+     * **부르는 시점이 중요하다** — 이미 열려 있는 창을 앞으로 가져오기만 할 때는
+     * 부르지 않는다. 거기서 부르면 지금 보고 있는 안읽음 색이 눈앞에서 사라진다
+     * (기획서 "알림 화면"). 그 구분은 메인 프로세스의 창 관리 쪽(`main.ts`)이 안다.
+     */
+    markNotificationsSeen() {
+      store.set({ notificationsSeenAt: now() })
+      publish()
+      return snapshot()
+    },
+
+    /** 그 줄을 영영 지운다. */
+    dismissNotification(teamId: string) {
+      store.set({ notifications: store.get('notifications').filter((n) => n.teamId !== teamId) })
       publish()
       return snapshot()
     },

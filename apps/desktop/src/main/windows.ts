@@ -190,6 +190,29 @@ function createSettingsWindow() {
   return window
 }
 
+/** 알림 화면. 방마다 따로가 아니라 하나뿐이다(기획서 "알림 화면"). */
+function createNotificationsWindow() {
+  const window = new BrowserWindow({
+    width: 380,
+    height: 520,
+    minWidth: 340,
+    minHeight: 400,
+    title: 'Buddling',
+    backgroundColor: '#f5efe1',
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+    show: false,
+    webPreferences: {
+      preload: preloadScript('notifications'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  })
+
+  void window.loadFile(rendererPage('notifications', 'index.html'))
+  window.once('ready-to-show', () => window.show())
+  return window
+}
+
 /** 내 팀 목록 창 */
 function createTeamWindow() {
   const window = new BrowserWindow({
@@ -249,6 +272,7 @@ export {
   createTeamDetailWindow,
   createSizeWindow,
   createSettingsWindow,
+  createNotificationsWindow,
   placeSizeWindow,
   resizePetWindow,
   clampScale,

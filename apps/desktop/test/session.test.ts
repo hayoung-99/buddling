@@ -25,6 +25,8 @@ function memoryStore(): Store & { peek: () => StoredState } {
     language: null,
     power: null,
     lastUpdateCheck: null,
+    notifications: [],
+    notificationsSeenAt: null,
   }
 
   const pet = (teamId: string): PetSettings => ({ ...DEFAULT_PET, ...state.pets[teamId] })
@@ -66,10 +68,14 @@ function memoryStore(): Store & { peek: () => StoredState } {
   }
 }
 
-function makeSession({ server = createFakeServer(), userId = 'user-me' } = {}) {
+function makeSession({
+  server = createFakeServer(),
+  userId = 'user-me',
+  now,
+}: { server?: ReturnType<typeof createFakeServer>; userId?: string; now?: () => number } = {}) {
   const store = memoryStore()
   const net = createFakeNet({ server, userId })
-  const session = createSession({ url: 'x', anonKey: 'y', store, net })
+  const session = createSession({ url: 'x', anonKey: 'y', store, net, now })
   return { server, store, net, session }
 }
 
@@ -469,6 +475,128 @@ describe('세션 — 방장과 강퇴', () => {
     await ctx.session.leaveTeam(teamId)
 
     expect(kicked).toEqual([])
+  })
+})
+
+describe('세션 — 알림 화면', () => {
+  /** 방장이 게스트를 만들고 초대해 둔다 */
+  async function hostAndGuest({ now }: { now?: () => number } = {}) {
+    const server = createFakeServer()
+    const host = makeSession({ server, userId: 'user-host' })
+    const guest = makeSession({ server, userId: 'user-guest', now })
+    const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    const teamId = created.memberships[0].team.id
+    const joined = await guest.session.joinTeam({
+      inviteCode: created.memberships[0].team.inviteCode,
+      nickname: '민수',
+    })
+    return { host, guest, teamId, guestMemberId: joined.memberships[0].member.id }
+  }
+
+  it('강퇴되면 알림 목록에 한 줄 남는다', async () => {
+    const { host, guest, teamId, guestMemberId } = await hostAndGuest()
+
+    await host.session.kickMember(teamId, guestMemberId)
+    await guest.session.recover()
+
+    const [entry] = guest.session.snapshot().notifications
+    expect(entry.teamId).toBe(teamId)
+    expect(entry.teamName).toBe('디자인팀')
+  })
+
+  it('내가 직접 나간 것은 알림에 남지 않는다', async () => {
+    const ctx = makeSession()
+    const created = await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    await ctx.session.leaveTeam(created.memberships[0].team.id)
+
+    expect(ctx.session.snapshot().notifications).toEqual([])
+  })
+
+  it('같은 방에서 두 번 내보내지면 알림 줄이 하나로 유지된다', async () => {
+    let clock = 1000
+    const { host, guest, teamId, guestMemberId } = await hostAndGuest({ now: () => clock })
+
+    await host.session.kickMember(teamId, guestMemberId)
+    await guest.session.recover()
+    expect(guest.session.snapshot().notifications).toHaveLength(1)
+
+    // 새 초대코드로 다시 들어왔다가 또 내보내진다
+    clock = 2000
+    const inviteCode = host.session.snapshot().memberships[0].team.inviteCode
+    const rejoined = await guest.session.joinTeam({ inviteCode, nickname: '민수' })
+    await host.session.kickMember(teamId, rejoined.memberships[0].member.id)
+    await guest.session.recover()
+
+    const notifications = guest.session.snapshot().notifications
+    expect(notifications).toEqual([{ teamId, teamName: '디자인팀', at: 2000 }])
+  })
+
+  it('최신 알림이 맨 앞에 온다', async () => {
+    let clock = 1000
+    const server = createFakeServer()
+    const host = makeSession({ server, userId: 'user-host' })
+    const guest = makeSession({ server, userId: 'user-guest', now: () => clock })
+
+    const design = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    const designId = design.memberships[0].team.id
+    const devState = await host.session.createTeam({ name: '개발팀', nickname: '나영' })
+    const devId = devState.memberships.find((m) => m.team.id !== designId)!.team.id
+
+    const joinedDesign = await guest.session.joinTeam({
+      inviteCode: design.memberships[0].team.inviteCode,
+      nickname: '민수',
+    })
+    const joinedDev = await guest.session.joinTeam({
+      inviteCode: devState.memberships.find((m) => m.team.id === devId)!.team.inviteCode,
+      nickname: '민수',
+    })
+
+    clock = 1000
+    await host.session.kickMember(
+      designId,
+      joinedDesign.memberships.find((m) => m.team.id === designId)!.member.id,
+    )
+    await guest.session.recover()
+
+    clock = 2000
+    await host.session.kickMember(
+      devId,
+      joinedDev.memberships.find((m) => m.team.id === devId)!.member.id,
+    )
+    await guest.session.recover()
+
+    const notifications = guest.session.snapshot().notifications
+    expect(notifications.map((n) => n.teamName)).toEqual(['개발팀', '디자인팀'])
+  })
+
+  it('한 번도 안 읽은 알림이 있으면 안읽음 표시가 켜진다', async () => {
+    const { host, guest, teamId, guestMemberId } = await hostAndGuest()
+    expect(guest.session.snapshot().hasUnreadNotifications).toBe(false)
+
+    await host.session.kickMember(teamId, guestMemberId)
+    await guest.session.recover()
+
+    expect(guest.session.snapshot().hasUnreadNotifications).toBe(true)
+  })
+
+  it('알림 창을 열었다고 표시하면 안읽음이 꺼진다', async () => {
+    const { host, guest, teamId, guestMemberId } = await hostAndGuest()
+    await host.session.kickMember(teamId, guestMemberId)
+    await guest.session.recover()
+
+    guest.session.markNotificationsSeen()
+
+    expect(guest.session.snapshot().hasUnreadNotifications).toBe(false)
+  })
+
+  it('알림을 지우면 목록에서 빠진다', async () => {
+    const { host, guest, teamId, guestMemberId } = await hostAndGuest()
+    await host.session.kickMember(teamId, guestMemberId)
+    await guest.session.recover()
+
+    guest.session.dismissNotification(teamId)
+
+    expect(guest.session.snapshot().notifications).toEqual([])
   })
 })
 

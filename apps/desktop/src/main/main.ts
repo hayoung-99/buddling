@@ -20,6 +20,7 @@ import {
   createTeamDetailWindow,
   createSizeWindow,
   createSettingsWindow,
+  createNotificationsWindow,
   placeSizeWindow,
   resizePetWindow,
   clampScale,
@@ -67,6 +68,10 @@ const app = {
   sizeWindow: null as BrowserWindow | null,
   sizePanelTeamId: null as string | null,
   settingsWindow: null as BrowserWindow | null,
+  notificationsWindow: null as BrowserWindow | null,
+  /** 지금 열려 있는 알림 창이 "안읽음"을 가릴 기준(epoch ms) — 그 창이 열리기 직전의
+   *  `notificationsSeenAt`. 창이 떠 있는 동안 바뀌지 않는다 (아래 `openNotifications`). */
+  notificationsUnreadBefore: 0,
   /** `whenReady` 전에는 아직 없다 */
   session: null as Session | null,
   tray: null as TrayHandle | null,
@@ -164,6 +169,28 @@ const app = {
       app.settingsWindow = createSettingsWindow()
       app.settingsWindow.on('closed', () => {
         app.settingsWindow = null
+      })
+    }
+    electronApp.focus({ steal: true })
+  },
+
+  /**
+   * 내 소속이 바뀐 일이 쌓이는 알림 화면. 방마다 따로가 아니라 하나뿐이다.
+   *
+   * **기준 시각은 창이 닫혀 있다가 열릴 때만 갱신한다.** 이미 떠 있는 창을 앞으로
+   * 가져오기만 할 때 갱신하면, 보고 있던 안읽음 색이 눈앞에서 사라진다(기획서
+   * "알림 화면"). 그래서 새로 만드는 갈래에서만 지금 값을 붙잡아 두고 시각을 새로 쓴다.
+   */
+  openNotifications() {
+    if (app.notificationsWindow && !app.notificationsWindow.isDestroyed()) {
+      app.notificationsWindow.show()
+      app.notificationsWindow.focus()
+    } else {
+      app.notificationsUnreadBefore = store.get('notificationsSeenAt') ?? 0
+      app.session?.markNotificationsSeen()
+      app.notificationsWindow = createNotificationsWindow()
+      app.notificationsWindow.on('closed', () => {
+        app.notificationsWindow = null
       })
     }
     electronApp.focus({ steal: true })

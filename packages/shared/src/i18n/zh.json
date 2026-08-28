@@ -28,6 +28,10 @@
 
   "pet.bubble": "戳戳！",
 
+  "notifications.title": "通知",
+  "notifications.empty": "还没有通知",
+  "notifications.dismiss": "删除",
+
   "size.caption": "大小",
   "size.reset": "恢复默认大小",
 

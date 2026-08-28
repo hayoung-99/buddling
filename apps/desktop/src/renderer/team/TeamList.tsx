@@ -19,6 +19,7 @@ import { characterThumbnails } from './thumbnails'
 import { useAppState, useRunner } from './hooks'
 import * as ui from '../ui'
 import { GearIcon, KeyIcon, PawIcon, PeopleIcon } from '../icons'
+import { NotificationButton } from '../NotificationButton'
 
 /** 사용자가 입력 중인 값. 화면이 다시 그려져도 날아가지 않게 여기 붙잡아 둔다. */
 interface Draft {
@@ -324,6 +325,7 @@ export function TeamList() {
       <header className={ui.titlebar}>
         <PawIcon className="mr-[4px]" />
         <span>{t('app.name')}</span>
+        <NotificationButton state={state} t={t} onOpen={() => window.teamApi.openNotifications()} />
       </header>
       <main className={ui.main}>
         <UpdateBanner state={state} t={t} />

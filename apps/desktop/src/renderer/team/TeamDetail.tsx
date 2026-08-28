@@ -16,6 +16,7 @@ import { characterThumbnails } from './thumbnails'
 import { inviteStatus } from './invite'
 import { useAppState, useMinuteTick, useRunner, useToast } from './hooks'
 import * as ui from '../ui'
+import { NotificationButton } from '../NotificationButton'
 
 /** 지금 무엇을 고쳐 쓰는 중인가 */
 type Editing = null | 'team' | 'nickname'
@@ -526,6 +527,7 @@ export function TeamDetail() {
     <>
       <header className={ui.titlebar}>
         <span>{t('app.name')}</span>
+        <NotificationButton state={state} t={t} onOpen={() => window.teamApi.openNotifications()} />
       </header>
       <main className={ui.main}>{body}</main>
       <div

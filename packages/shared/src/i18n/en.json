@@ -28,6 +28,10 @@
 
   "pet.bubble": "NUDGE NUDGE!",
 
+  "notifications.title": "Notifications",
+  "notifications.empty": "Nothing here yet",
+  "notifications.dismiss": "Dismiss",
+
   "size.caption": "Size",
   "size.reset": "Back to default size",
 

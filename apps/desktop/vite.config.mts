@@ -32,6 +32,7 @@ export default defineConfig({
         team: renderer('team', 'index.html'),
         teamDetail: renderer('team', 'detail.html'),
         settings: renderer('settings', 'index.html'),
+        notifications: renderer('notifications', 'index.html'),
         size: renderer('size', 'index.html'),
 
         // 배포본에는 들어가지 않지만(package.json 의 build.files 참고) 개발용 명령이

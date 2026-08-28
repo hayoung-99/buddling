@@ -58,6 +58,16 @@ export function PawIcon(props: IconProps) {
   )
 }
 
+/** 종 — 알림 화면 아이콘 */
+export function BellIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 4.2c-3 0-4.6 2.3-4.6 5.4v2.6c0 1-.4 1.9-1.2 2.7l-.7.7h13l-.7-.7c-.8-.8-1.2-1.7-1.2-2.7V9.6c0-3.1-1.6-5.4-4.6-5.4Z" />
+      <path d="M10 18.2a2 2 0 0 0 4 0" />
+    </svg>
+  )
+}
+
 /** 톱니바퀴 — "설정…" 옆 */
 export function GearIcon(props: IconProps) {
   return (

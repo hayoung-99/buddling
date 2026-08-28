@@ -28,6 +28,7 @@ export default defineConfig({
         team: preload('team'),
         size: preload('size'),
         settings: preload('settings'),
+        notifications: preload('notifications'),
       },
       formats: ['cjs'],
       fileName: (_format, name) => `${name}.cjs`,

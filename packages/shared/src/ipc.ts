@@ -53,6 +53,8 @@ export interface TeamApi {
 
   openTeam: (teamId: string) => void
   openSettings: () => void
+  /** 알림 화면을 연다 (이미 열려 있으면 앞으로 가져온다) */
+  openNotifications: () => void
   /** 새 버전을 받을 수 있는 곳을 브라우저로 연다 (주소는 메인이 정한다) */
   openDownloadPage: () => void
   /** 이미 받아 둔 새 버전을 지금 적용한다 (앱이 다시 시작된다) */
@@ -97,8 +99,26 @@ export interface SizeApi {
 export interface SettingsApi {
   getState: () => Promise<AppState>
   onState: (handler: (state: AppState) => void) => void
+  /** 알림 화면을 연다 (이미 열려 있으면 앞으로 가져온다) */
+  openNotifications: () => void
   setPower: (level: string) => Promise<AppState>
   setLanguage: (preference: string) => Promise<AppState>
+}
+
+/**
+ * 내 소속이 바뀐 일이 쌓이는 알림 화면. 창은 하나뿐이라 팀 id 를 받지 않는다.
+ *
+ * `unreadBefore` 는 **이 창이 이번에 열릴 때 한 번만** 정해진다 — 창이 떠 있는 동안
+ * 다시 부르지 않는다. 그래야 "안읽음 색" 이 보는 도중에 눈앞에서 사라지지 않는다
+ * (기획서 "알림 화면" 의 "기준 시각은 창이 열릴 때만 갱신한다").
+ */
+export interface NotificationsApi {
+  getState: () => Promise<AppState>
+  onState: (handler: (state: AppState) => void) => void
+  /** 이번에 창이 열리기 직전까지의 컷오프. 이보다 나중 줄이 안읽음이다. */
+  getUnreadBefore: () => Promise<number>
+  /** 그 줄을 영영 지운다 */
+  dismiss: (teamId: string) => Promise<AppState>
 }
 
 declare global {
@@ -107,5 +127,6 @@ declare global {
     teamApi: TeamApi
     sizeApi: SizeApi
     settingsApi: SettingsApi
+    notificationsApi: NotificationsApi
   }
 }

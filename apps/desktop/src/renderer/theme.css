@@ -94,3 +94,8 @@
 @utility drag-region {
   -webkit-app-region: drag;
 }
+
+/** 드래그 자리(제목줄) 안에서 눌려야 하는 것 — 없으면 클릭이 창 이동으로 먹힌다 */
+@utility no-drag-region {
+  -webkit-app-region: no-drag;
+}

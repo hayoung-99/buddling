@@ -65,6 +65,18 @@ export interface UpdateInfo {
   url: string | null
 }
 
+/**
+ * 알림 화면에 쌓이는 사건 한 줄. 지금은 내보내진 것 하나뿐이다(기획서 "알림 화면").
+ * 같은 방에서 다시 내보내지면 `teamId` 가 같은 줄을 덮어써, 방마다 줄은 늘 하나다.
+ */
+export interface NotificationEntry {
+  teamId: string
+  /** 내보내질 당시 내가 부르던 이름 — 나중에 팀 이름이 바뀌어도 이 줄은 그대로다 */
+  teamName: string
+  /** epoch ms. 정렬(최신이 위)과 안읽음 판정에 쓴다 */
+  at: number
+}
+
 export interface AppState {
   /** Supabase 접속 정보가 있는가. 없으면 팀 창이 설정 방법을 안내한다. */
   configured: boolean
@@ -76,6 +88,10 @@ export interface AppState {
   maxMembers: number
   update: UpdateInfo | null
   memberships: Membership[]
+  /** 최신이 앞. 알림 창이 그대로 늘어놓는다 */
+  notifications: NotificationEntry[]
+  /** 지난번 알림 창을 연 뒤로 새로 온 것이 있는가 — 제목줄 아이콘의 빨간 점 */
+  hasUnreadNotifications: boolean
 }
 
 /** 신호를 받았을 때 캐릭터 창으로 오는 것 */

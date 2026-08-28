@@ -28,6 +28,10 @@
 
   "pet.bubble": "콕콕!",
 
+  "notifications.title": "알림",
+  "notifications.empty": "쌓인 알림이 없어요",
+  "notifications.dismiss": "지우기",
+
   "size.caption": "크기",
   "size.reset": "기본 크기로 되돌리기",
 

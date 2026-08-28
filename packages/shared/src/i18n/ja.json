@@ -28,6 +28,10 @@
 
   "pet.bubble": "つんつん！",
 
+  "notifications.title": "通知",
+  "notifications.empty": "まだ何もありません",
+  "notifications.dismiss": "削除",
+
   "size.caption": "サイズ",
   "size.reset": "元のサイズに戻す",
 
