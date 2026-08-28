@@ -120,6 +120,11 @@
   "connection.connecting": "Connecting…",
   "connection.lost": "Connection lost. Reconnecting…",
 
+  "offline.title": "Can't reach the internet",
+  "offline.lead": "It'll reconnect on its own once you're back online",
+  "offline.retry": "Try again",
+  "offline.retrying": "Trying…",
+
   "invite.hoursLeft": "{hours}h left",
   "invite.minutesLeft": "{minutes}m left",
   "invite.expired": "Expired",

@@ -13,6 +13,8 @@
  *               기억해 둬야 한다.
  *   notifications       내보내진 나 자신의 줄들. 알림 화면의 나머지 사건은 서버에서 온다
  *   notificationsSeenAt 알림 창을 마지막으로 연 시각. 안읽음 판정의 기준이다
+ *   serverNotifications 서버가 적어 둔 사건들의 사본. 오프라인일 때도 마지막으로 받은
+ *               것까지는 보여 주려고 기기에 둔다 (원본은 언제나 서버)
  *
  * 쓰기는 잠깐 모았다 한 번에 한다 (SAVE_DELAY). 앱을 끄기 직전처럼 미룰 수 없을 때는
  * `flush()` 로 그 자리에서 끝낸다.
@@ -25,6 +27,7 @@ import { legacyStorePath } from './legacy-store'
 import { writeJsonAtomically } from './write-json'
 import type { Member, PetSettings, Team } from '@buddling/shared/state'
 import { DEFAULT_SIGNAL } from '@buddling/shared/signals'
+import type { NetEvent } from '../services/net'
 
 /**
  * 기기에 남기는 **내보내진 나 자신의 줄** 하나 (기획서 "알림 화면").
@@ -79,6 +82,20 @@ export interface StoredState {
   /** 알림 창을 마지막으로 연 시각(epoch ms). 한 번도 안 열었으면 null — 그때는 있는
    *  것 전부가 안읽음이다 */
   notificationsSeenAt: number | null
+  /**
+   * 서버에서 마지막으로 받아 온 7일치의 **사본** (기획서 "알림 화면").
+   *
+   * 원본은 언제나 서버다. 이 칸은 인터넷이 없는 동안 보여 줄 것이고, 새로 받아 오면
+   * **통째로 갈아 끼운다** — 줄 단위로 견주거나 합치지 않는다. 합치기 시작하는 순간
+   * 서버와 기기가 서로 다른 말을 할 수 있게 되는데, 캐싱을 미뤄 두었던 이유가
+   * 정확히 그것이었다.
+   *
+   * **`notifications`(내보내진 나 자신의 줄)와 다른 칸이다.** 그쪽은 앱이 뺄셈으로
+   * 알아내 만든 것이라 서버에서 다시 읽을 수 없고, 갈아 끼우기에 쓸려 나가면 안 된다.
+   *
+   * 받은 모양 그대로 적는다 — `at` 은 ISO 문자열이다.
+   */
+  serverNotifications: NetEvent[]
 }
 
 const DEFAULTS: StoredState = {
@@ -92,6 +109,7 @@ const DEFAULTS: StoredState = {
   lastUpdateCheck: null,
   notifications: [],
   notificationsSeenAt: null,
+  serverNotifications: [],
 }
 
 const DEFAULT_PET: PetSettings = { position: null, scale: 1, signal: DEFAULT_SIGNAL }

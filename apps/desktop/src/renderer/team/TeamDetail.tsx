@@ -17,6 +17,7 @@ import { inviteStatus } from './invite'
 import { useAppState, useMinuteTick, useRunner, useToast } from './hooks'
 import * as ui from '../ui'
 import { NotificationButton } from '../NotificationButton'
+import { OfflineScreen } from '../OfflineScreen'
 
 /** 지금 무엇을 고쳐 쓰는 중인가 */
 type Editing = null | 'team' | 'nickname'
@@ -536,7 +537,13 @@ export function TeamDetail() {
         <span>{t('app.name')}</span>
         <NotificationButton state={state} t={t} onOpen={() => window.teamApi.openNotifications()} />
       </header>
-      <main className={ui.main}>{body}</main>
+      <main className={ui.main}>
+        {state.offline ? (
+          <OfflineScreen t={t} onRetry={() => window.teamApi.retryConnection()} />
+        ) : (
+          body
+        )}
+      </main>
       <div
         className={`fixed left-1/2 bottom-[22px] -translate-x-1/2 bg-ink text-cream text-[13px]
           font-bold px-[18px] py-[9px] rounded-full pointer-events-none

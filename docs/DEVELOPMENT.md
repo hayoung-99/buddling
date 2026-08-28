@@ -367,8 +367,8 @@ npm run check:site  # 스스로 어긋나지 않았는지 (CI 도 이걸 돌린�
 
 | 기능 | 문서 | 상태 |
 |---|---|---|
-| 알림 화면 | [docs/design/notifications-screen.md](design/notifications-screen.md) | 1~5장 구현 완료 · **6장(오프라인 사본) 설계 중** |
-| 인터넷이 없을 때 | [docs/design/offline-screen.md](design/offline-screen.md) | 설계 중 |
+| 알림 화면 | [docs/design/notifications-screen.md](design/notifications-screen.md) | 구현 완료 (리뷰 대기) |
+| 인터넷이 없을 때 | [docs/design/offline-screen.md](design/offline-screen.md) | 구현 완료 (리뷰 대기) |
 
 ---
 

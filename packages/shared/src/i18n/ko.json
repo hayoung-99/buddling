@@ -120,6 +120,11 @@
   "connection.connecting": "연결하는 중…",
   "connection.lost": "연결이 끊겼어요. 다시 연결하는 중…",
 
+  "offline.title": "인터넷에 닿지 못했어요",
+  "offline.lead": "연결이 돌아오면 저절로 다시 이어져요",
+  "offline.retry": "다시 해 보기",
+  "offline.retrying": "다시 해 보는 중…",
+
   "invite.hoursLeft": "{hours}시간 남음",
   "invite.minutesLeft": "{minutes}분 남음",
   "invite.expired": "만료됨",

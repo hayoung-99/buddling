@@ -37,6 +37,9 @@ const api: TeamApi = {
   /** 이미 받아 둔 새 버전을 지금 적용한다 (앱이 다시 시작된다) */
   installUpdate: () => ipcRenderer.send('update:install'),
 
+  /** 오프라인 화면의 "다시 해 보기" */
+  retryConnection: () => call<AppState>('app:retry'),
+
   onState: (handler) => {
     ipcRenderer.on('state', (_event, state: AppState) => handler(state))
   },

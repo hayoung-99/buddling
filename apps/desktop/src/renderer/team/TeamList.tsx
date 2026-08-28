@@ -20,6 +20,7 @@ import { useAppState, useRunner } from './hooks'
 import * as ui from '../ui'
 import { GearIcon, KeyIcon, PawIcon, PeopleIcon } from '../icons'
 import { NotificationButton } from '../NotificationButton'
+import { OfflineScreen } from '../OfflineScreen'
 
 /** 사용자가 입력 중인 값. 화면이 다시 그려져도 날아가지 않게 여기 붙잡아 둔다. */
 interface Draft {
@@ -328,18 +329,28 @@ export function TeamList() {
         <NotificationButton state={state} t={t} onOpen={() => window.teamApi.openNotifications()} />
       </header>
       <main className={ui.main}>
-        <UpdateBanner state={state} t={t} />
-        {!state.configured ? setupNeeded : state.memberships.length > 0 ? list : onboarding}
-        {/* 언어와 절전 강도는 설정 창에 모여 있다. 여기서는 그리로 가는 길만 둔다. */}
-        <div className={ui.footer}>
-          <button
-            className={`${ui.buttonQuiet} inline-flex items-center gap-[4px]`}
-            onClick={() => window.teamApi.openSettings()}
-          >
-            <GearIcon width={13} height={13} />
-            {t('app.settings')}
-          </button>
-        </div>
+        {/* 설정이 없는 것이 오프라인보다 먼저다 (기획서). 실제로는 configured 가
+            false 면 offline 이 true 가 될 수 없지만, 순서로 그 우선순위를 적어 둔다. */}
+        {!state.configured ? (
+          setupNeeded
+        ) : state.offline ? (
+          <OfflineScreen t={t} onRetry={() => window.teamApi.retryConnection()} />
+        ) : (
+          <>
+            <UpdateBanner state={state} t={t} />
+            {state.memberships.length > 0 ? list : onboarding}
+            {/* 언어와 절전 강도는 설정 창에 모여 있다. 여기서는 그리로 가는 길만 둔다. */}
+            <div className={ui.footer}>
+              <button
+                className={`${ui.buttonQuiet} inline-flex items-center gap-[4px]`}
+                onClick={() => window.teamApi.openSettings()}
+              >
+                <GearIcon width={13} height={13} />
+                {t('app.settings')}
+              </button>
+            </div>
+          </>
+        )}
       </main>
     </>
   )
