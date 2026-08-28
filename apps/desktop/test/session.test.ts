@@ -400,6 +400,78 @@ describe('세션 — 끊긴 연결 되살리기', () => {
   })
 })
 
+describe('세션 — 방장과 강퇴', () => {
+  it('방장은 멤버를 내보낼 수 있다', async () => {
+    const server = createFakeServer()
+    const host = makeSession({ server, userId: 'user-host' })
+    const guest = makeSession({ server, userId: 'user-guest' })
+
+    const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    const teamId = created.memberships[0].team.id
+    const joined = await guest.session.joinTeam({
+      inviteCode: created.memberships[0].team.inviteCode,
+      nickname: '민수',
+    })
+
+    await host.session.kickMember(teamId, joined.memberships[0].member.id)
+
+    expect(host.session.snapshot().memberships[0].members.map((m) => m.nickname)).toEqual([
+      '나영',
+    ])
+  })
+
+  it('방장이 아니면 내보낼 수 없다', async () => {
+    const server = createFakeServer()
+    const host = makeSession({ server, userId: 'user-host' })
+    const guest = makeSession({ server, userId: 'user-guest' })
+
+    const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    const teamId = created.memberships[0].team.id
+    await guest.session.joinTeam({
+      inviteCode: created.memberships[0].team.inviteCode,
+      nickname: '민수',
+    })
+    const hostMemberId = created.memberships[0].member.id
+
+    await expect(guest.session.kickMember(teamId, hostMemberId)).rejects.toThrow('NOT_THE_HOST')
+  })
+
+  it('내보내진 사람은 다음에 목록을 받을 때 그 사실을 안다', async () => {
+    const server = createFakeServer()
+    const host = makeSession({ server, userId: 'user-host' })
+    const guest = makeSession({ server, userId: 'user-guest' })
+
+    const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    const teamId = created.memberships[0].team.id
+    const joined = await guest.session.joinTeam({
+      inviteCode: created.memberships[0].team.inviteCode,
+      nickname: '민수',
+    })
+
+    const kicked: { teamId: string; teamName: string }[] = []
+    guest.session.on('kicked', (payload) => kicked.push(payload))
+
+    await host.session.kickMember(teamId, joined.memberships[0].member.id)
+    // 실시간 알림이 이미 왔을 수도, 늦을 수도 있다 — 늦었다면 여기서 확실히 맞춘다
+    await guest.session.recover()
+
+    expect(kicked).toEqual([{ teamId, teamName: '디자인팀' }])
+    expect(guest.session.snapshot().memberships).toEqual([])
+  })
+
+  it('내가 직접 나간 것은 강퇴로 잘못 알리지 않는다', async () => {
+    const ctx = makeSession()
+    const created = await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    const teamId = created.memberships[0].team.id
+
+    const kicked: unknown[] = []
+    ctx.session.on('kicked', (payload) => kicked.push(payload))
+    await ctx.session.leaveTeam(teamId)
+
+    expect(kicked).toEqual([])
+  })
+})
+
 describe('세션 — 팀을 떠난 뒤 흔적 지우기', () => {
   it('팀에서 나가면 연타 기록도 함께 지워, 다시 들어갔을 때 첫 콕이 막히지 않는다', async () => {
     const ctx = makeSession()

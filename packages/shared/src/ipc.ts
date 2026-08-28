@@ -66,6 +66,8 @@ export interface TeamApi {
   leaveTeam: (teamId: string) => Promise<AppState>
   refreshInvite: (teamId: string) => Promise<AppState>
   renameTeam: (teamId: string, name: string) => Promise<AppState>
+  /** 방장만 부를 수 있다. 대상을 그 방에서 내보낸다. */
+  kickMember: (teamId: string, memberId: string) => Promise<AppState>
   setNickname: (teamId: string, nickname: string) => Promise<AppState>
   setLanguage: (preference: string) => Promise<AppState>
   setCharacter: (teamId: string, characterKey: string) => Promise<AppState>

@@ -34,6 +34,11 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
   session.on('teams', (snapshot) => broadcast('state', snapshot))
   session.on('error', (message) => broadcast('app-error', describe(new Error(message))))
 
+  // `kicked` 는 아직 아무도 듣지 않는다 — 운영체제 알림은 걷어냈다(macOS 는 이 앱이
+  // 코드 서명이 없어 권한이 거부되곤 했다). 대신 보여줄 알림 화면은 기획서 "알림 화면"
+  // 에서 정해졌고 다음 PR 에서 만든다. 세션이 이벤트를 내보내는 것 자체는 그대로 두는데,
+  // 그 화면이 그대로 구독해서 쓸 것이기 때문이다.
+
   // 캐릭터 관련 이벤트는 그 팀의 캐릭터 창에만 보낸다
   session.on('character', ({ teamId, characterKey }) =>
     send(app.petWindow(teamId), 'character', characterKey),
@@ -78,6 +83,9 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
   handle('team:refresh-invite', (teamId: string) => session.refreshInvite(teamId))
   handle('team:rename', ({ teamId, name }: { teamId: string; name: string }) =>
     session.renameTeam(teamId, name),
+  )
+  handle('team:kick', ({ teamId, memberId }: { teamId: string; memberId: string }) =>
+    session.kickMember(teamId, memberId),
   )
   handle('member:nickname', ({ teamId, nickname }: { teamId: string; nickname: string }) =>
     session.setNickname(teamId, nickname),

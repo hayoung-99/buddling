@@ -22,6 +22,9 @@ const ERROR_KEYS = [
   'TEAM_LIMIT_REACHED',
   'TEAM_FULL',
   'CODE_GENERATION_FAILED',
+  'NOT_THE_HOST',
+  'CANNOT_KICK_SELF',
+  'MEMBER_NOT_FOUND',
 ] as const
 
 export function toFriendlyError(error: unknown): Error {

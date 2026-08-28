@@ -360,6 +360,99 @@ describe('캐릭터 바꾸기 / 팀 나가기', () => {
   })
 })
 
+describe('방장과 강퇴', () => {
+  it('방을 만든 사람이 방장이라 멤버를 내보낼 수 있다', async () => {
+    const { alice, bob } = twoDevices()
+    const a = await alice.createTeam({ name: '디자인팀', nickname: '나영' })
+    const b = await bob.joinTeam({ inviteCode: a.team.inviteCode, nickname: '민수' })
+
+    await alice.kickMember(a.team.id, b.member.id)
+
+    const [mine] = await alice.getMyTeams()
+    expect(mine.members.map((m) => m.nickname)).toEqual(['나영'])
+    expect(await bob.getMyTeams()).toEqual([])
+  })
+
+  it('방장이 아니면 내보낼 수 없다', async () => {
+    const { alice, bob } = twoDevices()
+    const a = await alice.createTeam({ name: '디자인팀', nickname: '나영' })
+    await bob.joinTeam({ inviteCode: a.team.inviteCode, nickname: '민수' })
+
+    await expect(bob.kickMember(a.team.id, a.member.id)).rejects.toThrow('NOT_THE_HOST')
+  })
+
+  it('자기 자신은 내보낼 수 없다', async () => {
+    const { alice } = twoDevices()
+    const a = await alice.createTeam({ name: '디자인팀', nickname: '나영' })
+
+    await expect(alice.kickMember(a.team.id, a.member.id)).rejects.toThrow('CANNOT_KICK_SELF')
+  })
+
+  it('이미 그 방에 없는 사람은 내보낼 수 없다', async () => {
+    const { alice, bob } = twoDevices()
+    const a = await alice.createTeam({ name: '디자인팀', nickname: '나영' })
+    const b = await bob.joinTeam({ inviteCode: a.team.inviteCode, nickname: '민수' })
+    await bob.leaveTeam(a.team.id)
+
+    await expect(alice.kickMember(a.team.id, b.member.id)).rejects.toThrow('MEMBER_NOT_FOUND')
+  })
+
+  it('내보내면 그 자리에서 초대코드가 새로 발급된다', async () => {
+    const { server, alice, bob } = twoDevices()
+    const carol = createFakeNet({ server, userId: 'user-carol' })
+    const a = await alice.createTeam({ name: '디자인팀', nickname: '나영' })
+    const b = await bob.joinTeam({ inviteCode: a.team.inviteCode, nickname: '민수' })
+    const oldCode = a.team.inviteCode
+
+    const updated = await alice.kickMember(a.team.id, b.member.id)
+
+    expect(updated.inviteCode).not.toBe(oldCode)
+    await expect(carol.joinTeam({ inviteCode: oldCode, nickname: '수진' })).rejects.toThrow(
+      'INVALID_INVITE_CODE',
+    )
+  })
+
+  it('방장이 나가면 가장 오래 있은 다음 사람이 방장이 된다', async () => {
+    const { server, alice, bob } = twoDevices()
+    const carol = createFakeNet({ server, userId: 'user-carol' })
+    const a = await alice.createTeam({ name: '디자인팀', nickname: '나영' })
+    await bob.joinTeam({ inviteCode: a.team.inviteCode, nickname: '민수' })
+    const c = await carol.joinTeam({ inviteCode: a.team.inviteCode, nickname: '수진' })
+
+    await alice.leaveTeam(a.team.id)
+
+    await bob.kickMember(a.team.id, c.member.id)
+    const [mine] = await bob.getMyTeams()
+    expect(mine.members.map((m) => m.nickname)).toEqual(['민수'])
+  })
+
+  it('방장이 나갔다가 코드로 다시 들어오면 방장이 아니다', async () => {
+    const { alice, bob } = twoDevices()
+    const a = await alice.createTeam({ name: '디자인팀', nickname: '나영' })
+    const b = await bob.joinTeam({ inviteCode: a.team.inviteCode, nickname: '민수' })
+
+    await alice.leaveTeam(a.team.id)
+    const rejoined = await alice.joinTeam({ inviteCode: b.team.inviteCode, nickname: '나영' })
+
+    // 이제 민수가 방장이라, 다시 들어온 나영을 내보낼 수 있다
+    await bob.kickMember(a.team.id, rejoined.member.id)
+    const [mine] = await bob.getMyTeams()
+    expect(mine.members.map((m) => m.nickname)).toEqual(['민수'])
+  })
+
+  it('내보낸 것을 방장 아닌 사람의 오류 열쇠와 구분해서 알린다', () => {
+    expect(toFriendlyError(new Error('db error: NOT_THE_HOST')).message).toBe(
+      'error.NOT_THE_HOST',
+    )
+    expect(toFriendlyError(new Error('db error: CANNOT_KICK_SELF')).message).toBe(
+      'error.CANNOT_KICK_SELF',
+    )
+    expect(toFriendlyError(new Error('db error: MEMBER_NOT_FOUND')).message).toBe(
+      'error.MEMBER_NOT_FOUND',
+    )
+  })
+})
+
 describe('오류 알림', () => {
   it.each([
     'INVALID_INVITE_CODE',
