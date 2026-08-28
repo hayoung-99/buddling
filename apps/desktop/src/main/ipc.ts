@@ -112,7 +112,7 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
   })
   handle('settings:power', (level: string) => session.setPower(level))
 
-  handle('notifications:dismiss', (teamId: string) => session.dismissNotification(teamId))
+  handle('notifications:dismiss', (id: string) => session.dismissNotification(id))
   // 알림 창이 이번에 열릴 때 붙잡아 둔 컷오프. `app.openNotifications()` 참고.
   handle('notifications:unread-before', () => app.notificationsUnreadBefore)
 

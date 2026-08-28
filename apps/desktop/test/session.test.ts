@@ -512,7 +512,7 @@ describe('세션 — 알림 화면', () => {
     expect(ctx.session.snapshot().notifications).toEqual([])
   })
 
-  it('같은 방에서 두 번 내보내지면 알림 줄이 하나로 유지된다', async () => {
+  it('같은 방에서 두 번 내보내지면 알림 줄도 둘 남는다 — 각각을 한 번씩 말한다', async () => {
     let clock = 1000
     const { host, guest, teamId, guestMemberId } = await hostAndGuest({ now: () => clock })
 
@@ -528,7 +528,12 @@ describe('세션 — 알림 화면', () => {
     await guest.session.recover()
 
     const notifications = guest.session.snapshot().notifications
-    expect(notifications).toEqual([{ teamId, teamName: '디자인팀', at: 2000 }])
+    expect(notifications.map((n) => ({ teamId: n.teamId, teamName: n.teamName, at: n.at }))).toEqual([
+      { teamId, teamName: '디자인팀', at: 2000 },
+      { teamId, teamName: '디자인팀', at: 1000 },
+    ])
+    // 두 줄을 구별할 수 있어야 한 줄만 지울 수 있다
+    expect(notifications[0].id).not.toBe(notifications[1].id)
   })
 
   it('최신 알림이 맨 앞에 온다', async () => {
@@ -594,9 +599,31 @@ describe('세션 — 알림 화면', () => {
     await host.session.kickMember(teamId, guestMemberId)
     await guest.session.recover()
 
-    guest.session.dismissNotification(teamId)
+    const [entry] = guest.session.snapshot().notifications
+    guest.session.dismissNotification(entry.id)
 
     expect(guest.session.snapshot().notifications).toEqual([])
+  })
+
+  it('같은 방의 다른 줄까지 함께 지우지 않는다', async () => {
+    let clock = 1000
+    const { host, guest, teamId, guestMemberId } = await hostAndGuest({ now: () => clock })
+
+    await host.session.kickMember(teamId, guestMemberId)
+    await guest.session.recover()
+
+    clock = 2000
+    const inviteCode = host.session.snapshot().memberships[0].team.inviteCode
+    const rejoined = await guest.session.joinTeam({ inviteCode, nickname: '민수' })
+    await host.session.kickMember(teamId, rejoined.memberships[0].member.id)
+    await guest.session.recover()
+
+    const [newest, older] = guest.session.snapshot().notifications
+    guest.session.dismissNotification(newest.id)
+
+    const remaining = guest.session.snapshot().notifications
+    expect(remaining).toHaveLength(1)
+    expect(remaining[0].id).toBe(older.id)
   })
 })
 

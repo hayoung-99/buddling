@@ -117,8 +117,8 @@ export interface NotificationsApi {
   onState: (handler: (state: AppState) => void) => void
   /** 이번에 창이 열리기 직전까지의 컷오프. 이보다 나중 줄이 안읽음이다. */
   getUnreadBefore: () => Promise<number>
-  /** 그 줄을 영영 지운다 */
-  dismiss: (teamId: string) => Promise<AppState>
+  /** 그 줄(NotificationEntry.id)을 영영 지운다. 같은 방의 다른 줄은 남는다. */
+  dismiss: (id: string) => Promise<AppState>
 }
 
 declare global {

@@ -10,6 +10,7 @@
  * store 와 net 은 갈아끼울 수 있게 인자로 받는다. 그래야 Electron 없이 테스트할 수 있다.
  */
 
+import { randomUUID } from 'node:crypto'
 import { createNet, createEmitter, toFriendlyError } from '../services/net'
 import type { ConnectionState, AppState, TapPayload, UpdateInfo } from '@buddling/shared/state'
 import { toSignal } from '@buddling/shared/signals'
@@ -165,12 +166,14 @@ function createSession({
 
   /**
    * 알림 화면에 사건 한 줄을 남긴다(기획서 "알림 화면").
-   * 같은 방 줄이 이미 있으면 시각만 새로 써서 하나로 유지한다 — 몇 번 내보내졌는지
-   * 세는 화면이 되면 안 된다.
+   *
+   * **방마다 하나로 묶지 않는다.** 같은 방에서 두 번 내보내지면 줄도 둘이다 — 서로
+   * 다른 두 번의 일이라, 뒤의 것으로 앞의 것을 덮으면 아직 확인하지 못한 줄이 사라질
+   * 수 있다. 몇 번 내보내졌는지 세는 화면이 아니라 각각을 한 번씩 말하는 화면이다.
    */
   function addNotification(teamId: string, teamName: string) {
-    const rest = store.get('notifications').filter((entry) => entry.teamId !== teamId)
-    store.set({ notifications: [...rest, { teamId, teamName, at: now() }] })
+    const entry = { id: randomUUID(), teamId, teamName, at: now() }
+    store.set({ notifications: [...store.get('notifications'), entry] })
   }
 
   function publish() {
@@ -525,9 +528,12 @@ function createSession({
       return snapshot()
     },
 
-    /** 그 줄을 영영 지운다. */
-    dismissNotification(teamId: string) {
-      store.set({ notifications: store.get('notifications').filter((n) => n.teamId !== teamId) })
+    /**
+     * 그 줄을 영영 지운다.
+     * 같은 방의 다른 줄까지 지우면 안 되므로 `teamId` 가 아니라 그 줄의 `id` 로 고른다.
+     */
+    dismissNotification(id: string) {
+      store.set({ notifications: store.get('notifications').filter((n) => n.id !== id) })
       publish()
       return snapshot()
     },

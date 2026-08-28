@@ -80,11 +80,11 @@ export function Notifications() {
           <ul className="mt-[16px] flex flex-col gap-[6px]">
             {state.notifications.map((entry) => (
               <Row
-                key={entry.teamId}
+                key={entry.id}
                 unread={entry.at > unreadBefore}
                 label={t('kicked.message', { teamName: entry.teamName })}
                 dismissLabel={t('notifications.dismiss')}
-                onDismiss={() => void window.notificationsApi.dismiss(entry.teamId)}
+                onDismiss={() => void window.notificationsApi.dismiss(entry.id)}
               />
             ))}
           </ul>
