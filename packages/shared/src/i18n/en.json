@@ -103,6 +103,8 @@
   "detail.memberStatus": "{character} · {presence}",
   "detail.teamFull": "This team is full. A team can hold up to {max} people.",
   "detail.leave": "Leave team",
+  "detail.leaveConfirm": "Leave this team?",
+  "detail.leaveConfirmLast": "Leaving will delete this team. Leave anyway?",
   "detail.gone": "You left this team",
   "detail.goneHint": "You can close this window.",
 

@@ -515,7 +515,14 @@ export function TeamDetail() {
       <div className={ui.footer}>
         <button
           className={ui.buttonQuiet}
-          onClick={() => run(() => window.teamApi.leaveTeam(teamId))}
+          onClick={() => {
+            // 마지막 사람이면 나가는 순간 방과 초대코드가 함께 영영 사라진다 — 그
+            // 사실을 서버에 물어볼 필요 없이 이미 들고 있는 멤버 목록으로 안다.
+            const prompt =
+              entry.members.length === 1 ? t('detail.leaveConfirmLast') : t('detail.leaveConfirm')
+            if (!window.confirm(prompt)) return
+            void run(() => window.teamApi.leaveTeam(teamId))
+          }}
         >
           {t('detail.leave')}
         </button>

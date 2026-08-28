@@ -103,6 +103,8 @@
   "detail.memberStatus": "{character} · {presence}",
   "detail.teamFull": "정원이 찼어요. 한 방에는 {max}명까지 들어올 수 있어요.",
   "detail.leave": "방 나가기",
+  "detail.leaveConfirm": "이 방에서 나갈까요?",
+  "detail.leaveConfirmLast": "나가면 이 방은 사라져요. 그래도 나갈까요?",
   "detail.gone": "이 방에서 나왔어요",
   "detail.goneHint": "이 창은 닫으셔도 됩니다.",
 

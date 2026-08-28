@@ -103,6 +103,8 @@
   "detail.memberStatus": "{character} · {presence}",
   "detail.teamFull": "定員に達しました。1つのルームには {max} 人まで入れます。",
   "detail.leave": "ルームを抜ける",
+  "detail.leaveConfirm": "このルームを抜けますか？",
+  "detail.leaveConfirmLast": "抜けるとこのルームは消えます。それでも抜けますか？",
   "detail.gone": "このルームから抜けました",
   "detail.goneHint": "このウィンドウは閉じて大丈夫です。",
 
