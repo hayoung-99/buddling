@@ -29,8 +29,17 @@
   "pet.bubble": "NUDGE NUDGE!",
 
   "notifications.title": "Notifications",
-  "notifications.empty": "Nothing here yet",
-  "notifications.dismiss": "Dismiss",
+  "notifications.empty": "No news yet",
+  "notifications.kickedMe": "The host removed you from '{teamName}'.",
+  "notifications.joined": "{nickname} joined '{teamName}'.",
+  "notifications.left": "{nickname} left '{teamName}'.",
+  "notifications.kicked": "The host removed {nickname} from '{teamName}'.",
+  "notifications.leftHost": "{nickname} left '{teamName}'. {hostNickname} is now the host.",
+  "notifications.ago.now": "Just now",
+  "notifications.ago.minutes": "{minutes}m ago",
+  "notifications.ago.hours": "{hours}h ago",
+  "notifications.ago.yesterday": "Yesterday",
+  "notifications.ago.days": "{days}d ago",
 
   "size.caption": "Size",
   "size.reset": "Back to default size",
@@ -107,8 +116,6 @@
   "detail.leaveConfirmLast": "Leaving will delete this team. Leave anyway?",
   "detail.gone": "You left this team",
   "detail.goneHint": "You can close this window.",
-
-  "kicked.message": "You're no longer in '{teamName}'.",
 
   "connection.connecting": "Connecting…",
   "connection.lost": "Connection lost. Reconnecting…",

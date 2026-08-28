@@ -4,6 +4,7 @@ import { createFakeServer, createFakeNet, MAX_TEAMS_PER_USER } from '../src/serv
 import type { Store, StoredState } from '../src/main/store'
 import type { Net } from '../src/services/net'
 import type { PetSettings, TapPayload } from '@buddling/shared/state'
+import { NOTIFICATION_TTL_MS } from '@buddling/shared/state'
 import { DEFAULT_SIGNAL } from '@buddling/shared/signals'
 
 const DEFAULT_PET: PetSettings = { position: null, scale: 1, signal: DEFAULT_SIGNAL }
@@ -493,137 +494,352 @@ describe('세션 — 알림 화면', () => {
     return { host, guest, teamId, guestMemberId: joined.memberships[0].member.id }
   }
 
-  it('강퇴되면 알림 목록에 한 줄 남는다', async () => {
-    const { host, guest, teamId, guestMemberId } = await hostAndGuest()
+  /**
+   * 서버 쪽 시계를 손으로 미는 헬퍼.
+   *
+   * fake-net 은 `Date.now()` 를 그대로 쓰는데, 테스트는 같은 밀리초 안에서 여러
+   * 사건을 일으킨다. "들어온 뒤의 줄만" 판정은 `event.at <= mine.createdAt` 로
+   * 가르므로, 같은 밀리초에 묶이면 그 뒤에 실제로 벌어진 일도 가려진다(진짜 서버는
+   * 트랜잭션마다 마이크로초 단위로 갈리지만 여기는 한 밀리초 안에서 다 끝난다).
+   * 사건 하나마다 시계를 밀어 순서를 확정한다.
+   */
+  function clockedServer() {
+    let clock = 1_000
+    const server = createFakeServer({ now: () => clock })
+    return { server, tick: () => (clock += 1_000) }
+  }
 
-    await host.session.kickMember(teamId, guestMemberId)
-    await guest.session.recover()
+  describe('내가 내보내진 것 (기기에 남는 kicked-me)', () => {
+    it('강퇴되면 알림 목록에 한 줄 남는다', async () => {
+      const { host, guest, teamId, guestMemberId } = await hostAndGuest()
 
-    const [entry] = guest.session.snapshot().notifications
-    expect(entry.teamId).toBe(teamId)
-    expect(entry.teamName).toBe('디자인팀')
-  })
+      await host.session.kickMember(teamId, guestMemberId)
+      await guest.session.recover()
 
-  it('내가 직접 나간 것은 알림에 남지 않는다', async () => {
-    const ctx = makeSession()
-    const created = await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
-    await ctx.session.leaveTeam(created.memberships[0].team.id)
-
-    expect(ctx.session.snapshot().notifications).toEqual([])
-  })
-
-  it('같은 방에서 두 번 내보내지면 알림 줄도 둘 남는다 — 각각을 한 번씩 말한다', async () => {
-    let clock = 1000
-    const { host, guest, teamId, guestMemberId } = await hostAndGuest({ now: () => clock })
-
-    await host.session.kickMember(teamId, guestMemberId)
-    await guest.session.recover()
-    expect(guest.session.snapshot().notifications).toHaveLength(1)
-
-    // 새 초대코드로 다시 들어왔다가 또 내보내진다
-    clock = 2000
-    const inviteCode = host.session.snapshot().memberships[0].team.inviteCode
-    const rejoined = await guest.session.joinTeam({ inviteCode, nickname: '민수' })
-    await host.session.kickMember(teamId, rejoined.memberships[0].member.id)
-    await guest.session.recover()
-
-    const notifications = guest.session.snapshot().notifications
-    expect(notifications.map((n) => ({ teamId: n.teamId, teamName: n.teamName, at: n.at }))).toEqual([
-      { teamId, teamName: '디자인팀', at: 2000 },
-      { teamId, teamName: '디자인팀', at: 1000 },
-    ])
-    // 두 줄을 구별할 수 있어야 한 줄만 지울 수 있다
-    expect(notifications[0].id).not.toBe(notifications[1].id)
-  })
-
-  it('최신 알림이 맨 앞에 온다', async () => {
-    let clock = 1000
-    const server = createFakeServer()
-    const host = makeSession({ server, userId: 'user-host' })
-    const guest = makeSession({ server, userId: 'user-guest', now: () => clock })
-
-    const design = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
-    const designId = design.memberships[0].team.id
-    const devState = await host.session.createTeam({ name: '개발팀', nickname: '나영' })
-    const devId = devState.memberships.find((m) => m.team.id !== designId)!.team.id
-
-    const joinedDesign = await guest.session.joinTeam({
-      inviteCode: design.memberships[0].team.inviteCode,
-      nickname: '민수',
-    })
-    const joinedDev = await guest.session.joinTeam({
-      inviteCode: devState.memberships.find((m) => m.team.id === devId)!.team.inviteCode,
-      nickname: '민수',
+      const entry = guest.session.snapshot().notifications.find((n) => n.kind === 'kicked-me')
+      expect(entry?.teamId).toBe(teamId)
+      expect(entry?.teamName).toBe('디자인팀')
     })
 
-    clock = 1000
-    await host.session.kickMember(
-      designId,
-      joinedDesign.memberships.find((m) => m.team.id === designId)!.member.id,
-    )
-    await guest.session.recover()
+    it('내가 직접 나간 것은 알림에 남지 않는다', async () => {
+      const ctx = makeSession()
+      const created = await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+      await ctx.session.leaveTeam(created.memberships[0].team.id)
 
-    clock = 2000
-    await host.session.kickMember(
-      devId,
-      joinedDev.memberships.find((m) => m.team.id === devId)!.member.id,
-    )
-    await guest.session.recover()
+      expect(ctx.session.snapshot().notifications).toEqual([])
+    })
 
-    const notifications = guest.session.snapshot().notifications
-    expect(notifications.map((n) => n.teamName)).toEqual(['개발팀', '디자인팀'])
+    it('같은 방에서 두 번 내보내지면 알림 줄도 둘 남는다 — 각각을 한 번씩 말한다', async () => {
+      let clock = 1000
+      const { host, guest, teamId, guestMemberId } = await hostAndGuest({ now: () => clock })
+
+      await host.session.kickMember(teamId, guestMemberId)
+      await guest.session.recover()
+      expect(guest.session.snapshot().notifications).toHaveLength(1)
+
+      // 새 초대코드로 다시 들어왔다가 또 내보내진다
+      clock = 2000
+      const inviteCode = host.session.snapshot().memberships[0].team.inviteCode
+      const rejoined = await guest.session.joinTeam({ inviteCode, nickname: '민수' })
+      await host.session.kickMember(teamId, rejoined.memberships[0].member.id)
+      await guest.session.recover()
+
+      const notifications = guest.session.snapshot().notifications
+      expect(
+        notifications.map((n) => ({ teamId: n.teamId, teamName: n.teamName, at: n.at })),
+      ).toEqual([
+        { teamId, teamName: '디자인팀', at: 2000 },
+        { teamId, teamName: '디자인팀', at: 1000 },
+      ])
+      // 두 줄을 구별할 수 있어야 한 줄만 가릴 수 있다
+      expect(notifications[0].id).not.toBe(notifications[1].id)
+    })
+
+    it('최신 알림이 맨 앞에 온다', async () => {
+      let clock = 1000
+      const server = createFakeServer()
+      const host = makeSession({ server, userId: 'user-host' })
+      const guest = makeSession({ server, userId: 'user-guest', now: () => clock })
+
+      const design = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+      const designId = design.memberships[0].team.id
+      const devState = await host.session.createTeam({ name: '개발팀', nickname: '나영' })
+      const devId = devState.memberships.find((m) => m.team.id !== designId)!.team.id
+
+      const joinedDesign = await guest.session.joinTeam({
+        inviteCode: design.memberships[0].team.inviteCode,
+        nickname: '민수',
+      })
+      const joinedDev = await guest.session.joinTeam({
+        inviteCode: devState.memberships.find((m) => m.team.id === devId)!.team.inviteCode,
+        nickname: '민수',
+      })
+
+      clock = 1000
+      await host.session.kickMember(
+        designId,
+        joinedDesign.memberships.find((m) => m.team.id === designId)!.member.id,
+      )
+      await guest.session.recover()
+
+      clock = 2000
+      await host.session.kickMember(
+        devId,
+        joinedDev.memberships.find((m) => m.team.id === devId)!.member.id,
+      )
+      await guest.session.recover()
+
+      const notifications = guest.session.snapshot().notifications
+      expect(notifications.map((n) => n.teamName)).toEqual(['개발팀', '디자인팀'])
+    })
+
+    it('한 번도 안 읽은 알림이 있으면 안읽음 표시가 켜진다', async () => {
+      const { host, guest, teamId, guestMemberId } = await hostAndGuest()
+      expect(guest.session.snapshot().hasUnreadNotifications).toBe(false)
+
+      await host.session.kickMember(teamId, guestMemberId)
+      await guest.session.recover()
+
+      expect(guest.session.snapshot().hasUnreadNotifications).toBe(true)
+    })
+
+    it('알림 창을 열었다고 표시하면 안읽음이 꺼진다', async () => {
+      const { host, guest, teamId, guestMemberId } = await hostAndGuest()
+      await host.session.kickMember(teamId, guestMemberId)
+      await guest.session.recover()
+
+      guest.session.markNotificationsSeen()
+
+      expect(guest.session.snapshot().hasUnreadNotifications).toBe(false)
+    })
   })
 
-  it('한 번도 안 읽은 알림이 있으면 안읽음 표시가 켜진다', async () => {
-    const { host, guest, teamId, guestMemberId } = await hostAndGuest()
-    expect(guest.session.snapshot().hasUnreadNotifications).toBe(false)
+  describe('서버가 적어 둔 사건 (들어옴 · 나감 · 내보내짐)', () => {
+    it('누가 들어오면 남아 있는 사람들에게 알림이 간다', async () => {
+      const { server, tick } = clockedServer()
+      const host = makeSession({ server, userId: 'user-host' })
+      const guestA = makeSession({ server, userId: 'user-a' })
+      const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+      const inviteCode = created.memberships[0].team.inviteCode
+      tick()
+      await guestA.session.joinTeam({ inviteCode, nickname: 'A' })
 
-    await host.session.kickMember(teamId, guestMemberId)
-    await guest.session.recover()
+      tick()
+      const guestB = makeSession({ server, userId: 'user-b' })
+      await guestB.session.joinTeam({ inviteCode, nickname: 'B' })
+      await host.session.recover()
+      await guestA.session.recover()
 
-    expect(guest.session.snapshot().hasUnreadNotifications).toBe(true)
-  })
+      for (const viewer of [host, guestA]) {
+        const entry = viewer.session
+          .snapshot()
+          .notifications.find((n) => n.kind === 'joined' && n.nickname === 'B')
+        expect(entry?.teamName).toBe('디자인팀')
+      }
+    })
 
-  it('알림 창을 열었다고 표시하면 안읽음이 꺼진다', async () => {
-    const { host, guest, teamId, guestMemberId } = await hostAndGuest()
-    await host.session.kickMember(teamId, guestMemberId)
-    await guest.session.recover()
+    it('스스로 나간 사람이 있으면 남은 사람들에게 알림이 간다', async () => {
+      const { server, tick } = clockedServer()
+      const host = makeSession({ server, userId: 'user-host' })
+      const guestA = makeSession({ server, userId: 'user-a' })
+      const guestB = makeSession({ server, userId: 'user-b' })
+      const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+      const teamId = created.memberships[0].team.id
+      const inviteCode = created.memberships[0].team.inviteCode
+      tick()
+      await guestA.session.joinTeam({ inviteCode, nickname: 'A' })
+      tick()
+      await guestB.session.joinTeam({ inviteCode, nickname: 'B' })
 
-    guest.session.markNotificationsSeen()
+      tick()
+      await guestB.session.leaveTeam(teamId)
+      await host.session.recover()
+      await guestA.session.recover()
 
-    expect(guest.session.snapshot().hasUnreadNotifications).toBe(false)
-  })
+      for (const viewer of [host, guestA]) {
+        const entry = viewer.session
+          .snapshot()
+          .notifications.find((n) => n.kind === 'left' && n.nickname === 'B')
+        expect(entry).toBeDefined()
+      }
+    })
 
-  it('알림을 지우면 목록에서 빠진다', async () => {
-    const { host, guest, teamId, guestMemberId } = await hostAndGuest()
-    await host.session.kickMember(teamId, guestMemberId)
-    await guest.session.recover()
+    it('내보내진 사람이 있으면 남은 사람들에게 알림이 간다', async () => {
+      const { server, tick } = clockedServer()
+      const host = makeSession({ server, userId: 'user-host' })
+      const guestA = makeSession({ server, userId: 'user-a' })
+      const guestB = makeSession({ server, userId: 'user-b' })
+      const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+      const teamId = created.memberships[0].team.id
+      const inviteCode = created.memberships[0].team.inviteCode
+      tick()
+      await guestA.session.joinTeam({ inviteCode, nickname: 'A' })
+      tick()
+      const joinedB = await guestB.session.joinTeam({ inviteCode, nickname: 'B' })
 
-    const [entry] = guest.session.snapshot().notifications
-    guest.session.dismissNotification(entry.id)
+      tick()
+      await host.session.kickMember(teamId, joinedB.memberships[0].member.id)
+      await guestA.session.recover()
 
-    expect(guest.session.snapshot().notifications).toEqual([])
-  })
+      const entry = guestA.session
+        .snapshot()
+        .notifications.find((n) => n.kind === 'kicked' && n.nickname === 'B')
+      expect(entry?.teamName).toBe('디자인팀')
+    })
 
-  it('같은 방의 다른 줄까지 함께 지우지 않는다', async () => {
-    let clock = 1000
-    const { host, guest, teamId, guestMemberId } = await hostAndGuest({ now: () => clock })
+    it('내가 만든 줄은 나에게 오지 않는다', async () => {
+      const server = createFakeServer()
+      const host = makeSession({ server, userId: 'user-host' })
+      const guest = makeSession({ server, userId: 'user-guest' })
+      const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
 
-    await host.session.kickMember(teamId, guestMemberId)
-    await guest.session.recover()
+      await guest.session.joinTeam({ inviteCode: created.memberships[0].team.inviteCode, nickname: '민수' })
 
-    clock = 2000
-    const inviteCode = host.session.snapshot().memberships[0].team.inviteCode
-    const rejoined = await guest.session.joinTeam({ inviteCode, nickname: '민수' })
-    await host.session.kickMember(teamId, rejoined.memberships[0].member.id)
-    await guest.session.recover()
+      expect(guest.session.snapshot().notifications).toEqual([])
+    })
 
-    const [newest, older] = guest.session.snapshot().notifications
-    guest.session.dismissNotification(newest.id)
+    it('들어오기 전의 줄은 보이지 않는다', async () => {
+      const { server, tick } = clockedServer()
+      const host = makeSession({ server, userId: 'user-host' })
+      const guestA = makeSession({ server, userId: 'user-a' })
+      const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+      const inviteCode = created.memberships[0].team.inviteCode
+      // A 가 들어온 것은 (아직 없는) B 에게는 보일 사건이지만, A 자신에게는 자기 일이라
+      // 보이지 않는다 — 이 테스트가 확인하려는 것은 그다음이다.
+      tick()
+      await guestA.session.joinTeam({ inviteCode, nickname: 'A' })
 
-    const remaining = guest.session.snapshot().notifications
-    expect(remaining).toHaveLength(1)
-    expect(remaining[0].id).toBe(older.id)
+      tick()
+      const guestB = makeSession({ server, userId: 'user-b' })
+      await guestB.session.joinTeam({ inviteCode, nickname: 'B' })
+
+      // B 가 들어오기 전에 있었던 "A 가 들어왔어요" 는 B 에게 오지 않는다.
+      // B 자신이 들어온 사건도 자기 일이라 오지 않으므로, 목록은 비어 있어야 한다.
+      expect(guestB.session.snapshot().notifications).toEqual([])
+    })
+
+    it('방장이 나가면 다음 사람에게만 계승이 붙는다', async () => {
+      const { server, tick } = clockedServer()
+      const host = makeSession({ server, userId: 'user-host' })
+      const guestA = makeSession({ server, userId: 'user-a' })
+      const guestB = makeSession({ server, userId: 'user-b' })
+      const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+      const teamId = created.memberships[0].team.id
+      const inviteCode = created.memberships[0].team.inviteCode
+      // A 가 B 보다 먼저 들어왔으므로 방장이 나가면 A 가 다음 방장이다.
+      tick()
+      await guestA.session.joinTeam({ inviteCode, nickname: 'A' })
+      tick()
+      await guestB.session.joinTeam({ inviteCode, nickname: 'B' })
+
+      tick()
+      await host.session.leaveTeam(teamId)
+      await guestA.session.recover()
+      await guestB.session.recover()
+
+      const aEntry = guestA.session
+        .snapshot()
+        .notifications.find((n) => n.kind === 'left' && n.nickname === '나영')
+      expect(aEntry?.newHostNickname).toBe('A')
+
+      const bEntry = guestB.session
+        .snapshot()
+        .notifications.find((n) => n.kind === 'left' && n.nickname === '나영')
+      expect(bEntry?.newHostNickname).toBeFalsy()
+    })
+
+    it('방장이 아닌 사람이 나가면 아무에게도 계승이 안 붙는다', async () => {
+      const { server, tick } = clockedServer()
+      const host = makeSession({ server, userId: 'user-host' })
+      const guestA = makeSession({ server, userId: 'user-a' })
+      const guestB = makeSession({ server, userId: 'user-b' })
+      const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+      const teamId = created.memberships[0].team.id
+      const inviteCode = created.memberships[0].team.inviteCode
+      tick()
+      await guestA.session.joinTeam({ inviteCode, nickname: 'A' })
+      tick()
+      await guestB.session.joinTeam({ inviteCode, nickname: 'B' })
+
+      tick()
+      await guestA.session.leaveTeam(teamId)
+      await host.session.recover()
+      await guestB.session.recover()
+
+      for (const viewer of [host, guestB]) {
+        const entry = viewer.session
+          .snapshot()
+          .notifications.find((n) => n.kind === 'left' && n.nickname === 'A')
+        expect(entry?.newHostNickname).toBeFalsy()
+      }
+    })
+
+    it('나갔다 다시 들어오면 그 전 줄이 다시 보이지 않는다', async () => {
+      const { server, tick } = clockedServer()
+      const host = makeSession({ server, userId: 'user-host' })
+      const guest = makeSession({ server, userId: 'user-guest' })
+      const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+      const teamId = created.memberships[0].team.id
+      const inviteCode = created.memberships[0].team.inviteCode
+      tick()
+      await guest.session.joinTeam({ inviteCode, nickname: '민수' })
+
+      // 게스트가 있는 동안 누군가 들어왔다 — 지금은 게스트에게 보인다.
+      tick()
+      const other = makeSession({ server, userId: 'user-other' })
+      await other.session.joinTeam({ inviteCode, nickname: '재석' })
+      await guest.session.recover()
+      expect(guest.session.snapshot().notifications.some((n) => n.kind === 'joined')).toBe(true)
+
+      tick()
+      await guest.session.leaveTeam(teamId)
+      tick()
+      await guest.session.joinTeam({ inviteCode, nickname: '민수' })
+
+      // 다시 들어온 시점 이전의 줄은 더 이상 보이지 않는다.
+      expect(guest.session.snapshot().notifications).toEqual([])
+    })
+
+    it('7일 지난 줄은 빠진다', async () => {
+      let clock = 1_000_000
+      const server = createFakeServer({ now: () => clock })
+      const host = makeSession({ server, userId: 'user-host' })
+      const guest = makeSession({ server, userId: 'user-guest' })
+      const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+      const inviteCode = created.memberships[0].team.inviteCode
+      clock += 1_000
+      await guest.session.joinTeam({ inviteCode, nickname: '민수' })
+
+      clock += 1_000
+      const other = makeSession({ server, userId: 'user-other' })
+      await other.session.joinTeam({ inviteCode, nickname: '재석' })
+      await guest.session.recover()
+      expect(guest.session.snapshot().notifications).toHaveLength(1)
+
+      clock += NOTIFICATION_TTL_MS + 1
+      await guest.session.recover()
+
+      expect(guest.session.snapshot().notifications).toEqual([])
+    })
+
+    it('내보낸 방장도 그 줄을 받는다', async () => {
+      const { server, tick } = clockedServer()
+      const host = makeSession({ server, userId: 'user-host' })
+      const guest = makeSession({ server, userId: 'user-guest' })
+      const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+      const teamId = created.memberships[0].team.id
+      const inviteCode = created.memberships[0].team.inviteCode
+      tick()
+      const joined = await guest.session.joinTeam({ inviteCode, nickname: '민수' })
+
+      tick()
+      await host.session.kickMember(teamId, joined.memberships[0].member.id)
+
+      const entry = host.session
+        .snapshot()
+        .notifications.find((n) => n.kind === 'kicked' && n.nickname === '민수')
+      expect(entry?.teamName).toBe('디자인팀')
+    })
   })
 })
 

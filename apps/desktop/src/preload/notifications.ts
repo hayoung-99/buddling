@@ -17,7 +17,6 @@ const api: NotificationsApi = {
   },
 
   getUnreadBefore: () => call<number>('notifications:unread-before'),
-  dismiss: (id) => call<AppState>('notifications:dismiss', id),
 }
 
 contextBridge.exposeInMainWorld('notificationsApi', api)

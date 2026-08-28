@@ -11,7 +11,7 @@
  *   power       절전 강도. 캐릭터가 가만히 있을 때 얼마나 게으르게 그릴지를 정한다.
  *   lastUpdateCheck  새 버전을 마지막으로 확인한 날. 앱을 껐다 켜도 하루 한 번을 지키려면
  *               기억해 둬야 한다.
- *   notifications       알림 화면에 쌓인 사건들 (지금은 내보내진 것뿐이다)
+ *   notifications       내보내진 나 자신의 줄들. 알림 화면의 나머지 사건은 서버에서 온다
  *   notificationsSeenAt 알림 창을 마지막으로 연 시각. 안읽음 판정의 기준이다
  *
  * 쓰기는 잠깐 모았다 한 번에 한다 (SAVE_DELAY). 앱을 끄기 직전처럼 미룰 수 없을 때는
@@ -23,8 +23,25 @@ import path from 'node:path'
 import { app } from 'electron'
 import { legacyStorePath } from './legacy-store'
 import { writeJsonAtomically } from './write-json'
-import type { Member, NotificationEntry, PetSettings, Team } from '@buddling/shared/state'
+import type { Member, PetSettings, Team } from '@buddling/shared/state'
 import { DEFAULT_SIGNAL } from '@buddling/shared/signals'
+
+/**
+ * 기기에 남기는 **내보내진 나 자신의 줄** 하나 (기획서 "알림 화면").
+ *
+ * 서버가 적어 준 사건(`joined`·`left`·`kicked`)과 달리 이 표에 남는 것은 이 한 종류뿐이라
+ * `kind` 를 들고 있지 않는다 — 그 값은 `session.ts` 의 `snapshot()` 이 `'kicked-me'` 로
+ * 붙여 준다. `shared/state.ts` 의 `NotificationEntry` 를 그대로 쓰지 않는 이유가 그것이다.
+ */
+export interface DeviceNotificationEntry {
+  id: string
+  teamId: string
+  /** 내보내질 당시 내가 부르던 이름 — 그때 무엇을 잃었는지 말하는 값이라 나중에 팀
+   *  이름이 바뀌어도 이 줄은 그대로다 */
+  teamName: string
+  /** epoch ms. 안읽음 판정과 7일 소멸에 쓴다 */
+  at: number
+}
 
 /**
  * 저장 파일에 남는 소속.
@@ -55,9 +72,10 @@ export interface StoredState {
   power: string | null
   /** 새 버전을 마지막으로 확인한 날 'YYYY-MM-DD'. 하루 한 번만 보려고 남긴다. */
   lastUpdateCheck: string | null
-  /** 알림 화면에 쌓인 사건들 (지금은 내보내진 것 하나뿐이다). 최신이 앞이 아니어도 된다 —
+  /** 내보내진 나 자신의 줄들 — 알림 화면에 쌓이는 나머지(들어옴·나감·내보내짐)는
+   *  서버가 들고 있다가 `net.getMyEvents()` 로 온다. 최신이 앞이 아니어도 된다 —
    *  정렬은 내보낼 때(session.ts) 한다 */
-  notifications: NotificationEntry[]
+  notifications: DeviceNotificationEntry[]
   /** 알림 창을 마지막으로 연 시각(epoch ms). 한 번도 안 열었으면 null — 그때는 있는
    *  것 전부가 안읽음이다 */
   notificationsSeenAt: number | null

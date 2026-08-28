@@ -34,8 +34,9 @@
  */
 
 import { createEmitter } from './emitter'
-import type { Net, NetEvents, NetMembership } from './net'
+import type { Net, NetEvent, NetEvents, NetMembership } from './net'
 import type { Member, Team } from '@buddling/shared/state'
+import { NOTIFICATION_TTL_MS } from '@buddling/shared/state'
 import { DEFAULT_SIGNAL } from '@buddling/shared/signals'
 
 /** 서버 안에서만 쓰는 팀. 밖으로 나갈 때는 `publicTeam` 이 `Team` 모양으로 깎는다. */
@@ -47,10 +48,36 @@ interface StoredTeam {
   inviteExpiresAt: number
 }
 
-/** 서버 안에서만 쓰는 멤버. `userId` 는 밖으로 내보내지 않는다. */
+/**
+ * 서버 안에서만 쓰는 멤버. `userId` 는 밖으로 내보내지 않는다.
+ *
+ * `createdAt` 은 진짜 쪽의 `members.created_at` 자리다 — `get_my_events()` 가 "내가
+ * 들어온 뒤의 줄만" 을 거르는 데 쓰므로 여기서도 있어야 그 필터를 흉내 낼 수 있다.
+ */
 interface StoredMember extends Member {
   teamId: string
   userId: string
+  createdAt: number
+}
+
+/**
+ * 서버 안에서만 쓰는 알림 사건 한 줄 (`supabase/schema.sql` 의 `team_events` 자리).
+ *
+ * `subjectUserId` 는 밖으로 나가지 않는다 — "내가 주인공인 줄인가" 를 가리는 데만
+ * 쓰고, 사람에게 보이는 이름은 이미 `nickname` 에 값으로 박혀 있다.
+ */
+interface StoredEvent {
+  id: string
+  teamId: string
+  teamName: string
+  kind: 'joined' | 'left' | 'kicked'
+  subjectUserId: string
+  nickname: string
+  /** 방장이 나간 줄에만. 그 순간 다음 방장이 된 사람 */
+  nextHostUserId?: string
+  newHostNickname?: string
+  /** 밀리초. 밖으로 나갈 때 ISO 문자열이 된다. */
+  at: number
 }
 
 /** 붙어 있는 클라이언트 하나 */
@@ -86,10 +113,17 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
   /** `${teamId}:${userId}` → 멤버 */
   const members = new Map<string, StoredMember>()
   const connections = new Map<string, Set<Connection>>()
+  /** 알림 화면에 쌓이는 사건들 (`supabase/schema.sql` 의 `team_events` 자리) */
+  const events: StoredEvent[] = []
   let sequence = 0
 
   const nextId = () => `id-${(sequence += 1)}`
   const key = (teamId: string, userId: string) => `${teamId}:${userId}`
+
+  /** 들어옴·나감·내보내짐 한 줄을 남긴다. `create_team` 은 이걸 부르지 않는다. */
+  function pushEvent(event: Omit<StoredEvent, 'id' | 'at'>) {
+    events.push({ ...event, id: nextId(), at: now() })
+  }
 
   function generateInviteCode() {
     for (let attempt = 0; attempt < 50; attempt += 1) {
@@ -188,8 +222,12 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
         userId,
         nickname: nickname.trim(),
         characterKey: characterKey ?? 'cat',
+        createdAt: now(),
       }
       members.set(key(team.id, userId), member)
+      // 방을 만든 순간에는 나 혼자라 이 줄이 나에게 오지 않는다. 필터에 걸려도
+      // 방 하나마다 죽은 줄이 하나씩 쌓이는 것뿐이라 아예 남기지 않는다
+      // (기획서 "알림 화면"의 "만드는 쪽에게").
       return membership(member)
     },
 
@@ -216,7 +254,9 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
 
       const existing = members.get(key(teamId, userId))
       if (existing) {
-        // 이미 들어와 있는 팀이면 닉네임·캐릭터만 새로 맞춘다
+        // 이미 들어와 있는 팀이면 닉네임·캐릭터만 새로 맞춘다. 새 members 줄이 아니므로
+        // createdAt 도 그대로고, 알림 줄도 남기지 않는다 — 안 그러면 닉네임을 고칠
+        // 때마다 "들어왔어요" 가 뜬다 (기획서 "알림 화면"의 "만드는 쪽에게").
         existing.nickname = nickname.trim()
         if (characterKey) existing.characterKey = characterKey
         return membership(existing)
@@ -231,8 +271,19 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
         userId,
         nickname: nickname.trim(),
         characterKey: characterKey ?? 'cat',
+        createdAt: now(),
       }
       members.set(key(teamId, userId), member)
+
+      const team = teams.get(teamId)!
+      pushEvent({
+        teamId,
+        teamName: team.name,
+        kind: 'joined',
+        subjectUserId: userId,
+        nickname: member.nickname,
+      })
+
       return membership(member)
     },
 
@@ -315,11 +366,48 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
       if (target.userId === userId) throw new Error('CANNOT_KICK_SELF')
 
       members.delete(key(teamId, target.userId))
-      return rotateInviteCode(teams.get(teamId)!)
+
+      const team = teams.get(teamId)!
+      pushEvent({
+        teamId,
+        teamName: team.name,
+        kind: 'kicked',
+        subjectUserId: target.userId,
+        nickname: target.nickname,
+      })
+
+      return rotateInviteCode(team)
     },
 
+    /**
+     * 방장 계승은 여기서만 일어난다 — 내보내기는 방장만 할 수 있고 자기 자신은
+     * 대상이 아니라 자리가 넘어갈 일이 없다 (기획서 "알림 화면"의 "만드는 쪽에게").
+     * 그래서 지우기 **전에** "내가 방장이었나" 를 재고, 지운 **뒤에** 다음 사람을 본다.
+     */
     leaveTeam({ userId, teamId }: { userId: string; teamId: string }) {
+      const leaving = members.get(key(teamId, userId))
+      const wasHost =
+        !!leaving &&
+        [...members.values()].filter((m) => m.teamId === teamId)[0]?.userId === userId
+
       members.delete(key(teamId, userId))
+
+      if (leaving) {
+        const remaining = [...members.values()].filter((m) => m.teamId === teamId)
+        const next = wasHost ? remaining[0] : undefined
+        const team = teams.get(teamId)
+        if (team) {
+          pushEvent({
+            teamId,
+            teamName: team.name,
+            kind: 'left',
+            subjectUserId: userId,
+            nickname: leaving.nickname,
+            nextHostUserId: next?.userId,
+            newHostNickname: next?.nickname,
+          })
+        }
+      }
 
       // 마지막 사람이 나갔으면 빈 팀과 초대코드를 함께 지운다 (schema.sql 과 같은 규칙)
       const empty = ![...members.values()].some((m) => m.teamId === teamId)
@@ -329,6 +417,38 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
         teams.delete(teamId)
         connections.delete(teamId)
       }
+    },
+
+    /**
+     * 알림 화면이 볼 사건들. `get_my_events()` 와 같은 넷을 흉내 낸다 — 내가 지금
+     * 멤버인 방만 · 내 `createdAt` 이후 줄만 · 내가 주인공인 줄은 빼고 · 최근 7일만
+     * (기획서 "알림 화면"). 앱이 화면에 무엇을 그릴지가 이 필터로 갈리므로, 이 파일이
+     * 평소 비워 두는 "앱이 갈 수 없는 길" 이 아니라 흉내 낼 값어치가 있는 자리다.
+     */
+    getMyEvents({ userId }: { userId: string }): NetEvent[] {
+      const cutoff = now() - NOTIFICATION_TTL_MS
+      return events
+        .filter((event) => event.at > cutoff)
+        .filter((event) => event.subjectUserId !== userId)
+        .flatMap((event) => {
+          const mine = members.get(key(event.teamId, userId))
+          if (!mine || event.at <= mine.createdAt) return []
+          return [
+            {
+              id: event.id,
+              teamId: event.teamId,
+              teamName: event.teamName,
+              kind: event.kind,
+              nickname: event.nickname,
+              // 다음 방장이 나일 때만 이름을 내보낸다 — 남에게는 null 이라 평소의
+              // "나갔어요" 가 된다 (진짜 RPC 의 case 문과 같은 규칙).
+              newHostNickname:
+                event.nextHostUserId === userId ? (event.newHostNickname ?? null) : null,
+              at: new Date(event.at).toISOString(),
+            },
+          ]
+        })
+        .sort((a, b) => Date.parse(b.at) - Date.parse(a.at))
     },
 
     attach(connection: Connection) {
@@ -386,6 +506,9 @@ function createFakeNet({
     },
     async getMyTeams() {
       return server.getMyTeams({ userId })
+    },
+    async getMyEvents() {
+      return server.getMyEvents({ userId })
     },
 
     /*

@@ -29,8 +29,17 @@
   "pet.bubble": "つんつん！",
 
   "notifications.title": "通知",
-  "notifications.empty": "まだ何もありません",
-  "notifications.dismiss": "削除",
+  "notifications.empty": "まだ知らせがありません",
+  "notifications.kickedMe": "部屋主に「{teamName}」から退出させられました",
+  "notifications.joined": "{nickname}さんが「{teamName}」に参加しました",
+  "notifications.left": "{nickname}さんが「{teamName}」から退出しました",
+  "notifications.kicked": "部屋主が{nickname}さんを「{teamName}」から退出させました",
+  "notifications.leftHost": "{nickname}さんが「{teamName}」から退出しました。{hostNickname}さんが新しい部屋主になりました",
+  "notifications.ago.now": "たった今",
+  "notifications.ago.minutes": "{minutes}分前",
+  "notifications.ago.hours": "{hours}時間前",
+  "notifications.ago.yesterday": "昨日",
+  "notifications.ago.days": "{days}日前",
 
   "size.caption": "サイズ",
   "size.reset": "元のサイズに戻す",
@@ -107,8 +116,6 @@
   "detail.leaveConfirmLast": "抜けるとこのルームは消えます。それでも抜けますか？",
   "detail.gone": "このルームから抜けました",
   "detail.goneHint": "このウィンドウは閉じて大丈夫です。",
-
-  "kicked.message": "「{teamName}」から退出することになりました。",
 
   "connection.connecting": "接続中…",
   "connection.lost": "接続が切れました。再接続しています…",

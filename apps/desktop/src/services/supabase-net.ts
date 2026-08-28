@@ -13,7 +13,7 @@ import { createClient } from '@supabase/supabase-js'
 import { createEmitter } from './emitter'
 import { toFriendlyError } from './errors'
 import { withSessionRecovery } from './session-recovery'
-import type { Net, NetConfig, NetEvents } from './net'
+import type { Net, NetConfig, NetEvent, NetEvents } from './net'
 import type { Member, Team } from '@buddling/shared/state'
 import { DEFAULT_SIGNAL } from '@buddling/shared/signals'
 import type { RealtimeChannel } from '@supabase/supabase-js'
@@ -214,6 +214,16 @@ function createSupabaseNet({ url, anonKey, storage }: Required<Pick<NetConfig, '
     /** @returns {Promise<Array<{team, member, members}>>} */
     async getMyTeams() {
       return (await rpc('get_my_teams', {})) ?? []
+    },
+
+    /**
+     * `get_my_events()` 는 이 앱보다 늦게 콘솔에 적용될 수 있다 — `supabase/schema.sql`
+     * 은 사람이 손으로 실행하는 파일이다. 그래서 여기서는 오류를 삼키지 않고 그대로
+     * 올려보낸다 — 삼키는 자리는 `main/session.ts` 의 `syncEvents()` 다. 거기서
+     * 삼켜야 팀 목록 갱신(`getMyTeams`)까지 함께 막히지 않는다.
+     */
+    async getMyEvents() {
+      return ((await rpc('get_my_events', {})) ?? []) as NetEvent[]
     },
 
     async touch() {

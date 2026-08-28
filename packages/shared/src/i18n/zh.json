@@ -29,8 +29,17 @@
   "pet.bubble": "戳戳！",
 
   "notifications.title": "通知",
-  "notifications.empty": "还没有通知",
-  "notifications.dismiss": "删除",
+  "notifications.empty": "还没有消息",
+  "notifications.kickedMe": "房主把你移出了「{teamName}」",
+  "notifications.joined": "{nickname}加入了「{teamName}」",
+  "notifications.left": "{nickname}退出了「{teamName}」",
+  "notifications.kicked": "房主把{nickname}移出了「{teamName}」",
+  "notifications.leftHost": "{nickname}退出了「{teamName}」。现在{hostNickname}是房主了",
+  "notifications.ago.now": "刚刚",
+  "notifications.ago.minutes": "{minutes}分钟前",
+  "notifications.ago.hours": "{hours}小时前",
+  "notifications.ago.yesterday": "昨天",
+  "notifications.ago.days": "{days}天前",
 
   "size.caption": "大小",
   "size.reset": "恢复默认大小",
@@ -107,8 +116,6 @@
   "detail.leaveConfirmLast": "退出后这个房间会消失。还要退出吗？",
   "detail.gone": "你已退出这个房间",
   "detail.goneHint": "可以关闭这个窗口了。",
-
-  "kicked.message": "你已经不在「{teamName}」了。",
 
   "connection.connecting": "连接中…",
   "connection.lost": "连接已断开，正在重新连接…",

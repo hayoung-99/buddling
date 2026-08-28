@@ -587,6 +587,14 @@ preload 의 `call()` 이 봉투를 풀어 다시 던집니다 — 새 창을 만
 | `apps/desktop/src/main/session.ts` | `MAX_TEAMS` · `MAX_MEMBERS` |
 | `apps/desktop/src/services/fake-net.ts` | `MAX_TEAMS_PER_USER` · `MAX_MEMBERS_PER_TEAM` · `INVITE_TTL_MS` |
 
+알림 보관 기간 7일도 같은 성질의 짝입니다 — **우연히 같은 숫자인 익명 계정 청소의
+유예 7일과는 다릅니다**, 묶지 마세요.
+
+| 곳 | 무엇 |
+|---|---|
+| `supabase/schema.sql` | `cleanup_team_events()` 의 기본 유예 · `get_my_events()` 의 `interval '7 days'` |
+| `packages/shared/src/state.ts` | `NOTIFICATION_TTL_MS` |
+
 DB 는 `security definer` RPC 로만 접근합니다. 테이블은 RLS 로 잠겨 있어서
 클라이언트에서 직접 select/insert 하면 아무것도 안 됩니다. 새 기능이 DB 를 건드린다면
 **RPC 를 추가하고 `fake-net.ts` 에 같은 규칙을 흉내 내야** 테스트가 돕니다.
@@ -595,15 +603,21 @@ DB 는 `security definer` RPC 로만 접근합니다. 테이블은 RLS 로 잠�
 
 ## 밟기 쉬운 함정
 
-- **이름을 바꿔도 그대로 둔 것이 셋 있습니다.** 2026-08 에 `tap-tap` 에서 **Buddling**
-  으로 옮기면서, 바꾸면 손해가 더 큰 셋은 옛 이름을 남겼습니다.
+- **이름을 바꿔도 그대로 둔 것이 둘 있습니다.** 2026-08 에 `tap-tap` 에서 **Buddling**
+  으로 옮기면서, 바꾸면 손해가 더 큰 둘은 옛 이름을 남겼습니다.
   **"안 바뀐 자리를 찾았다" 고 마저 바꾸지 마세요.**
 
   | 남긴 것 | 왜 |
   |---|---|
   | `appId` (`com.taptap.desktop`) | 바꾸면 이미 깔린 Windows 앱이 새 버전을 **업데이트가 아니라 다른 앱**으로 봅니다. 자동 업데이트가 그 자리에서 끊기고, 사용자에게는 보이지 않는 값입니다 |
-  | `supabase/schema.sql` 의 `tap-tap-cleanup-anonymous` | 이미 걸려 있는 pg_cron 작업의 이름입니다. 바꾸면 옛 작업을 못 찾아 정리가 **둘로 늘거나 사라집니다.** 게다가 하루 한 번 조용히 도는 일이라 한참 뒤에도 아무도 모릅니다 |
   | `apps/desktop/CHANGELOG.md` | 지난 릴리스의 기록입니다. 고치면 역사를 바꾸는 셈입니다 |
+
+  **`supabase/schema.sql` 의 pg_cron 작업 이름은 2026-08 알림 화면 작업 때 옛 이름
+  (`tap-tap-cleanup-anonymous`)에서 `buddling-cleanup-anonymous` 로 실제로 옮겨졌습니다**
+  — 이 표가 한동안 "바꾸지 말라" 고 적어 두었던 바로 그 자리입니다. 옮기는 김에 알림
+  정리 작업(`buddling-cleanup-team-events`)도 같은 이름 규칙으로 새로 걸었습니다.
+  둘 다 옛 이름을 `cron.unschedule()` 로 먼저 지운 뒤 새 이름으로 다시 걸어서, 옛
+  작업과 새 작업이 동시에 돌거나 정리가 통째로 빠지는 일이 없게 했습니다.
 
   반대로 **`productName` 은 `Buddling` 으로 바뀌었고, 그 때문에 userData 폴더가
   통째로 새로 생깁니다.** 세션이 곧 신원이라 그냥 두면 쓰던 사람이 방과 남남이 되므로,

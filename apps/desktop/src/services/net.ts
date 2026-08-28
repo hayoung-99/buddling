@@ -31,6 +31,25 @@ export interface NetMembership {
   members: Member[]
 }
 
+/**
+ * `get_my_events()` RPC 가 돌려주는 사건 한 줄 (기획서 "알림 화면").
+ *
+ * `shared/state.ts` 의 `NotificationEntry` 보다 좁다 — `kicked-me` 는 서버가 주는 것이
+ * 아니라 앱이 뺄셈으로 알아내는 것이라 여기 없다. `at` 이 문자열인 것도 다르다 —
+ * ISO 문자열로 오는 것을 밀리초로 바꾸는 일은 `main/session.ts` 가 한다.
+ */
+export interface NetEvent {
+  id: string
+  teamId: string
+  teamName: string
+  kind: 'joined' | 'left' | 'kicked'
+  nickname: string
+  /** 방장이 나가서 내가 방장이 된 줄에만. 그 방에서의 내 닉네임 */
+  newHostNickname?: string | null
+  /** ISO 문자열. 서버가 적은 시각을 그대로 옮긴다. */
+  at: string
+}
+
 /** 실시간 채널이 알려 오는 상태 문자열 (Supabase Realtime 이 그대로 준다) */
 export type ChannelStatus = 'SUBSCRIBED' | 'CHANNEL_ERROR' | 'TIMED_OUT' | 'CLOSED'
 
@@ -57,6 +76,13 @@ export interface Net {
     characterKey?: string
   }): Promise<NetMembership>
   getMyTeams(): Promise<NetMembership[]>
+
+  /**
+   * 내가 지금 속한 방들에서, 내가 들어온 뒤에 일어난 일 중 내가 주인공이 아닌 것들
+   * (기획서 "알림 화면"). 최근 7일치만 온다 — `@buddling/shared/state` 의
+   * `NOTIFICATION_TTL_MS` 와 짝이다.
+   */
+  getMyEvents(): Promise<NetEvent[]>
 
   /**
    * "아직 쓰고 있다" 는 흔적만 남긴다.
