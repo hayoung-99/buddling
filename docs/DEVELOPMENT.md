@@ -200,8 +200,11 @@ supabase/           schema.sql — 테이블과 RPC
 `config.ts`·`windows.ts`·`tray.ts` 가 저장소 루트를 찾지 못하는데, 그게 **배포본에서만**
 드러납니다.
 
-아이콘도 랜딩페이지 그림도 **앱과 같은 캐릭터 코드로 그립니다.** 캐릭터 스펙을
-고치고 `npm run app-icon && npm run site-images` 를 돌리면 전부 따라옵니다.
+**앱 아이콘·메뉴바 아이콘도 랜딩페이지 그림도 앱과 같은 캐릭터 코드로 그립니다.**
+캐릭터 스펙을 고치고 `npm run app-icon && npm run site-images` 를 돌리면 전부
+따라옵니다. **창 안의 작은 아이콘은 여기 해당하지 않습니다** — 그것들은 lucide 세트에서
+꺼내 쓰고 `renderer/icons.tsx` 가 크기·굵기만 씌웁니다
+([library-icons.md](design/library-icons.md)).
 
 ---
 
@@ -369,6 +372,7 @@ npm run check:site  # 스스로 어긋나지 않았는지 (CI 도 이걸 돌린�
 |---|---|---|
 | 알림 화면 | [docs/design/notifications-screen.md](design/notifications-screen.md) | 구현 완료 (리뷰 대기) |
 | 인터넷이 없을 때 | [docs/design/offline-screen.md](design/offline-screen.md) | 구현 완료 (리뷰 대기) |
+| 화면 속 아이콘을 라이브러리 것으로 | [docs/design/library-icons.md](design/library-icons.md) | 설계 중 |
 
 ---
 
