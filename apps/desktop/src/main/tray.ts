@@ -39,6 +39,8 @@ export interface TrayHost {
   isPetVisible(): boolean
   setPetVisible(visible: boolean): void
   quit(): void
+  /** 메뉴를 띄우기 직전에 알린다 — 종료가 메뉴를 밟고 지나가지 않게 한다 (`quit.ts`) */
+  menuOpened(menu: Menu): void
 }
 
 export interface TrayHandle {
@@ -97,16 +99,26 @@ function createTray(app: TrayHost): TrayHandle {
     ])
 
     // 리눅스에서는 이렇게 걸어 두는 것 말고 메뉴를 띄울 길이 없다.
-    // 항목이 바뀌면 매번 다시 걸어야 반영된다.
-    if (!SPLITS_CLICKS) tray.setContextMenu(menu)
+    // 항목이 바뀌면 매번 다시 걸어야 반영된다. 우리가 `popUpContextMenu()` 로 직접
+    // 띄우는 것이 아니라서 언제 뜨는지 알 수 없으므로, 여기서 미리 알려 둔다 —
+    // 게이트는 `menu-will-close` 만 보므로 미리 알려 두어도 탈이 없다 (`quit.ts`).
+    if (!SPLITS_CLICKS) {
+      app.menuOpened(menu)
+      tray.setContextMenu(menu)
+    }
   }
 
   refresh()
 
   if (SPLITS_CLICKS) {
     tray.on('click', () => app.openTeamWindow())
-    // 메뉴는 창이 열려 있든 말든 그 자리에서 뜬다 — 창을 거치지 않는 길이다
-    tray.on('right-click', () => tray.popUpContextMenu(menu ?? undefined))
+    // 메뉴는 창이 열려 있든 말든 그 자리에서 뜬다 — 창을 거치지 않는 길이다.
+    // 띄우기 **직전에** 알려야 한다 — 메뉴가 뜬 채로 종료가 시작되면 프로세스가
+    // 영구히 얼어붙는다 (`quit.ts`).
+    tray.on('right-click', () => {
+      if (menu) app.menuOpened(menu)
+      tray.popUpContextMenu(menu ?? undefined)
+    })
   }
 
   return { tray, refresh }

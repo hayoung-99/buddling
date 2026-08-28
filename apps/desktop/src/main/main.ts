@@ -26,20 +26,33 @@ import {
   clampScale,
 } from './windows'
 import { attachPointerControl } from './click-through'
-import { releaseUnclosableWindows } from './quit'
+import { createQuitGate } from './quit'
 import { createSession } from './session'
 import { createTray } from './tray'
 import { registerIpc } from './ipc'
 import { startUpdates } from './updates'
+import type { Menu } from 'electron'
 import type { PointerControl } from './click-through'
 import type { Session } from './session'
 import type { TrayHandle } from './tray'
 import type { Updates } from './updates'
 
-// 프로필을 나누면 같은 컴퓨터에서 여러 인스턴스를 띄울 수 있다
-if (process.env.BUDDLING_PROFILE) {
-  electronApp.setPath('userData', `${electronApp.getPath('userData')}-${process.env.BUDDLING_PROFILE}`)
-}
+// Electron 은 userData 폴더를 **앱 이름으로** 잡는다. 그래서 이름만 고쳐도 저장 폴더가
+// 통째로 옮겨가고, 그 안의 세션(=신원)을 잃는다. 맥·윈도우는 대소문자를 구별하지 않아
+// 표가 안 나지만 **리눅스는 구별한다** (AppImage 를 실제로 낸다).
+//
+// 그래서 이름을 바꾸기 **전에** 지금 폴더를 그대로 못 박아 둔다. 프로필을 나누면 같은
+// 컴퓨터에서 여러 인스턴스를 띄울 수 있다.
+const userDataDir = electronApp.getPath('userData')
+electronApp.setPath(
+  'userData',
+  process.env.BUDDLING_PROFILE ? `${userDataDir}-${process.env.BUDDLING_PROFILE}` : userDataDir,
+)
+
+// 메뉴 막대와 About 창에 보이는 이름. package.json 의 `name` 이 소문자라 그대로 두면
+// "Quit buddling" 이 된다. `build.productName` 은 electron-builder 만 보는 값이라
+// Electron 의 `app.getName()` 에는 닿지 않는다. **위에서 폴더를 못 박은 뒤라야 한다.**
+electronApp.setName('Buddling')
 
 /**
  * 이 프로세스가 처음 뜬 인스턴스인가.
@@ -53,6 +66,15 @@ if (process.env.BUDDLING_PROFILE) {
  * 안으로 모으고 **이 값이 참일 때만 부른다.**
  */
 const isFirstInstance = electronApp.requestSingleInstanceLock()
+
+/**
+ * 종료로 가는 문 하나 (`quit.ts`). 네이티브 메뉴가 떠 있는 동안 `app.quit()` 을 부르면
+ * 프로세스가 영구히 얼어붙으므로, 메뉴가 사라진 뒤에 종료를 시작한다.
+ */
+const quitGate = createQuitGate({
+  quit: () => electronApp.quit(),
+  exit: (code) => electronApp.exit(code),
+})
 
 /** 한 팀의 캐릭터 창과 그 창의 포인터 처리 */
 export interface Pet {
@@ -88,6 +110,10 @@ const app = {
 
   /** 소속 팀 목록에 맞춰 캐릭터 창과 상세 창을 만들고 지운다 */
   syncPetWindows() {
+    // 끄는 중에 어떤 경로로든(`session.on('teams')` 포함) 캐릭터 창이 새로 생기는 것을
+    // 막는 마지막 울타리. `close` 가드 덕에 창이 하나 더 생겨도 결국 닫히긴 하지만,
+    // 끄는 도중에 새로 그리는 것 자체가 낭비다.
+    if (app.quitting) return
     const teamIds = (app.session?.snapshot().memberships ?? []).map((entry) => entry.team.id)
 
     for (const [teamId, pet] of app.pets) {
@@ -112,8 +138,20 @@ const app = {
       })
       app.pets.set(teamId, { window, pointer })
 
-      // 창은 우리가 지울 때만 사라지는 게 맞지만, 운영체제 단축키(맥의 ⌘W)로도 닫힌다.
-      // 그때 Map 에 죽은 창이 남으면 아래 `has(teamId)` 때문에 캐릭터가 영영 안 돌아온다.
+      // 캐릭터를 없애는 길은 트레이의 "숨기기" 와 방 나가기뿐이다. 그래서 평소에는
+      // 닫히지 않게 막는다 (맥의 ⌘W 가 여기로 온다).
+      //
+      // **종료 중에는 막지 않는다.** 여기서 막으면 Electron 이 "닫지 못한 창" 으로
+      // 보고 종료를 통째로 취소한다 — `closable: false` 가 일으키던 것과 똑같은
+      // 고장이다 (까닭은 `quit.ts` 맨 위에 적어 두었다).
+      window.on('close', (event) => {
+        if (app.quitting) return
+        event.preventDefault()
+      })
+
+      // 창은 우리가 지울 때만 사라지는 게 맞지만, `close` 가드가 비켜 주는 종료 중에는
+      // Electron 자신이 닫는다. 그때 Map 에 죽은 창이 남으면 아래 `has(teamId)` 때문에
+      // 캐릭터가 영영 안 돌아온다.
       window.on('closed', () => {
         if (app.pets.get(teamId)?.window !== window) return
         app.pets.delete(teamId)
@@ -296,8 +334,18 @@ const app = {
     }
   },
 
+  /**
+   * 사용자가 '종료' 를 골랐다. 네이티브 메뉴가 떠 있으면 그 메뉴가 닫힌 뒤에
+   * 실제로 나간다 — 메뉴가 뜬 채로 곧바로 나가면 프로세스가 영구히 얼어붙는다
+   * (`quit.ts` 참고).
+   */
   quit() {
-    electronApp.quit()
+    quitGate.request()
+  },
+
+  /** 메뉴(트레이·캐릭터 우클릭)를 띄우기 직전에 알린다. `quit.ts` 참고. */
+  menuOpened(menu: Menu) {
+    quitGate.menuOpened(menu)
   },
 
   /**
@@ -307,19 +355,19 @@ const app = {
    * 오지만, 개발용 캡처(`dev-capture.js`)는 `app.exit()` 으로 곧장 나간다. 그 길에는
    * `before-quit` 이 오지 않아서, 여기 있는 것들을 저쪽에서 직접 불러 줘야 한다.
    *
-   * 특히 `quitting` 을 세우는 일이 중요하다. 이 표시가 없으면 캐릭터 창이 파괴되는
-   * 순간 `closed` 처리기가 `syncPetWindows()` 로 **새 창을 다시 세우고**, 그 창은
-   * Electron 이 이미 훑어 둔 목록에 없어서 아무도 닫지 않는다. 그러면 앱이 영영 남는다.
+   * 특히 `quitting` 을 세우는 일이 중요하다. 이 표시가 없으면 캐릭터 창의 `close`
+   * 가드가 계속 창을 붙잡고, Electron 은 "닫지 못한 창" 으로 보고 종료를 통째로
+   * 취소한다.
    */
   shutdown() {
     if (app.quitting) return
     app.quitting = true
     app.updates?.stop()
 
-    // 캐릭터 창을 걷어낸다. `closable: false` 라서 그냥 두면 Electron 이 이 창을 닫지
-    // 못하고, 그 실패가 종료를 통째로 취소시킨다 (까닭은 `quit.js` 에 적어 두었다).
-    // 위 `quitting` 을 세운 뒤라야 한다 — 순서가 바뀌면 캐릭터가 되살아난다.
-    releaseUnclosableWindows(app.pets.values())
+    // 안전망. 여기서부터 QUIT_WATCHDOG_MS 안에 프로세스가 안 끝나면 강제로 끝낸다
+    // (`quit.ts` 4장). 정상적인 종료를 가로막지 않는다 — 정상 종료가 이 시간보다
+    // 먼저 끝나면 그냥 프로세스가 사라질 뿐이다.
+    quitGate.armWatchdog()
 
     // 미뤄 둔 저장을 끝낸다. Electron 은 종료 처리기를 기다려 주지 않으므로 뒤로
     // 미룰수록 마지막 위치나 크기를 잃기 쉽다.
@@ -330,7 +378,8 @@ const app = {
     //
     // 채널을 미처 닫지 못한 채 프로세스가 죽지만, 소켓이 끊기면 서버가 알아서 접속을
     // 내려 준다. 반대로 여기서 종료를 붙잡았다가 정리가 늦어지면 그것이 그대로 "앱이
-    // 안 꺼진다" 가 된다 — 고쳐 놓은 것과 똑같은 고장을 새로 심는 셈이다.
+    // 안 꺼진다" 가 된다 — 고쳐 놓은 것과 똑같은 고장을 새로 심는 셈이다. 위 워치독의
+    // 2초가 이 정리를 끝낼 여유가 되어 준다.
     app.session?.dispose().catch(() => {
       // 끄는 길에 할 수 있는 일이 없다. 여기서 새어 나가면 오류창만 뜬다.
     })

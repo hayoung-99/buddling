@@ -134,7 +134,7 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
   ipcMain.on('pet:menu', (_event, { teamId }) => {
     const entry = session.snapshot().memberships.find((m) => m.team.id === teamId)
     const asleep = session.isAsleep(teamId)
-    Menu.buildFromTemplate([
+    const menu = Menu.buildFromTemplate([
       { label: entry ? entry.team.name : t('app.name'), enabled: false },
       { type: 'separator' },
       { label: t('app.openDetail'), click: () => app.openTeamDetail(teamId) },
@@ -151,7 +151,11 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
       },
       { label: t('app.hideAll'), click: () => app.setPetVisible(false) },
       { label: t('app.quit'), click: () => app.quit() },
-    ]).popup({ window: app.petWindow(teamId) ?? undefined })
+    ])
+    // 띄우기 직전에 알려야 한다 — 메뉴가 뜬 채로 종료가 시작되면 프로세스가 영구히
+    // 얼어붙는다 (`quit.ts`).
+    app.menuOpened(menu)
+    menu.popup({ window: app.petWindow(teamId) ?? undefined })
   })
 
   ipcMain.on('window:team', () => app.openTeamWindow())
