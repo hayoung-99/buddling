@@ -90,7 +90,10 @@ function JoinForms({
         </div>
       </section>
 
-      <div className="flex items-center gap-[10px] my-[4px]">
+      {/* 마진은 인접 형제와 겹치는 성질이 있어서, 아래쪽 섹션의 mt-[20px] 과
+          겹치는 만큼 위쪽도 같은 20px 을 줘야 위아래 여백이 같아 보인다.
+          (위 섹션은 자기 마진-바텀이 없어 위쪽은 이 div 의 마진만 그대로 남는다) */}
+      <div className="flex items-center gap-[10px] my-[20px]">
         <div className="flex-1 border-t border-line" />
         <span className="text-[12px] text-ink-soft">{t('form.or')}</span>
         <div className="flex-1 border-t border-line" />
@@ -117,7 +120,7 @@ function JoinForms({
         />
         <div className="flex gap-[10px] mt-[16px]">
           <button
-            className={`${ui.buttonGhost} flex-1 w-full`}
+            className={`${ui.button} flex-1 w-full`}
             disabled={busy || !draft.inviteCode.trim()}
             onClick={() =>
               run(async () => {
