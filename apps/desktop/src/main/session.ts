@@ -283,18 +283,30 @@ function createSession({
     commit()
   }
 
-  /** 서버에서 내 소속을 통째로 다시 불러온다 */
+  /**
+   * 서버에서 내 소속을 통째로 다시 불러온다.
+   *
+   * **알림을 먼저 받아 둔다.** `applyTeams()` 가 끝에서 `commit()` → `publish()` 를
+   * 부르므로, 그 전에 `serverEvents` 를 최신으로 맞춰 두면 그 한 번의 방송에
+   * 소속과 알림이 함께 실린다. 반대 순서로 두면 `publish()` 를 한 번 더 불러야
+   * 알림이 반영되는데, `state` IPC 가 roster 가 바뀔 때마다 두 번 나가는 것뿐이라
+   * 낭비였다.
+   *
+   * `net.getMyTeams()` 가 실패하면 `applyTeams()` 자체가 불리지 않아 그 안의
+   * `publish()` 도 없다 — 그때만 예외적으로 직접 불러서, 방금 받아 둔 알림이라도
+   * 화면에 반영되게 한다.
+   */
   async function refresh() {
     if (!net) return
+    // 소속을 다시 불러오는 자리마다 알림도 함께 새로 받는다 — roster 브로드캐스트
+    // 하나에 두 가지가 얹혀 있다 (기획서 "알림 화면"의 "만드는 쪽에게").
+    await syncEvents()
     try {
       await applyTeams(await net.getMyTeams())
     } catch (error) {
       emitter.emit('error', toFriendlyError(error).message)
+      publish()
     }
-    // 소속을 다시 불러오는 자리마다 알림도 함께 새로 받는다 — roster 브로드캐스트
-    // 하나에 두 가지가 얹혀 있다 (기획서 "알림 화면"의 "만드는 쪽에게").
-    await syncEvents()
-    publish()
   }
 
   /**

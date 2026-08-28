@@ -840,6 +840,31 @@ describe('세션 — 알림 화면', () => {
         .notifications.find((n) => n.kind === 'kicked' && n.nickname === '민수')
       expect(entry?.teamName).toBe('디자인팀')
     })
+
+    /*
+     * `refresh()` 가 알림을 받아 두는 자리를 `applyTeams()` 보다 앞으로 옮긴 이유를
+     * 지킨다 — 순서를 잘못 되돌리면 `state` IPC 가 소속을 다시 불러올 때마다 두 번
+     * 나간다 (데이터가 틀리지는 않지만 불필요한 방송이 는다).
+     *
+     * **아무도 없는 팀 하나로 깬다.** 다른 사람이 있으면 그 사람이 들어올 때의 roster
+     * 브로드캐스트가 `net.on('roster', () => refresh())` 를 통해 배경에서 또 하나의
+     * `refresh()` 를 걸어 두는데(기다리지 않는 호출이라 아무 때나 끝난다), 그 배경
+     * 방송이 이 테스트가 세는 도중에 섞여 들어오면 셈이 흔들린다.
+     */
+    it('소속을 다시 불러올 때 state 방송이 한 번만 나간다', async () => {
+      const ctx = makeSession()
+      const created = await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+      const teamId = created.memberships[0].team.id
+
+      const broadcasts: number[] = []
+      ctx.session.on('teams', () => broadcasts.push(1))
+
+      // setNickname() 도 끝에서 refresh() 를 부른다 — 다른 사람이 없어 roster 를
+      // 보낼 곳이 없으므로 위에서 걱정한 배경 refresh() 가 섞일 일이 없다.
+      await ctx.session.setNickname(teamId, '나영2')
+
+      expect(broadcasts).toEqual([1])
+    })
   })
 })
 
