@@ -115,7 +115,7 @@ function JoinForms({
         />
         <div className="flex gap-[10px] mt-[16px]">
           <button
-            className={`${ui.buttonGhost} flex-1 w-full`}
+            className={`${ui.button} flex-1 w-full`}
             disabled={busy || !draft.inviteCode.trim()}
             onClick={() =>
               run(async () => {
