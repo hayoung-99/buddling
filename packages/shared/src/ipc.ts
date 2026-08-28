@@ -59,6 +59,11 @@ export interface TeamApi {
   openDownloadPage: () => void
   /** 이미 받아 둔 새 버전을 지금 적용한다 (앱이 다시 시작된다) */
   installUpdate: () => void
+  /**
+   * 오프라인 화면의 "다시 해 보기". 서버에 닿는지만 확인하고 돌아온다 — 방 채널을
+   * 다시 붙이는 일은 기다리지 않는다 (기획서 "인터넷이 없을 때").
+   */
+  retryConnection: () => Promise<AppState>
 
   onState: (handler: (state: AppState) => void) => void
   onError: (handler: (message: string) => void) => void
@@ -101,6 +106,11 @@ export interface SettingsApi {
   onState: (handler: (state: AppState) => void) => void
   /** 알림 화면을 연다 (이미 열려 있으면 앞으로 가져온다) */
   openNotifications: () => void
+  /**
+   * 오프라인 화면의 "다시 해 보기". 서버에 닿는지만 확인하고 돌아온다 — 방 채널을
+   * 다시 붙이는 일은 기다리지 않는다 (기획서 "인터넷이 없을 때").
+   */
+  retryConnection: () => Promise<AppState>
   setPower: (level: string) => Promise<AppState>
   setLanguage: (preference: string) => Promise<AppState>
 }

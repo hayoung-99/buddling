@@ -115,6 +115,10 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
   // 알림 창이 이번에 열릴 때 붙잡아 둔 컷오프. `app.openNotifications()` 참고.
   handle('notifications:unread-before', () => app.notificationsUnreadBefore)
 
+  // 오프라인 화면의 "다시 해 보기". 방 채널을 다시 붙이는 일은 기다리지 않는다
+  // (기획서 "인터넷이 없을 때", `session.retryNow()` 참고).
+  handle('app:retry', () => session.retryNow())
+
   // ── 캐릭터 창 전용 ──
   ipcMain.on('pet:tap', (_event, { teamId }) => {
     void session.tap({ teamId, toMemberId: null })

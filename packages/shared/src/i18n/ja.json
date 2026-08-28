@@ -120,6 +120,11 @@
   "connection.connecting": "接続中…",
   "connection.lost": "接続が切れました。再接続しています…",
 
+  "offline.title": "インターネットに接続できません",
+  "offline.lead": "接続が戻れば自動でつながります",
+  "offline.retry": "もう一度試す",
+  "offline.retrying": "試しています…",
+
   "invite.hoursLeft": "残り{hours}時間",
   "invite.minutesLeft": "残り{minutes}分",
   "invite.expired": "期限切れ",

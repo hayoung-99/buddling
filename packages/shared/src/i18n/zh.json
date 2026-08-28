@@ -120,6 +120,11 @@
   "connection.connecting": "连接中…",
   "connection.lost": "连接已断开，正在重新连接…",
 
+  "offline.title": "无法连接到网络",
+  "offline.lead": "网络恢复后会自动重新连接",
+  "offline.retry": "重试",
+  "offline.retrying": "正在重试…",
+
   "invite.hoursLeft": "剩余 {hours} 小时",
   "invite.minutesLeft": "剩余 {minutes} 分钟",
   "invite.expired": "已过期",

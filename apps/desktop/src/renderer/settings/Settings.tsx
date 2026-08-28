@@ -21,6 +21,7 @@ import { POWER_LEVELS, resolvePower } from '@buddling/shared/power'
 import type { AppState } from '@buddling/shared/state'
 import * as ui from '../ui'
 import { NotificationButton } from '../NotificationButton'
+import { OfflineScreen } from '../OfflineScreen'
 
 /** 라디오 한 줄. 이름표 전체가 눌리는 카드다. */
 function Choice({
@@ -167,7 +168,9 @@ export function Settings() {
         />
       </header>
       <main className={ui.main}>
-        {item ? (
+        {state.offline ? (
+          <OfflineScreen t={t} onRetry={() => window.settingsApi.retryConnection()} />
+        ) : item ? (
           <>
             {/* 뒤로가기는 타이틀바가 아니라 제목 왼쪽에 붙는다 (settings.css 참고) */}
             {/* 화살표를 왼쪽 여백 밖으로 조금 내밀어야 제목이 목록 화면과 같은 자리에서 시작한다 */}

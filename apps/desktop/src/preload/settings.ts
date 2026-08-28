@@ -19,6 +19,9 @@ const api: SettingsApi = {
   /** 알림 화면을 연다 (이미 열려 있으면 앞으로 가져온다) */
   openNotifications: () => ipcRenderer.send('window:notifications'),
 
+  /** 오프라인 화면의 "다시 해 보기" */
+  retryConnection: () => call<AppState>('app:retry'),
+
   setPower: (level) => call<AppState>('settings:power', level),
   setLanguage: (preference) => call<AppState>('settings:language', preference),
 }

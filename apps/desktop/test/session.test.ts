@@ -28,6 +28,7 @@ function memoryStore(): Store & { peek: () => StoredState } {
     lastUpdateCheck: null,
     notifications: [],
     notificationsSeenAt: null,
+    serverNotifications: [],
   }
 
   const pet = (teamId: string): PetSettings => ({ ...DEFAULT_PET, ...state.pets[teamId] })
@@ -333,6 +334,133 @@ function failOnce<M extends keyof Net>(
   }
 }
 
+/**
+ * 매번 실패하게 만든다. `failOnce` 와 모양은 같고 횟수 제한만 없다.
+ * 잇달아 여러 번 닿지 못하는 상황(오프라인)을 흉내 내는 데 쓴다.
+ */
+function failEvery<M extends keyof Net>(
+  net: Net,
+  method: M,
+  when: (...args: any[]) => boolean = () => true,
+) {
+  const original = (net[method] as (...args: any[]) => Promise<unknown>).bind(net)
+  ;(net as unknown as Record<string, unknown>)[method] = async (...args: any[]) => {
+    if (when(...args)) throw new Error('offline')
+    return original(...args)
+  }
+}
+
+describe('세션 — 인터넷이 없을 때', () => {
+  let ctx: ReturnType<typeof makeSession>
+  beforeEach(() => {
+    ctx = makeSession()
+  })
+  afterEach(async () => {
+    vi.useRealTimers()
+    await ctx.session.dispose()
+  })
+
+  it('한 번 실패로는 오프라인이 아니다 — 뜸 들이기가 걸린다', async () => {
+    await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    failOnce(ctx.net, 'getMyTeams')
+
+    await ctx.session.recover()
+
+    expect(ctx.session.snapshot().offline).toBe(false)
+  })
+
+  it('잇달아 두 번 실패하면 오프라인이다', async () => {
+    vi.useFakeTimers()
+    await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    failEvery(ctx.net, 'getMyTeams')
+
+    await ctx.session.recover()
+    expect(ctx.session.snapshot().offline).toBe(false)
+
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(ctx.session.snapshot().offline).toBe(true)
+  })
+
+  it('다시 닿으면 즉시 풀린다 — 채널이 붙기를 기다리지 않는다', async () => {
+    vi.useFakeTimers()
+    await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    await ctx.net.disconnect()
+    failEvery(ctx.net, 'getMyTeams')
+    failEvery(ctx.net, 'connect') // 소속은 받아지는데 채널은 여전히 안 붙는 상황을 흉내 낸다
+    await ctx.session.recover()
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(ctx.session.snapshot().offline).toBe(true)
+
+    // 서버가 다시 응답하도록 되돌린다 (failEvery 는 원본을 갈아치우므로 새로 심는다)
+    ctx.net.getMyTeams = async () => ctx.server.getMyTeams({ userId: 'user-me' })
+    await ctx.session.retryNow()
+
+    // connect() 는 여전히 실패하지만(채널은 다른 층이다) 오프라인은 이미 풀려 있어야 한다
+    expect(ctx.session.snapshot().offline).toBe(false)
+  })
+
+  it('★ 방 채널만 실패하는 것은 오프라인이 아니다', async () => {
+    vi.useFakeTimers()
+    await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    await ctx.net.disconnect()
+    failEvery(ctx.net, 'connect')
+
+    await ctx.session.recover()
+    await vi.advanceTimersByTimeAsync(60000)
+
+    expect(ctx.session.snapshot().offline).toBe(false)
+  })
+
+  it('접속 정보가 없으면 오프라인이 아니다', () => {
+    const store = memoryStore()
+    const session = createSession({ url: '', anonKey: '', store })
+    expect(session.snapshot().offline).toBe(false)
+  })
+
+  it('recover() 는 오프라인을 되돌리지 않는다 — 깨어났는데 아직 안 닿으면 그대로다', async () => {
+    vi.useFakeTimers()
+    await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    failEvery(ctx.net, 'getMyTeams')
+    await ctx.session.recover()
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(ctx.session.snapshot().offline).toBe(true)
+
+    // 여전히 닿지 못하는 채로 절전에서 깨어난 것처럼 다시 부른다
+    await ctx.session.recover()
+
+    expect(ctx.session.snapshot().offline).toBe(true)
+  })
+
+  it('retryNow() 가 닿으면 오프라인이 풀린다', async () => {
+    vi.useFakeTimers()
+    await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    failEvery(ctx.net, 'getMyTeams')
+    await ctx.session.recover()
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(ctx.session.snapshot().offline).toBe(true)
+
+    ctx.net.getMyTeams = async () => ctx.server.getMyTeams({ userId: 'user-me' })
+    const state = await ctx.session.retryNow()
+
+    expect(state.offline).toBe(false)
+  })
+
+  it('오프라인이면 재시도가 예약되어 있다 — refresh() 로 실패했을 때도', async () => {
+    vi.useFakeTimers()
+    const created = await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    const teamId = created.memberships[0].team.id
+    failEvery(ctx.net, 'getMyTeams')
+
+    // roster 브로드캐스트가 refresh() 를 부르는 자리를 흉내 낸다
+    await ctx.session.setNickname(teamId, '나영2').catch(() => {})
+
+    // refresh() 가 실패해도 재시도를 예약해야 한다 — 오프라인 화면이 "저절로
+    // 다시 붙는다" 고 약속하기 때문이다.
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(ctx.session.snapshot().offline).toBe(true)
+  })
+})
+
 describe('세션 — 끊긴 연결 되살리기', () => {
   let ctx: ReturnType<typeof makeSession>
   beforeEach(() => {
@@ -502,9 +630,14 @@ describe('세션 — 알림 화면', () => {
    * 가르므로, 같은 밀리초에 묶이면 그 뒤에 실제로 벌어진 일도 가려진다(진짜 서버는
    * 트랜잭션마다 마이크로초 단위로 갈리지만 여기는 한 밀리초 안에서 다 끝난다).
    * 사건 하나마다 시계를 밀어 순서를 확정한다.
+   *
+   * **실제 시각 근처에서 시작한다.** `session.ts` 의 `snapshot()`/`syncEvents()` 가
+   * 사본에 또 다른 7일 컷오프를 거는데(6장), 그 컷오프는 세션의 `now()`(기본값
+   * `Date.now`)를 본다. 이 서버 시계가 1970년 근처의 아주 작은 값에서 시작하면 그
+   * 컷오프가 모든 사건을 "7일보다 오래됐다"고 걸러 내 버린다.
    */
   function clockedServer() {
-    let clock = 1_000
+    let clock = Date.now()
     const server = createFakeServer({ now: () => clock })
     return { server, tick: () => (clock += 1_000) }
   }
@@ -801,7 +934,8 @@ describe('세션 — 알림 화면', () => {
     })
 
     it('7일 지난 줄은 빠진다', async () => {
-      let clock = 1_000_000
+      // 실제 시각 근처에서 시작한다 — 위 clockedServer() 의 설명과 같은 이유다.
+      let clock = Date.now()
       const server = createFakeServer({ now: () => clock })
       const host = makeSession({ server, userId: 'user-host' })
       const guest = makeSession({ server, userId: 'user-guest' })
@@ -864,6 +998,169 @@ describe('세션 — 알림 화면', () => {
       await ctx.session.setNickname(teamId, '나영2')
 
       expect(broadcasts).toEqual([1])
+    })
+  })
+
+  describe('오프라인 사본 (기획서 "알림 화면" 6장)', () => {
+    it('받아 오기에 성공하면 사본이 저장소에 남는다', async () => {
+      const { server, tick } = clockedServer()
+      const host = makeSession({ server, userId: 'user-host' })
+      const guest = makeSession({ server, userId: 'user-guest' })
+      const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+      const inviteCode = created.memberships[0].team.inviteCode
+      tick()
+      await guest.session.joinTeam({ inviteCode, nickname: '민수' })
+
+      await host.session.recover()
+
+      expect(host.store.peek().serverNotifications.some((e) => e.kind === 'joined')).toBe(true)
+    })
+
+    it('받아 오기에 실패해도 사본을 비우지 않는다 — 실패 전 목록이 그대로 보인다', async () => {
+      const { server, tick } = clockedServer()
+      const host = makeSession({ server, userId: 'user-host' })
+      const guest = makeSession({ server, userId: 'user-guest' })
+      const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+      const inviteCode = created.memberships[0].team.inviteCode
+      tick()
+      await guest.session.joinTeam({ inviteCode, nickname: '민수' })
+      await host.session.recover()
+      const before = host.store.peek().serverNotifications
+      expect(before.length).toBeGreaterThan(0)
+
+      failEvery(host.net, 'getMyEvents')
+      await host.session.recover()
+
+      expect(host.store.peek().serverNotifications).toEqual(before)
+    })
+
+    it('네트워크가 한 번도 안 도는 새 세션이 저장소의 사본을 곧바로 화면에 낸다', () => {
+      // 앱을 껐다 켠 상황을 흉내 낸다 — 고치기 전에는 여기서 목록이 통째로 사라졌다.
+      const store = memoryStore()
+      store.set({
+        serverNotifications: [
+          {
+            id: 'e1',
+            teamId: 't1',
+            teamName: '디자인팀',
+            kind: 'joined',
+            nickname: '민수',
+            at: new Date().toISOString(),
+          },
+        ],
+      })
+      const session = createSession({ url: '', anonKey: '', store })
+
+      const entry = session.snapshot().notifications.find((n) => n.id === 'e1')
+      expect(entry?.kind).toBe('joined')
+    })
+
+    it('7일 지난 사본 줄은 화면에 안 나온다 (보여 줄 때의 컷오프)', () => {
+      // 열흘 동안 오프라인이었던 것처럼, 사본에 이미 낡은 줄이 남아 있는 상황을 흉내 낸다.
+      const store = memoryStore()
+      store.set({
+        serverNotifications: [
+          {
+            id: 'stale',
+            teamId: 't1',
+            teamName: '옛날팀',
+            kind: 'joined',
+            nickname: '민수',
+            at: new Date(Date.now() - NOTIFICATION_TTL_MS - 1000).toISOString(),
+          },
+        ],
+      })
+      const session = createSession({ url: '', anonKey: '', store })
+
+      expect(session.snapshot().notifications).toEqual([])
+    })
+
+    it('7일 지난 줄은 사본에 적히지도 않는다 (적어 둘 때의 컷오프)', async () => {
+      const server = createFakeServer()
+      const net = createFakeNet({ server, userId: 'user-me' })
+      // 서버가 걸러 주지 못한 낡은 줄이 흘러들어 왔다고 흉내 낸다 (fake-net 은 진짜
+      // RPC 와 같은 7일 규칙을 이미 지키므로, 그 문지기를 우회해 직접 만든다).
+      net.getMyEvents = async () => [
+        {
+          id: 'stale',
+          teamId: 't1',
+          teamName: '옛날팀',
+          kind: 'joined' as const,
+          nickname: '민수',
+          at: new Date(Date.now() - NOTIFICATION_TTL_MS - 1000).toISOString(),
+        },
+      ]
+      const store = memoryStore()
+      const session = createSession({ url: 'x', anonKey: 'y', store, net })
+
+      await session.recover()
+
+      expect(store.peek().serverNotifications).toEqual([])
+    })
+
+    it('서버가 더는 주지 않는 방의 줄은 갈아 끼우기로 사라진다 (합치지 않는다)', async () => {
+      const server = createFakeServer()
+      const net = createFakeNet({ server, userId: 'user-me' })
+      let batch: Awaited<ReturnType<Net['getMyEvents']>> = [
+        {
+          id: 'a',
+          teamId: 't1',
+          teamName: '팀A',
+          kind: 'joined',
+          nickname: '민수',
+          at: new Date().toISOString(),
+        },
+      ]
+      net.getMyEvents = async () => batch
+      const store = memoryStore()
+      const session = createSession({ url: 'x', anonKey: 'y', store, net })
+
+      await session.recover()
+      expect(store.peek().serverNotifications).toEqual(batch)
+
+      // 서버가 더 이상 이 줄을 주지 않는다 — 그 방에서 나갔거나 지워진 상황이다.
+      batch = []
+      await session.recover()
+
+      expect(store.peek().serverNotifications).toEqual([])
+    })
+
+    it('재시작해도 빨간 점이 남는다 — 사본에 안읽은 줄이 있을 때', () => {
+      const store = memoryStore()
+      // 7일 컷오프에 걸리지 않도록 실제 시각 근처를 쓴다 (clockedServer() 와 같은 이유).
+      store.set({
+        notificationsSeenAt: Date.now() - 2000,
+        serverNotifications: [
+          {
+            id: 'e1',
+            teamId: 't1',
+            teamName: '디자인팀',
+            kind: 'joined',
+            nickname: '민수',
+            at: new Date(Date.now() - 1000).toISOString(),
+          },
+        ],
+      })
+      const session = createSession({ url: '', anonKey: '', store })
+
+      expect(session.snapshot().hasUnreadNotifications).toBe(true)
+    })
+
+    it('방에서 나가면 그 방 줄이 사본에서 사라진다', async () => {
+      const { server, tick } = clockedServer()
+      const host = makeSession({ server, userId: 'user-host' })
+      const guestA = makeSession({ server, userId: 'user-a' })
+      const created = await host.session.createTeam({ name: '디자인팀', nickname: '나영' })
+      const teamId = created.memberships[0].team.id
+      const inviteCode = created.memberships[0].team.inviteCode
+      tick()
+      await guestA.session.joinTeam({ inviteCode, nickname: 'A' })
+      await host.session.recover()
+      expect(host.store.peek().serverNotifications.length).toBeGreaterThan(0)
+
+      await host.session.leaveTeam(teamId)
+
+      expect(host.store.peek().serverNotifications).toEqual([])
     })
   })
 })

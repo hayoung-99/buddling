@@ -120,6 +120,19 @@ export interface AppState {
   notifications: NotificationEntry[]
   /** 지난번 알림 창을 연 뒤로 새로 온 것이 있는가 — 제목줄 아이콘의 빨간 점 */
   hasUnreadNotifications: boolean
+  /**
+   * 지금 서버에 닿지 못하는가 (기획서 "인터넷이 없을 때").
+   *
+   * 방마다의 `Membership.connection` 과 **다른 층이다** — 저쪽은 그 방의 실시간
+   * 채널이고, 이것은 앱 전체가 서버에 닿는지다. 방 하나가 말썽인 것은 오프라인이
+   * 아니고, 방이 하나도 없는 사람도 오프라인일 수 있다.
+   *
+   * 접속 정보가 아예 없는 빌드는 여기서 **false 다.** 그건 인터넷 문제가 아니라 앱이
+   * 완성되지 않은 것이라 `configured` 가 따로 가른다.
+   *
+   * **알림 창은 이 값을 보지 않는다** (기획서 "알림 화면").
+   */
+  offline: boolean
 }
 
 /** 신호를 받았을 때 캐릭터 창으로 오는 것 */

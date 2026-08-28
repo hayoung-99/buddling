@@ -38,6 +38,19 @@ const TAP_THROTTLE_MS = 300
 const RETRY_DELAYS = [5000, 15000, 30000, 60000]
 
 /**
+ * 몇 번 잇달아 닿지 못해야 "오프라인" 으로 보는가.
+ *
+ * **2 는 곧 `RETRY_DELAYS[0]` 이다** — 처음 실패하고, 5초 뒤 다시 붙어 보기가 한 번
+ * 더 실패하면 그때 덮는다(기획서 "인터넷이 없을 때"). 첫 실패에 곧바로 덮으면
+ * 노트북이 잠깐씩 끊길 때마다 창 셋이 통째로 뒤집히는데, **끊긴 것보다 그 깜빡임이
+ * 더 성가시다.**
+ *
+ * **이 숫자와 `RETRY_DELAYS` 는 짝이다** — 재시도 일정을 바꾸면 덮이는 시점도 함께
+ * 움직인다. 기획서가 그것을 알고 묶어 두었고, 여기가 그 사실을 적어 두는 자리다.
+ */
+const OFFLINE_AFTER_FAILURES = 2
+
+/**
  * "아직 쓰고 있다" 는 흔적을 남기는 주기(ms).
  *
  * 흔적은 앱을 켤 때 `getMyTeams()` 가 이미 한 번 남긴다. 그런데 **이 앱은 컴퓨터를 켜
@@ -103,14 +116,18 @@ function createSession({
   const connections = new Map<string, ConnectionState>()
   /** teamId → 마지막으로 보낸 시각 */
   const lastTapAt = new Map<string, number>()
-  /**
-   * 서버가 적어 둔 사건들 — 들어옴 · 나감 · 내보내짐(기획서 "알림 화면"). 메모리에만
-   * 두고 기기에 남기지 않는다. `syncEvents()` 가 채운다.
-   */
-  let serverEvents: NetEvent[] = []
   let update: UpdateInfo | null = null
   /** 다시 붙어 보기까지의 대기. 성공하면 처음으로 되돌린다. */
   let retryStep = 0
+  /**
+   * 서버에 잇달아 닿지 못한 횟수. 닿으면 0으로 돌아간다.
+   *
+   * `OFFLINE_AFTER_FAILURES` 이상이면 `AppState.offline` 이 켜진다. **되돌리는 것은
+   * 성공뿐이다** — `cancelRetry()` 는 이 값을 건드리지 않는다. 절전에서 깨어날 때
+   * `recover()` 가 그것을 부르는데, 거기서 함께 0으로 되돌리면 아직 오프라인인데
+   * 화면이 잠깐 정상으로 돌아왔다 다시 덮이는 깜빡임이 생긴다.
+   */
+  let unreachableStreak = 0
   let retryTimer: ReturnType<typeof setTimeout> | null = null
   let touchTimer: ReturnType<typeof setInterval> | null = null
   let disposed = false
@@ -152,11 +169,18 @@ function createSession({
     })
   }
 
+  /** 서버가 적어 준 사건 하나의 `at`(ISO 문자열)을 epoch ms 로 바꾼다 */
+  function atMs(event: NetEvent): number {
+    return new Date(event.at).getTime()
+  }
+
   /**
    * 기기 줄(내보내진 나 자신)과 서버 줄(들어옴·나감·내보내짐)을 합쳐 최신순으로 늘어놓는다.
    *
-   * 7일 지난 기기 줄은 여기서 걸러 낸다 — 서버 줄은 `get_my_events()` 가 이미 그
-   * 조건으로 걸러 보내 준다.
+   * **컷오프를 여기서도 다시 건다.** 적어 둘 때(`syncEvents()`)의 컷오프는 이상한 값과
+   * 시계 어긋남을 막는 문지기이고, 여기가 진짜 일하는 자리다 — 열흘 동안 오프라인이면
+   * 사본은 열흘 전 것 그대로인데(성공해야만 갈아 끼우므로), 그때 서버가 이미 지운 줄을
+   * 앱만 들고 있게 된다.
    */
   function snapshot(): AppState {
     const cutoff = now() - NOTIFICATION_TTL_MS
@@ -164,15 +188,18 @@ function createSession({
       .get('notifications')
       .filter((entry) => entry.at > cutoff)
       .map((entry) => ({ ...entry, kind: 'kicked-me' as const }))
-    const theirs: NotificationEntry[] = serverEvents.map((event) => ({
-      id: event.id,
-      kind: event.kind,
-      teamId: event.teamId,
-      teamName: event.teamName,
-      nickname: event.nickname,
-      newHostNickname: event.newHostNickname,
-      at: new Date(event.at).getTime(),
-    }))
+    const theirs: NotificationEntry[] = store
+      .get('serverNotifications')
+      .map((event) => ({
+        id: event.id,
+        kind: event.kind,
+        teamId: event.teamId,
+        teamName: event.teamName,
+        nickname: event.nickname,
+        newHostNickname: event.newHostNickname,
+        at: atMs(event),
+      }))
+      .filter((entry) => entry.at > cutoff)
     const notifications = [...mine, ...theirs].sort((a, b) => b.at - a.at)
     const seenAt = store.get('notificationsSeenAt') ?? 0
 
@@ -193,6 +220,7 @@ function createSession({
       })),
       notifications,
       hasUnreadNotifications: notifications.some((entry) => entry.at > seenAt),
+      offline: unreachableStreak >= OFFLINE_AFTER_FAILURES,
     }
   }
 
@@ -217,19 +245,29 @@ function createSession({
   }
 
   /**
-   * 서버가 적어 둔 사건들을 다시 받는다.
+   * 서버가 적어 둔 사건들을 다시 받아 **사본을 통째로 갈아 끼운다**(기획서 "알림 화면").
    *
-   * **스키마는 사람이 콘솔에서 손으로 실행한다.** 앱이 먼저 나가고 스키마가 늦으면
-   * `get_my_events()` 가 서버에 아직 없어 여기서 실패한다. 그렇다고 던지면 팀 목록
-   * 갱신(`refresh()`)까지 통째로 막히므로, 여기서는 조용히 삼키고 마지막 값을 그대로
-   * 둔다 — 알림만 비어 보이고 나머지는 멀쩡하게 굴러간다.
+   * 줄 단위로 합치지 않는다. 서버는 물어볼 때마다 그 순간의 7일치를 전부 돌려주므로
+   * 오프라인 동안 놓친 일도 이 목록 안에 이미 들어 있다.
+   *
+   * **실패하면 사본을 그대로 둔다. 비우지 않는다.** 인터넷이 없는 것과 스키마가 아직
+   * 안 올라간 것을 가리지 않는다 — 사람 쪽에서는 둘 다 "지금은 새 소식을 알 수 없다"
+   * 는 같은 상태다. 던지지도 않는다 — 던지면 팀 목록 갱신까지 통째로 막힌다.
    */
   async function syncEvents() {
     if (!net) return
     try {
-      serverEvents = await net.getMyEvents()
+      const received = await net.getMyEvents()
+      // 이상한 `at` 이 디스크에 남지 않게 여기서도 한 번 거른다 — 시계 어긋남을 막는
+      // 문지기다. 보여 줄 때(snapshot())의 컷오프가 진짜 일하는 자리다.
+      const cutoff = now() - NOTIFICATION_TTL_MS
+      store.set({
+        serverNotifications: received.filter(
+          (event) => Number.isFinite(atMs(event)) && atMs(event) > cutoff,
+        ),
+      })
     } catch {
-      // 위 설명대로 일부러 삼킨다.
+      // 위 설명대로 일부러 삼킨다. 사본은 그대로 둔다.
     }
   }
 
@@ -284,17 +322,37 @@ function createSession({
   }
 
   /**
+   * 서버에서 내 소속을 받아 온다. **이 호출 하나가 "서버에 닿는가" 의 기준이다**
+   * (기획서 "인터넷이 없을 때"). 방 채널이 붙는지는 보지 않는다 — 방 하나가 말썽인
+   * 것은 오프라인이 아니고, 방이 하나도 없는 사람도 오프라인일 수 있다.
+   *
+   * 실패하면 곧바로 다시 붙어 보기를 예약한다. **오프라인 화면이 "저절로 다시 붙는다"
+   * 고 약속하므로, 닿지 못한 상태에는 반드시 예약이 걸려 있어야 한다.** 예전에는
+   * `refresh()` 가 실패해도 예약하지 않아서 그 자리가 비어 있었다.
+   */
+  async function fetchTeams(): Promise<NetMembership[]> {
+    try {
+      const list = await requireNet().getMyTeams()
+      unreachableStreak = 0
+      return list
+    } catch (error) {
+      unreachableStreak += 1
+      scheduleRetry()
+      throw error
+    }
+  }
+
+  /**
    * 서버에서 내 소속을 통째로 다시 불러온다.
    *
    * **알림을 먼저 받아 둔다.** `applyTeams()` 가 끝에서 `commit()` → `publish()` 를
-   * 부르므로, 그 전에 `serverEvents` 를 최신으로 맞춰 두면 그 한 번의 방송에
-   * 소속과 알림이 함께 실린다. 반대 순서로 두면 `publish()` 를 한 번 더 불러야
-   * 알림이 반영되는데, `state` IPC 가 roster 가 바뀔 때마다 두 번 나가는 것뿐이라
-   * 낭비였다.
+   * 부르므로, 그 전에 사본을 최신으로 맞춰 두면 그 한 번의 방송에 소속과 알림이 함께
+   * 실린다. 반대 순서로 두면 `publish()` 를 한 번 더 불러야 알림이 반영되는데,
+   * `state` IPC 가 roster 가 바뀔 때마다 두 번 나가는 것뿐이라 낭비였다.
    *
-   * `net.getMyTeams()` 가 실패하면 `applyTeams()` 자체가 불리지 않아 그 안의
-   * `publish()` 도 없다 — 그때만 예외적으로 직접 불러서, 방금 받아 둔 알림이라도
-   * 화면에 반영되게 한다.
+   * `fetchTeams()` 가 실패하면 `applyTeams()` 자체가 불리지 않아 그 안의 `publish()`
+   * 도 없다 — 그때만 예외적으로 직접 불러서, 방금 받아 둔 알림이라도 화면에
+   * 반영되게 한다.
    */
   async function refresh() {
     if (!net) return
@@ -302,7 +360,7 @@ function createSession({
     // 하나에 두 가지가 얹혀 있다 (기획서 "알림 화면"의 "만드는 쪽에게").
     await syncEvents()
     try {
-      await applyTeams(await net.getMyTeams())
+      await applyTeams(await fetchTeams())
     } catch (error) {
       emitter.emit('error', toFriendlyError(error).message)
       publish()
@@ -351,15 +409,20 @@ function createSession({
   async function syncConnections() {
     if (!net || disposed) return
     let everythingWorked = true
+    // `fetchTeams()` 가 실패하면 그 안에서 곧바로 `scheduleRetry()` 를 불러 retryStep 을
+    // 올린다(오프라인 화면이 "저절로 다시 붙는다" 는 약속을 지키려면 그래야 한다). 그래서
+    // 아래 catch 안에서 retryStep 을 읽으면 이미 올라간 뒤라 "처음 한 번만" 을 가릴 수
+    // 없다 — 부르기 전에 미리 붙잡아 둔다.
+    const firstFailureInStreak = retryStep === 0
 
     try {
-      await applyTeams(await net.getMyTeams())
+      await applyTeams(await fetchTeams())
     } catch (error) {
       // 서버를 못 읽어도 캐시된 소속으로 연결은 시도해 본다
       everythingWorked = false
       // 인터넷이 오래 없으면 같은 실패가 계속 되풀이된다. 그때마다 알리면 잔소리가 되니
       // 한 번 어긋난 뒤 처음 한 번만 말한다. 다시 붙으면 알림도 처음으로 돌아간다.
-      if (retryStep === 0) emitter.emit('error', toFriendlyError(error).message)
+      if (firstFailureInStreak) emitter.emit('error', toFriendlyError(error).message)
     }
     // 앱을 켤 때·절전에서 깨어날 때도 밀린 알림을 함께 받는다.
     await syncEvents()
@@ -416,6 +479,32 @@ function createSession({
     async recover() {
       cancelRetry()
       await syncConnections()
+    },
+
+    /**
+     * 사람이 "다시 해 보기" 를 눌렀다 (기획서 "인터넷이 없을 때").
+     *
+     * **닿는지만 확인하고 돌아온다.** 방 채널을 다시 붙이는 일은 기다리지 않는다 —
+     * 채널 하나에 최대 15초라(`services/supabase-net.ts`) 그것까지 기다리면 단추가
+     * 몇십 초씩 눌린 채로 남는다. 오프라인인지는 `getMyTeams()` 하나로 정해지므로
+     * 그것만 기다리면 화면은 이미 정확하다.
+     *
+     * `cancelRetry()` 로 백오프를 처음(5초)으로 되돌린다 — 사람이 기다림을 끝낸 것이라
+     * 그다음 자동 재시도도 촘촘한 쪽에서 다시 시작하는 것이 맞다.
+     *
+     * **치르는 값** — 성공한 경우 `getMyTeams()` 가 곧이어 `syncConnections()` 안에서
+     * 한 번 더 불린다. 일부러 그대로 둔다 — 사람이 일부러 누른 단추에 RPC 하나가 더
+     * 드는 것과, 잘 도는 `syncConnections()` 를 둘로 쪼개는 것 중에 앞쪽이 싸다.
+     */
+    async retryNow() {
+      cancelRetry()
+      try {
+        await applyTeams(await fetchTeams()) // 성공하면 여기서 publish 되어 화면이 돌아온다
+      } catch {
+        publish() // 실패해도 offline 값은 갱신해 내보낸다
+      }
+      void syncConnections() // 채널 붙이기·알림 받기는 뒤에서
+      return snapshot()
     },
 
     async createTeam({
@@ -491,6 +580,11 @@ function createSession({
       if (net && memberships.has(teamId)) await net.leaveTeam(teamId)
       memberships.delete(teamId)
       forget(teamId)
+      // 나간 방의 줄은 서버가 더는 주지 않는다. 여기서 한 번 받아 와 사본을 갈아 끼워야
+      // 그 방 줄이 함께 사라진다 — 안 그러면 다음 성공적인 동기화까지 목록에 남고,
+      // 사본은 껐다 켜도 남는다(예전에는 메모리라 앱을 끄면 사라졌다). `commit()` 앞에
+      // 두어 그 한 번의 방송에 바뀐 소속과 갈아 끼운 사본이 함께 실리게 한다.
+      await syncEvents()
       commit()
       return snapshot()
     },
