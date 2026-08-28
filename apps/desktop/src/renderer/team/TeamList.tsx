@@ -39,6 +39,7 @@ function JoinForms({
   busy,
   run,
   onDone,
+  nickname,
 }: {
   t: Translate
   draft: Draft
@@ -46,6 +47,10 @@ function JoinForms({
   busy: boolean
   run: (action: () => Promise<unknown>) => Promise<void>
   onDone: () => void
+  /** 실제로 서버에 보낼 닉네임. `NicknameField` 가 화면에 보여주는 값과 같아야 한다
+   * (draft.nickname || state.nickname) — 입력창을 안 건드리고 바로 제출해도
+   * 화면에 보이는 이전 닉네임이 그대로 전송되게 하기 위함이다. */
+  nickname: string
 }) {
   return (
     <>
@@ -74,7 +79,7 @@ function JoinForms({
             disabled={busy || !draft.teamName.trim()}
             onClick={() =>
               run(async () => {
-                await window.teamApi.createTeam({ name: draft.teamName, nickname: draft.nickname })
+                await window.teamApi.createTeam({ name: draft.teamName, nickname })
                 setDraft((d) => ({ ...d, teamName: '' }))
                 onDone()
               })
@@ -118,7 +123,7 @@ function JoinForms({
               run(async () => {
                 await window.teamApi.joinTeam({
                   inviteCode: draft.inviteCode,
-                  nickname: draft.nickname,
+                  nickname,
                 })
                 setDraft((d) => ({ ...d, inviteCode: '' }))
                 onDone()
@@ -233,6 +238,11 @@ export function TeamList() {
 
   const t = createTranslator(state.language)
 
+  // NicknameField 가 입력창에 보여주는 값과 똑같은 규칙으로 계산한다. 그래야
+  // 이전 닉네임이 화면에 채워져 보이는데 손대지 않고 바로 제출해도, 보이는 값
+  // 그대로가 서버에 전송된다 (빈 문자열이 몰래 나가지 않는다).
+  const nickname = draft.nickname || state.nickname || ''
+
   const setupNeeded = (
     <>
       <h1 className={ui.h1}>{t('setup.title')}</h1>
@@ -272,6 +282,7 @@ export function TeamList() {
         busy={busy}
         run={run}
         onDone={() => setAdding(false)}
+        nickname={nickname}
       />
       <div className={ui.errorLine}>{error}</div>
     </>
@@ -310,6 +321,7 @@ export function TeamList() {
             busy={busy}
             run={run}
             onDone={() => setAdding(false)}
+            nickname={nickname}
           />
           <div className={ui.footer}>
             <button className={ui.buttonQuiet} onClick={() => setAdding(false)}>
