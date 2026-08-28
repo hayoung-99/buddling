@@ -20,6 +20,7 @@ import type { Translate } from '@buddling/shared/i18n'
 import { POWER_LEVELS, resolvePower } from '@buddling/shared/power'
 import type { AppState } from '@buddling/shared/state'
 import * as ui from '../ui'
+import { PawIcon } from '../icons'
 import { NotificationButton } from '../NotificationButton'
 import { OfflineScreen } from '../OfflineScreen'
 
@@ -160,6 +161,7 @@ export function Settings() {
   return (
     <>
       <header className={ui.titlebar}>
+        <PawIcon className="mr-[4px]" />
         <span>{t('app.name')}</span>
         <NotificationButton
           state={state}
