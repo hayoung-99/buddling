@@ -119,6 +119,15 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
 
   const teamsOf = (userId: string) => [...members.values()].filter((m) => m.userId === userId)
 
+  /** 예전 코드는 그 즉시 못 쓰게 되고, 새 코드로 24시간이 다시 주어진다 */
+  function rotateInviteCode(team: StoredTeam): Team {
+    codes.delete(team.inviteCode)
+    team.inviteCode = generateInviteCode()
+    team.inviteExpiresAt = now() + INVITE_TTL_MS
+    codes.set(team.inviteCode, team.id)
+    return publicTeam(team)
+  }
+
   const membership = (member: StoredMember): NetMembership => ({
     team: publicTeam(teams.get(member.teamId)!),
     member: publicMember(member),
@@ -279,12 +288,34 @@ function createFakeServer({ random = Math.random, now = () => Date.now() } = {})
 
     refreshInvite({ userId, teamId }: { userId: string; teamId: string }): Team {
       if (!members.has(key(teamId, userId))) throw new Error('NOT_A_MEMBER')
-      const team = teams.get(teamId)!
-      codes.delete(team.inviteCode) // 예전 코드는 그 즉시 못 쓰게 된다
-      team.inviteCode = generateInviteCode()
-      team.inviteExpiresAt = now() + INVITE_TTL_MS
-      codes.set(team.inviteCode, teamId)
-      return publicTeam(team)
+      return rotateInviteCode(teams.get(teamId)!)
+    },
+
+    /**
+     * 방장만 부를 수 있다. schema.sql 의 `kick_member` 와 같은 규칙 — 방장은 그 방에
+     * 가장 먼저 들어온(=아직 남아 있는 것 중 가장 오래된) 멤버다. `membersOf` 가
+     * 도는 순서가 곧 들어온 순서이므로(뒤에 들어온 사람일수록 뒤에 붙는다), 그 첫
+     * 번째가 방장이다.
+     */
+    kickMember({
+      userId,
+      teamId,
+      memberId,
+    }: {
+      userId: string
+      teamId: string
+      memberId: string
+    }): Team {
+      const teamMembers = [...members.values()].filter((m) => m.teamId === teamId)
+      const host = teamMembers[0]
+      if (!host || host.userId !== userId) throw new Error('NOT_THE_HOST')
+
+      const target = teamMembers.find((m) => m.id === memberId)
+      if (!target) throw new Error('MEMBER_NOT_FOUND')
+      if (target.userId === userId) throw new Error('CANNOT_KICK_SELF')
+
+      members.delete(key(teamId, target.userId))
+      return rotateInviteCode(teams.get(teamId)!)
     },
 
     leaveTeam({ userId, teamId }: { userId: string; teamId: string }) {
@@ -386,6 +417,12 @@ function createFakeNet({
 
     async refreshInvite(teamId) {
       const team = server.refreshInvite({ userId, teamId })
+      await this.announceRosterChange(teamId)
+      return team
+    },
+
+    async kickMember(teamId, memberId) {
+      const team = server.kickMember({ userId, teamId, memberId })
       await this.announceRosterChange(teamId)
       return team
     },

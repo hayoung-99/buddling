@@ -273,6 +273,13 @@ function createSupabaseNet({ url, anonKey, storage }: Required<Pick<NetConfig, '
       return team
     },
 
+    /** 방장만 부를 수 있다. 대상을 내보내고, 그 자리에서 초대코드를 새로 발급한다. */
+    async kickMember(teamId, memberId) {
+      const team = await rpc('kick_member', { p_team_id: teamId, p_member_id: memberId })
+      await this.announceRosterChange(teamId)
+      return team
+    },
+
     async leaveTeam(teamId) {
       // 순서가 중요하다: 먼저 지우고, 그다음 알려야 남은 사람들이 다시 불러올 때
       // 이미 빠진 상태를 본다. 알린 뒤에 채널을 닫는다.

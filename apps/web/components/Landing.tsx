@@ -1,7 +1,8 @@
 import type { Copy, Step } from '../lib/copy'
-import { BRAND, RELEASES_LATEST, RELEASES_PAGE } from '../lib/site'
+import { BRAND, DOWNLOAD_PATHS, RELEASES_LATEST } from '../lib/site'
 import { DownloadButtons } from './DownloadButtons'
 import { Peekers } from './Peekers'
+import { SiteFooter } from './SiteFooter'
 
 /**
  * 랜딩 한 장. 마크업은 여기 한 벌뿐이고 나라말은 `copy` 로 들어온다.
@@ -21,6 +22,9 @@ function renderStep(step: Step) {
 }
 
 export function Landing({ copy }: { copy: Copy }) {
+  // 버전 히스토리는 이제 별도 화면이다 — 그 화면의 나라말 주소로 보낸다.
+  const downloadHref = copy.locale === 'en' ? DOWNLOAD_PATHS.en : DOWNLOAD_PATHS.ko
+
   return (
     <>
       <a className="skip" href="#main">
@@ -40,12 +44,7 @@ export function Landing({ copy }: { copy: Copy }) {
             </svg>
             <span className="title">{BRAND}</span>
             <nav>
-              <a href="#characters">{copy.nav.characters}</a>
-              <a href="#download">{copy.nav.download}</a>
-              {/* 받기 버튼이 파일만 내려받고 페이지를 떠나므로, 경고를 만난 사람이
-                  돌아올 길이 내비에 있어야 한다 */}
-              <a href="#install">{copy.nav.install}</a>
-              <a href="#faq">{copy.nav.faq}</a>
+              <a href={downloadHref}>{copy.nav.download}</a>
               <a
                 className="lang"
                 href={copy.other.href}
@@ -68,13 +67,9 @@ export function Landing({ copy }: { copy: Copy }) {
                   {copy.hero.tail}
                 </h1>
                 <p className="lead">{copy.hero.sub}</p>
-                <p className="needs-two">{copy.hero.needsTwo}</p>
                 <div className="actions">
                   <a className="btn" href={RELEASES_LATEST} data-hero-download>
                     {copy.hero.download}
-                  </a>
-                  <a className="btn ghost" href="#download">
-                    {copy.hero.allVersions}
                   </a>
                 </div>
                 {/*
@@ -147,42 +142,6 @@ export function Landing({ copy }: { copy: Copy }) {
                   </div>
                 ))}
               </dl>
-            </section>
-
-            {/* ── 받기 ── */}
-            <section className="pane" id="download">
-              <div className="pane-head">
-                <div>
-                  <p className="label">{copy.download.label}</p>
-                  <h2>{copy.download.heading}</h2>
-                </div>
-                <span className="tag" data-release-tag>
-                  {copy.download.latest}
-                </span>
-              </div>
-
-              <div className="dl-list">
-                {copy.download.rows.map((row) => (
-                  <div className="dl-row" key={row.asset} data-asset={row.asset} data-label={row.label}>
-                    <div>
-                      <div className="name">{row.name}</div>
-                      <div className="meta">{row.meta}</div>
-                    </div>
-                    <a className="btn" href={RELEASES_LATEST}>
-                      {copy.download.button}
-                    </a>
-                  </div>
-                ))}
-              </div>
-
-              {/* 폰에서만 보인다. 여기 있는 셋 다 이 기기로는 열 수 없다는 것을 말해 준다 */}
-              <p className="hint" data-mobile-notice hidden>
-                {copy.download.mobileHint}
-              </p>
-              <p className="hint">{copy.download.hint}</p>
-              <p className="hint" data-pending-notice hidden>
-                {copy.download.pending}
-              </p>
             </section>
 
             {/* ── 처음 열 때 ── */}
@@ -281,23 +240,14 @@ export function Landing({ copy }: { copy: Copy }) {
               </div>
 
               <div className="actions">
-                <a className="btn" href="#download">
+                <a className="btn" href={downloadHref}>
                   {copy.try.cta}
                 </a>
               </div>
             </section>
           </main>
 
-          <footer>
-            <span>{copy.footer.tagline}</span>
-            <nav>
-              <a href="https://github.com/hayoung-99/buddling">{copy.footer.github}</a>
-              <a href={RELEASES_PAGE}>{copy.footer.releases}</a>
-              <a href={copy.other.href} hrefLang={copy.other.lang} lang={copy.other.lang}>
-                {copy.other.long}
-              </a>
-            </nav>
-          </footer>
+          <SiteFooter copy={copy} />
         </div>
       </div>
 

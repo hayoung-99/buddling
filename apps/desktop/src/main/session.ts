@@ -64,6 +64,8 @@ export type SessionEvents = {
   /** 사람에게 보여 줄 오류. 이미 번역 열쇠로 바뀐 뒤다. */
   error: string
   character: { teamId: string; characterKey: string }
+  /** 방장이 나를 내보냈다. 누가 그랬는지는 싣지 않는다 (기획서 "방장과 강퇴"). */
+  kicked: { teamId: string; teamName: string }
 }
 
 export interface SessionOptions {
@@ -185,11 +187,18 @@ function createSession({
   async function applyTeams(list: NetMembership[]) {
     const next = new Map(list.map((entry): [string, NetMembership] => [entry.team.id, entry]))
 
-    // 서버에서 사라진 팀은 연결을 끊는다 (다른 기기에서 나갔거나 팀이 지워졌다)
+    // 서버에서 사라진 팀은 연결을 끊는다.
+    //
+    // 여기서 사라졌다는 것은 곧 방장이 나를 내보냈다는 뜻이다 — 내가 스스로 나가는
+    // 길(`leaveTeam()`)은 이 함수를 거치지 않고 곧바로 지우기 때문에, 여기서 사라진
+    // 팀은 언제나 남이 지운 것이다. 혼자 있던 방은 내가 나가야만 사라지므로 안전한
+    // 구분이다 (기획서 "방장과 강퇴" 의 "만드는 쪽에게").
     for (const id of memberships.keys()) {
       if (next.has(id)) continue
+      const removed = memberships.get(id)!
       await requireNet().disconnect(id)
       forget(id)
+      emitter.emit('kicked', { teamId: id, teamName: removed.team.name })
     }
     memberships = next
     commit()
@@ -367,6 +376,17 @@ function createSession({
       const team = await net.refreshInvite(teamId)
       memberships.set(teamId, { ...entry, team })
       commit()
+      return snapshot()
+    },
+
+    /**
+     * 방장만 부를 수 있다. 내보낸 대상은 이 자리에서 목록을 다시 받지 않으므로,
+     * 그쪽은 다음에 서버 목록을 받을 때(`applyTeams`) 스스로 알아챈다.
+     */
+    async kickMember(teamId: string, memberId: string) {
+      if (!memberships.has(teamId) || !net) return snapshot()
+      await net.kickMember(teamId, memberId)
+      await refresh()
       return snapshot()
     },
 

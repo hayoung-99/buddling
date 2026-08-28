@@ -18,6 +18,7 @@ import type { AppState, Membership } from '@buddling/shared/state'
 import { characterThumbnails } from './thumbnails'
 import { useAppState, useRunner } from './hooks'
 import * as ui from '../ui'
+import { GearIcon, KeyIcon, PawIcon, PeopleIcon } from '../icons'
 
 /** 사용자가 입력 중인 값. 화면이 다시 그려져도 날아가지 않게 여기 붙잡아 둔다. */
 interface Draft {
@@ -47,7 +48,12 @@ function JoinForms({
   return (
     <>
       <section className={ui.section}>
-        <h2 className={ui.h2}>{t('form.createSection')}</h2>
+        <div className={ui.sectionHeading}>
+          <span className={`${ui.iconChip} bg-chip-people`}>
+            <PeopleIcon />
+          </span>
+          <h2 className={ui.sectionLabel}>{t('form.createSection')}</h2>
+        </div>
         <div>
           <label className={ui.label}>{t('form.teamName')}</label>
           <input
@@ -77,7 +83,12 @@ function JoinForms({
       </section>
 
       <section className={ui.section}>
-        <h2 className={ui.h2}>{t('form.joinSection')}</h2>
+        <div className={ui.sectionHeading}>
+          <span className={`${ui.iconChip} bg-chip-key`}>
+            <KeyIcon />
+          </span>
+          <h2 className={ui.sectionLabel}>{t('form.joinSection')}</h2>
+        </div>
         <input
           type="text"
           className={`${ui.input} uppercase tracking-[0.28em] font-bold text-center`}
@@ -311,6 +322,7 @@ export function TeamList() {
   return (
     <>
       <header className={ui.titlebar}>
+        <PawIcon className="mr-[4px]" />
         <span>{t('app.name')}</span>
       </header>
       <main className={ui.main}>
@@ -318,7 +330,11 @@ export function TeamList() {
         {!state.configured ? setupNeeded : state.memberships.length > 0 ? list : onboarding}
         {/* 언어와 절전 강도는 설정 창에 모여 있다. 여기서는 그리로 가는 길만 둔다. */}
         <div className={ui.footer}>
-          <button className={ui.buttonQuiet} onClick={() => window.teamApi.openSettings()}>
+          <button
+            className={`${ui.buttonQuiet} inline-flex items-center gap-[4px]`}
+            onClick={() => window.teamApi.openSettings()}
+          >
+            <GearIcon width={13} height={13} />
             {t('app.settings')}
           </button>
         </div>

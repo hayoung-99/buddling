@@ -145,6 +145,10 @@ function MemberList({
 }) {
   const { team, member, members, onlineIds } = entry
   const online = new Set(onlineIds)
+  // 방장은 칸이 아니라 순서다 — 그 방에 아직 남아 있는 것 중 가장 먼저 들어온
+  // 멤버가 방장이고, `members` 는 늘 그 순서로 온다(schema.sql 의 `membership_json`).
+  const hostId = members[0]?.id
+  const viewerIsHost = member.id === hostId
 
   return (
     <ul className="bg-card rounded-card overflow-hidden">
@@ -152,6 +156,7 @@ function MemberList({
         const spec = getCharacter(person.characterKey)
         const isMe = person.id === member.id
         const isOnline = isMe || online.has(person.id)
+        const isHost = person.id === hostId
 
         return (
           <li
@@ -169,6 +174,14 @@ function MemberList({
                 <span>{person.nickname}</span>
                 {isMe ? (
                   <span className="text-[11px] font-bold text-accent">{t('detail.me')}</span>
+                ) : null}
+                {isHost ? (
+                  <span
+                    className="text-[10px] font-bold text-ink-soft bg-line rounded-full
+                      px-[7px] py-[1px]"
+                  >
+                    {t('detail.hostBadge')}
+                  </span>
                 ) : null}
               </div>
               <div className="text-[12px] text-ink-soft flex items-center gap-[5px]">
@@ -190,17 +203,37 @@ function MemberList({
                 {t('detail.rename')}
               </button>
             ) : (
-              <button
-                className={ui.buttonTinyGhost}
-                onClick={() =>
-                  run(async () => {
-                    const sent = await window.teamApi.tapMember(team.id, person.id)
-                    toast(sent ? t('toast.poked', { name: person.nickname }) : t('toast.tooFast'))
-                  })
-                }
-              >
-                {t('detail.poke')}
-              </button>
+              <div className="flex gap-[6px] flex-none">
+                <button
+                  className={ui.buttonTinyGhost}
+                  onClick={() =>
+                    run(async () => {
+                      const sent = await window.teamApi.tapMember(team.id, person.id)
+                      toast(
+                        sent ? t('toast.poked', { name: person.nickname }) : t('toast.tooFast'),
+                      )
+                    })
+                  }
+                >
+                  {t('detail.poke')}
+                </button>
+                {viewerIsHost ? (
+                  <button
+                    className={`${ui.buttonTinyGhost} text-danger border-[rgba(180,82,58,0.4)]`}
+                    onClick={() => {
+                      if (!window.confirm(t('detail.kickConfirm', { name: person.nickname }))) {
+                        return
+                      }
+                      void run(async () => {
+                        await window.teamApi.kickMember(team.id, person.id)
+                        toast(t('toast.kicked', { name: person.nickname }))
+                      })
+                    }}
+                  >
+                    {t('detail.kick')}
+                  </button>
+                ) : null}
+              </div>
             )}
           </li>
         )
@@ -379,13 +412,15 @@ export function TeamDetail() {
             {entry.team.name}
           </h1>
           <button
-            className={ui.buttonTinyGhost}
+            className={`${ui.buttonTinyGhost} flex-none whitespace-nowrap`}
             onClick={() => startEdit('team', entry.team.name)}
           >
             {t('detail.rename')}
           </button>
         </div>
-        <span className={ui.quota}>{`${entry.members.length} / ${state.maxMembers}`}</span>
+        <span className={`${ui.quota} flex-none whitespace-nowrap`}>
+          {`${entry.members.length} / ${state.maxMembers}`}
+        </span>
       </div>
 
       {editing === 'team' ? (

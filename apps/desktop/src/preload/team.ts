@@ -46,6 +46,7 @@ const api: TeamApi = {
   leaveTeam: (id) => call<AppState>('team:leave', id),
   refreshInvite: (id) => call<AppState>('team:refresh-invite', id),
   renameTeam: (id, name) => call<AppState>('team:rename', { teamId: id, name }),
+  kickMember: (id, memberId) => call<AppState>('team:kick', { teamId: id, memberId }),
   setNickname: (id, nickname) => call<AppState>('member:nickname', { teamId: id, nickname }),
   setLanguage: (preference) => call<AppState>('settings:language', preference),
   setCharacter: (id, characterKey) => call<AppState>('character:set', { teamId: id, characterKey }),

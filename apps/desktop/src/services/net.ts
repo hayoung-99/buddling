@@ -73,6 +73,12 @@ export interface Net {
   refreshInvite(teamId: string): Promise<Team>
   leaveTeam(teamId: string): Promise<void>
 
+  /**
+   * 방장만 부를 수 있다. 대상은 그 방에서 빠지고, 그 자리에서 초대코드가 새로
+   * 발급된다 — 안 그러면 내보낸 사람이 알던 코드로 다시 들어올 수 있다.
+   */
+  kickMember(teamId: string, memberId: string): Promise<Team>
+
   connect(team: Team, member: Member): Promise<void>
   /** teamId 를 주면 그 팀만, 없으면 전부 끊는다 */
   disconnect(teamId?: string): Promise<void>
