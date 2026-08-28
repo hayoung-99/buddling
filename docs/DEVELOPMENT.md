@@ -372,7 +372,7 @@ npm run check:site  # 스스로 어긋나지 않았는지 (CI 도 이걸 돌린�
 |---|---|---|
 | 알림 화면 | [docs/design/notifications-screen.md](design/notifications-screen.md) | 구현 완료 (리뷰 대기) |
 | 인터넷이 없을 때 | [docs/design/offline-screen.md](design/offline-screen.md) | 구현 완료 (리뷰 대기) |
-| 화면 속 아이콘을 라이브러리 것으로 | [docs/design/library-icons.md](design/library-icons.md) | 설계 중 |
+| 화면 속 아이콘을 라이브러리 것으로 | [docs/design/library-icons.md](design/library-icons.md) | 구현 완료 (리뷰 대기) |
 
 ---
 
