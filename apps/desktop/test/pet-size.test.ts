@@ -8,6 +8,7 @@ import {
   nextPetBounds,
   sizePanelPosition,
   clampPetY,
+  dragPosition,
 } from '../src/main/pet-size'
 import type { Rect } from '../src/main/pet-size'
 
@@ -228,5 +229,82 @@ describe('clampPetY', () => {
     const clamped = clampPetY({ y: secondary.y - height, height, workArea: secondary })
     const headTop = clamped + height * HEAD_TOP_FRACTION
     expect(headTop).toBeCloseTo(secondary.y, 0)
+  })
+})
+
+describe('dragPosition', () => {
+  // pet-size.ts 의 상수와 같은 값
+  const HEAD_TOP_FRACTION = 0.317
+
+  it(
+    '드래그 중 모니터를 넘어가면(세로 위치가 다른 두 모니터), 매 프레임 새로 넘긴 ' +
+      'workArea 를 그대로 따른다 — 시작할 때의 모니터 것을 캐싱해 재사용하면, 커서가 ' +
+      '넘어간 모니터로 계속 y 를 붙잡아 두는 회귀가 재현된다',
+    () => {
+      const { height } = petSizeFor(1)
+      // 노트북 화면 아래쪽에, 세로로 한참 어긋나게(더 아래로) 놓인 외장 모니터를
+      // 흉내 낸다 — 흔한 "책상 아래 세로로 세운 모니터" 배치다.
+      const laptop = { x: 0, y: 0, width: 1440, height: 900 }
+      const external = { x: 1440, y: 800, width: 1920, height: 1080 }
+
+      const offsetX = 100
+      const offsetY = 100
+      // 노트북 화면 안, 두 모니터 경계 언저리에서 드래그를 시작한 커서
+      const startCursor = { x: 1400, y: 100 }
+      const onLaptop = dragPosition({
+        cursor: startCursor,
+        offsetX,
+        offsetY,
+        height,
+        workArea: laptop,
+      })
+      // 노트북 workArea(y=0~900) 안이라 clampPetY 가 손대지 않는다 — 그대로 커서를
+      // 따라간다. 이 값이 곧 "회귀가 있을 때 계속 붙잡혀 있을 y" 다.
+      expect(onLaptop.y).toBe(startCursor.y - offsetY)
+
+      // 그대로 커서를 외장 모니터로 옮긴다 (y 좌표는 그대로 두고 x 만 넘어간다 —
+      // 실제로도 커서를 옆 모니터로 옮기는 동작은 y 가 크게 안 변할 수 있다).
+      // 다만 외장 모니터의 workArea 는 노트북보다 한참 아래(y=800~1880)이므로,
+      // 그 기준으로 보면 이 y 는 화면 밖(위쪽)이다.
+      const movedCursor = { x: 1500, y: 100 }
+      const withFreshWorkArea = dragPosition({
+        cursor: movedCursor,
+        offsetX,
+        offsetY,
+        height,
+        workArea: external, // 매 프레임 다시 구한, 지금 커서가 있는 모니터의 workArea
+      })
+      const withStaleWorkArea = dragPosition({
+        cursor: movedCursor,
+        offsetX,
+        offsetY,
+        height,
+        workArea: laptop, // 회귀를 재현하려고 일부러 드래그 시작 때의 workArea 를 그대로 쓴다
+      })
+
+      // 새 workArea 를 따르면 외장 모니터의 (한참 아래로 어긋난) 화면 안으로 되밀려
+      // 노트북 화면 기준의 결과와 확연히 달라진다. 캐싱된 옛 workArea 를 그대로 쓰면
+      // (회귀 상황) 커서가 모니터를 넘어가도 y 가 그대로다 — 바로 그 증상이다.
+      expect(withFreshWorkArea.y).not.toBe(withStaleWorkArea.y)
+      expect(withStaleWorkArea.y).toBe(onLaptop.y)
+
+      // 정수 좌표로 반올림하는 자리라 1px 미만의 오차는 생길 수 있다
+      const headTop = withFreshWorkArea.y + height * HEAD_TOP_FRACTION
+      expect(headTop).toBeGreaterThanOrEqual(external.y - 1)
+    },
+  )
+
+  it('화면 안에서는 그냥 커서 - 오프셋을 그대로 따른다', () => {
+    const { height } = petSizeFor(1)
+    const cursor = { x: 800, y: 500 }
+    const { x, y } = dragPosition({
+      cursor,
+      offsetX: 50,
+      offsetY: 50,
+      height,
+      workArea: WIDE,
+    })
+    expect(x).toBe(cursor.x - 50)
+    expect(y).toBe(cursor.y - 50)
   })
 })

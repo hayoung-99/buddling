@@ -185,6 +185,35 @@ function clampPetY({
   return Math.round(next)
 }
 
+/**
+ * 드래그 중 매 프레임 창이 옮겨 갈 위치.
+ *
+ * `click-through.ts` 의 `follow()` 가 매 프레임 부르는 계산을 Electron 없이 테스트할
+ * 수 있게 뽑아 두었다. **`workArea` 는 반드시 그 프레임에서 새로 구해 넘겨야 한다** —
+ * 드래그를 시작한 모니터의 것을 캐싱해 재사용하면, 세로 위치가 서로 다른 모니터
+ * 여러 대를 쓰는 사람이 커서를 다른 모니터로 넘기는 순간 `clampPetY()` 가 엉뚱한(원래
+ * 모니터의) 범위로 y 를 붙잡아 캐릭터가 커서에서 세로로 떨어져 보인다 — 실제로
+ * 그렇게 캐싱해 두었다가 걷어낸 적이 있다.
+ */
+function dragPosition({
+  cursor,
+  offsetX,
+  offsetY,
+  height,
+  workArea,
+}: {
+  cursor: { x: number; y: number }
+  offsetX: number
+  offsetY: number
+  height: number
+  workArea: Rect
+}): { x: number; y: number } {
+  const x = Math.round(cursor.x - offsetX)
+  const rawY = Math.round(cursor.y - offsetY)
+  const y = clampPetY({ y: rawY, height, workArea })
+  return { x, y }
+}
+
 export {
   PET_BASE_SIZE,
   MIN_SCALE,
@@ -194,4 +223,5 @@ export {
   nextPetBounds,
   sizePanelPosition,
   clampPetY,
+  dragPosition,
 }
