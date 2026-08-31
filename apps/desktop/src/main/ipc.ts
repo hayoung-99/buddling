@@ -149,7 +149,7 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
           session.setAsleep(teamId, !asleep)
         },
       },
-      { label: t('app.hidePet'), click: () => app.setPetVisible(false) },
+      { label: t('app.hideAll'), click: () => app.setPetVisible(false) },
     ])
     // buddling 종료(프로세스 완전 종료)는 트레이 메뉴에서만 할 수 있다 — 여기 quit
     // 항목이 없어도, 이 메뉴가 열려 있는 동안 트레이나 ⌘Q 로 종료가 시작되면 여전히
