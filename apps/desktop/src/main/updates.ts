@@ -3,26 +3,38 @@
  *
  * 플랫폼마다 할 수 있는 일이 다르다.
  *
- *   Windows   받아서 설치까지 한다        → auto-update.js
- *   그 밖     새 버전이 나왔다고 알린다   → update-check.js
+ *   Windows   언제나 받아서 설치까지 한다                  → auto-update.js
+ *   Linux     AppImage 로 떠 있고 그 자리를 손댈 수 있을 때만 → auto-update.js
+ *             (아니면 macOS 와 같은 알림 길)
+ *   macOS     새 버전이 나왔다고 알리기만 한다              → update-check.js
  *
- * **macOS 가 빠진 것은 게을러서가 아니다.** Squirrel.Mac 이 실행 중인 앱의 서명과
- * 새로 받은 앱의 서명을 대조하기 때문에, 코드 서명이 없으면 설치가 반드시 실패한다.
- * electron-builder 문서도 못을 박아 두었다 — "Code signing is a mandatory
+ * **macOS 가 자동 설치를 하지 않는 것은 게을러서가 아니다.** Squirrel.Mac 이 실행 중인
+ * 앱의 서명과 새로 받은 앱의 서명을 대조하기 때문에, 코드 서명이 없으면 설치가 반드시
+ * 실패한다. electron-builder 문서도 못을 박아 두었다 — "Code signing is a mandatory
  * requirement for auto-updating on macOS." 그래서 맥에서는 자동 설치를 아예
  * 시도하지 않는다. 되는 척하다 실패하는 것이 제일 나쁘다.
  *
- * 서명을 붙이는 날 `canAutoInstall()` 에 'darwin' 을 더하면 그날부터 맥도 자동이 된다.
- * 나머지 코드는 손댈 곳이 없다.
+ * **Linux 가 조건부인 이유는 electron-updater 쪽 사정이다.** AppImage 로 뜨지 않았을
+ * 때는 `checkForUpdates()` 가 오류 없이 조용히 null 을 돌려주므로(AppUpdater.js:253),
+ * "일단 해 보고 실패하면 알림으로 갈아탄다" 가 통하지 않는다 — 갈아탈 신호 자체가
+ * 안 온다. 그래서 시작하기 전에 `appimage.ts` 로 미리 판정한다 (자세한 근거는
+ * docs/design/linux-build-pipeline.md 1.1).
+ *
+ * 서명을 붙이는 날 `canAutoInstall()` 에서 `platform === 'darwin'` 이면 항상 true 를
+ * 돌려주게 고치면 그날부터 맥도 자동이 된다. 나머지 코드는 손댈 곳이 없다.
  */
 
+import { canReplaceAppImage, readAppImageEnvironment } from './appimage'
 import { startUpdateCheck } from './update-check'
 import { startMorningSchedule } from './update-schedule'
 import type { UpdateInfo } from '@buddling/shared/state'
 
 /** 이 플랫폼에서 받아서 설치까지 할 수 있는가 */
-function canAutoInstall(platform: string): boolean {
-  return platform === 'win32'
+function canAutoInstall(platform: string, canReplaceHere: () => boolean): boolean {
+  if (platform === 'win32') return true
+  // 리눅스는 "AppImage 로 떠 있고 그 자리를 손댈 수 있을 때만" 이다 (appimage.ts)
+  if (platform === 'linux') return canReplaceHere()
+  return false
 }
 
 /**
@@ -48,6 +60,11 @@ export interface UpdatesOptions {
   onUpdate: (info: UpdateInfo) => void
   readLastDay: () => string | null
   writeLastDay: (day: string) => void
+  /**
+   * 리눅스에서 지금 자리를 갈아끼울 수 있는지. 리눅스가 아니면 불리지 않는다.
+   * 테스트가 갈아 끼운다.
+   */
+  canReplaceHere?: () => boolean
 }
 
 export interface Updates {
@@ -62,6 +79,7 @@ async function startUpdates({
   onUpdate,
   readLastDay,
   writeLastDay,
+  canReplaceHere = () => canReplaceAppImage(readAppImageEnvironment()),
 }: UpdatesOptions): Promise<Updates> {
   const schedule = (check: () => void) =>
     startMorningSchedule({ onDue: check, readLastDay, writeLastDay })
@@ -73,7 +91,7 @@ async function startUpdates({
   const startNotifying = (immediate = false) =>
     startUpdateCheck({ currentVersion, onUpdate, schedule, immediate })
 
-  if (!canAutoInstall(platform)) {
+  if (!canAutoInstall(platform, canReplaceHere)) {
     const watcher = startNotifying()
     return { stop: watcher.stop, install() {} }
   }
