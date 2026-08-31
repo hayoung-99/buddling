@@ -106,18 +106,18 @@
     }
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.4",
+    "@supabase/supabase-js": "^2.112.4",
     "dotenv": "^17.4.2",
     "electron-updater": "^6.8.9"
   },
   "devDependencies": {
     "@buddling/shared": "*",
     "@tailwindcss/vite": "^4.3.3",
-    "@types/node": "^26.2.0",
+    "@types/node": "^26.4.0",
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
+    "@types/react-dom": "^19.2.5",
     "@types/three": "^0.185.4",
-    "@vitejs/plugin-react": "^6.1.0",
+    "@vitejs/plugin-react": "^6.1.1",
     "electron": "43.4.1",
     "electron-builder": "^26.15.3",
     "lucide-react": "^1.35.0",
