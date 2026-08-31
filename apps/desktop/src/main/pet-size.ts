@@ -109,14 +109,31 @@ function nextPetBounds({
 const HEAD_TOP_FRACTION = 0.317
 
 /**
+ * 캐릭터 발밑이 창 안에서 위에서부터 몇 % 지점인지 (0 이 창 맨 위, 1 이 맨 아래).
+ *
+ * **창의 맨 아래가 곧 발밑이 아니다.** `critter.ts` 의 좌표 규약대로 발밑은 월드 y=0
+ * 이지만, 카메라가 발밑 아래로도 그림자 자리를 넉넉히 남겨 두어서(원점을 그대로
+ * `PET_CAMERA` 로 투영해 보면 창 맨 아래보다 한참 위에 찍힌다) 그 사이에 빈 여백이
+ * 남는다. `HEAD_TOP_FRACTION` 과 마찬가지로 창 크기에 정비례해 커지는 여백이라,
+ * 크기 패널을 "창 아래" 에 놓을 때 이 값 대신 창의 raw 아랫변을 기준으로 삼으면
+ * 스케일이 클수록 패널이 발과 멀어져 보인다 — 처음엔 이 자리에 그런 가정이 있었다.
+ *
+ * `HEAD_TOP_FRACTION` 과 같은 방법으로 쟀다. 다섯 종 전부 발밑이 월드 y=0 으로
+ * 정규화되므로(`scaleToStandardHeight`), 원점 `(0, 0, 0)` 을 그대로 `PET_CAMERA` 로
+ * 투영해 NDC y 를 구하고 `(1 - ndcY) / 2` 로 환산하면 다섯 종 전부 같은 값(0.7985)이
+ * 나온다.
+ */
+const FEET_BOTTOM_FRACTION = 0.7985
+
+/**
  * 크기 패널을 캐릭터 창 기준으로 놓을 자리.
  *
- * 기본은 캐릭터 창 바로 아래다 — 창 아랫변이 곧 캐릭터 발밑이라 그대로 붙여도 된다.
- * 화면 아래쪽에 자리가 없으면 위로 옮기는데, 이때는 **창의 맨 꼭대기가 아니라 캐릭터
- * 머리 위쪽 끝**(`HEAD_TOP_FRACTION`)을 기준으로 삼는다. 카메라 구도가 폴짝 뛸 때와
- * 말풍선을 위해 머리 위에 넉넉한 여백을 두므로(`renderer/pet/scene.ts` 의 `PET_CAMERA`
- * 주석), 창 top 을 그대로 쓰면 그 여백까지 창 크기에 비례해 커져서 스케일이 클수록
- * 패널이 캐릭터와 멀어져 보인다.
+ * 기본은 캐릭터 발밑 바로 아래다. 화면 아래쪽에 자리가 없으면 위로 옮기는데, 그때는
+ * 캐릭터 머리 위쪽 끝을 기준으로 삼는다. **어느 쪽도 창의 raw 위/아랫변을 그대로 쓰지
+ * 않는다** — 카메라 구도(`renderer/pet/scene.ts` 의 `PET_CAMERA`)가 머리 위로는 폴짝
+ * 뛸 때와 말풍선을 위해, 발밑 아래로는 그림자 자리를 위해 여백을 남겨 두는데, 이
+ * 여백이 창 크기에 정비례해 커진다. 창 변을 그대로 쓰면 스케일이 클수록 패널이
+ * 캐릭터와 멀어져 보인다.
  */
 function sizePanelPosition({
   pet,
@@ -130,7 +147,8 @@ function sizePanelPosition({
   gap?: number
 }): { x: number; y: number } {
   let x = Math.round(pet.x + pet.width / 2 - panel.width / 2)
-  let y = pet.y + pet.height + gap
+  const feetBottom = pet.y + pet.height * FEET_BOTTOM_FRACTION
+  let y = Math.round(feetBottom + gap)
   if (y + panel.height > workArea.y + workArea.height) {
     const headTop = pet.y + pet.height * HEAD_TOP_FRACTION
     y = Math.round(headTop - panel.height - gap)

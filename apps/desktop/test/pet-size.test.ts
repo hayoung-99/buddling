@@ -108,25 +108,48 @@ describe('nextPetBounds', () => {
 
 describe('sizePanelPosition', () => {
   const PANEL = { width: 244, height: 56 }
+  // pet-size.ts 의 상수와 같은 값. 창의 raw 위/아랫변이 아니라 이 비율로 재야
+  // 스케일이 달라도 캐릭터와의 간격이 그대로인지 검증할 수 있다.
+  const HEAD_TOP_FRACTION = 0.317
+  const FEET_BOTTOM_FRACTION = 0.7985
 
-  it('아래에 자리가 있으면 캐릭터 창 바로 아래 8px 간격에 붙는다', () => {
-    const pet = boundsFor(1, { x: 1000, y: 200 })
-    const { y } = sizePanelPosition({ pet, panel: PANEL, workArea: WIDE })
-    expect(y).toBe(pet.y + pet.height + 8)
-  })
+  it(
+    '아래에 자리가 있으면 발밑 바로 아래 8px 간격에 붙는다 — ' +
+      '창의 raw 아랫변이 아니다(그 아래로 그림자용 여백이 더 있다)',
+    () => {
+      // 스케일이 달라도(발밑 위치가 창 raw 아랫변과 얼마나 떨어져 있는지가 창
+      // 크기에 비례해 달라져도) 발밑에서부터의 간격은 늘 8px 이어야 한다.
+      const gaps = [0.25, 1, 2].map((scale) => {
+        const pet = boundsFor(scale, { x: 1000, y: 200 })
+        const { y } = sizePanelPosition({ pet, panel: PANEL, workArea: WIDE })
+        const feetBottom = pet.y + pet.height * FEET_BOTTOM_FRACTION
+        return y - feetBottom
+      })
+
+      for (const gap of gaps) expect(gap).toBeCloseTo(8, 0)
+    },
+  )
 
   it(
     '아래에 자리가 없어 위로 옮길 때, 스케일이 달라도 캐릭터(머리)와의 간격이 그대로다 — ' +
       '창 맨 꼭대기를 기준으로 삼으면 스케일이 클수록 카메라 구도의 머리 위 여백까지 ' +
       '함께 늘어나 패널이 캐릭터와 멀어져 보인다',
     () => {
-      // 화면 아래쪽에 딱 붙여 두어 아래로는 자리가 없게 만든다. 위로는 넉넉하다.
+      // 발밑 바로 아래(gap 포함)조차 들어갈 자리가 없도록 화면을 발밑 높이에
+      // 딱 맞춰 잘라 둔다 — 스케일이 달라도 늘 위로 튕기게 만든다.
       const gaps = [0.25, 1, 2].map((scale) => {
         const size = petSizeFor(scale)
-        const pet = { x: 1000, y: WIDE.height - size.height, ...size }
-        const { y } = sizePanelPosition({ pet, panel: PANEL, workArea: WIDE })
+        const pet = { x: 1000, y: 200, ...size }
+        const feetBottom = pet.y + pet.height * FEET_BOTTOM_FRACTION
+        const workArea = {
+          x: 0,
+          y: 0,
+          width: 2560,
+          height: Math.floor(feetBottom + 8 + PANEL.height) - 1,
+        }
+        const { y } = sizePanelPosition({ pet, panel: PANEL, workArea })
         // 머리 위 끝(HEAD_TOP_FRACTION 만큼 창 위에서 내려온 지점)과 패널 아랫변 사이 간격
-        const headTop = pet.y + pet.height * 0.317
+        const headTop = pet.y + pet.height * HEAD_TOP_FRACTION
         return headTop - (y + PANEL.height)
       })
 
