@@ -150,10 +150,10 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
         },
       },
       { label: t('app.hideAll'), click: () => app.setPetVisible(false) },
-      { label: t('app.quit'), click: () => app.quit() },
     ])
-    // 띄우기 직전에 알려야 한다 — 메뉴가 뜬 채로 종료가 시작되면 프로세스가 영구히
-    // 얼어붙는다 (`quit.ts`).
+    // buddling 종료(프로세스 완전 종료)는 트레이 메뉴에서만 할 수 있다 — 여기 quit
+    // 항목이 없어도, 이 메뉴가 열려 있는 동안 트레이나 ⌘Q 로 종료가 시작되면 여전히
+    // 프로세스가 영구히 얼어붙을 수 있어 이 방어는 그대로 둔다 (`quit.ts`).
     app.menuOpened(menu)
     menu.popup({ window: app.petWindow(teamId) ?? undefined })
   })
