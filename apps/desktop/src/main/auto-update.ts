@@ -35,6 +35,7 @@ function startAutoUpdate({ onReady, onFailure, schedule }: AutoUpdateOptions) {
   let stopped = false
   let downloaded = false
   let failureReported = false
+  let installAttempted = false
 
   autoUpdater.autoDownload = true
   autoUpdater.autoInstallOnAppQuit = true
@@ -48,9 +49,14 @@ function startAutoUpdate({ onReady, onFailure, schedule }: AutoUpdateOptions) {
   })
 
   autoUpdater.on('error', () => {
-    // 이미 받아 둔 뒤의 오류는 무시한다 — 적용은 여전히 할 수 있다.
-    // 받지도 못했다면 사람에게 알려서 직접 받게 한다.
-    if (stopped || downloaded || failureReported) return
+    if (stopped || failureReported) return
+    /*
+     * 받아 둔 뒤에 그냥 난 오류는 무시한다 — 적용은 여전히 할 수 있다.
+     * 다만 **적용을 눌렀다가 난 오류는 버리면 안 된다.** 리눅스의 doInstall 은
+     * 이 프로세스 안에서 파일을 직접 지우고 옮기므로(권한·디스크) 실패할 수 있고,
+     * 그대로 두면 사람이 "지금 적용하기" 를 눌러도 아무 일이 없는 것처럼 보인다.
+     */
+    if (downloaded && !installAttempted) return
     failureReported = true
     onFailure()
   })
@@ -71,6 +77,8 @@ function startAutoUpdate({ onReady, onFailure, schedule }: AutoUpdateOptions) {
     /** 지금 갈아끼운다. 앱이 꺼졌다가 새 버전으로 다시 뜬다. */
     install() {
       if (!downloaded) return
+      // 이 뒤로 오는 오류는 "적용 실패" 다. 위 처리기가 알림 길로 갈아탄다
+      installAttempted = true
       // (조용히 설치, 끝나면 다시 실행)
       autoUpdater.quitAndInstall(true, true)
     },

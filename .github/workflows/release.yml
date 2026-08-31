@@ -21,8 +21,10 @@
 #
 # 흐름은 네 단계다.
 #   prepare  릴리스 PR 을 만들거나 갱신한다. 그 PR 이 머지된 순간에만 다음으로 간다
-#   build    mac(arm64·x64) / win 을 각각 빌드해 **초안(draft) 릴리스**에 올린다
-#   publish  두 빌드가 다 끝나면 설치 안내를 앞에 붙이고 초안을 공개로 바꾼다
+#   build    mac(arm64·x64) / win / linux(x64) 를 각각 빌드해 **초안(draft) 릴리스**에
+#            올린다. linux 는 아직 continue-on-error 로 걸려 있어 실패해도 나머지
+#            발목을 잡지 않는다
+#   publish  mac·win 빌드가 다 끝나면 설치 안내를 앞에 붙이고 초안을 공개로 바꾼다
 #   refresh  태그가 실제로 생긴 뒤에 릴리스 PR 을 다시 계산한다 (아래 설명)
 #
 # 초안을 거치는 이유: 설치 파일이 하나도 없는 릴리스가 최신 버전으로 잡히면
@@ -113,10 +115,19 @@ jobs:
         include:
           - os: macos-latest
             target: --mac --arm64 --x64
+            optional: false
           - os: windows-latest
             target: --win --x64
+            optional: false
+          # 리눅스는 이번이 처음이라 한동안 나머지 둘의 발목을 잡지 않게 둔다.
+          # 연속 세 번 성공하면 optional 키와 continue-on-error 줄을 지운다
+          # (docs/design/linux-build-pipeline.md 2.2).
+          - os: ubuntu-latest
+            target: --linux --x64
+            optional: true
 
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.optional }}
 
     steps:
       # 기본 동작 그대로 둔다. 태그를 밀었으면 그 태그를, 릴리스 PR 이 머지됐으면
