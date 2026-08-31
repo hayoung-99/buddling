@@ -22,7 +22,6 @@ function memoryStore(): Store & { peek: () => StoredState } {
     nickname: '',
     memberships: [],
     pets: {},
-    petVisible: true,
     language: null,
     power: null,
     lastUpdateCheck: null,
@@ -163,6 +162,78 @@ describe('세션 — 팀마다 따로 관리되는 것들', () => {
     await ctx.session.leaveTeam(teamId)
     expect(ctx.store.peek().pets[teamId]).toBeUndefined()
     expect(ctx.session.snapshot().memberships).toHaveLength(0)
+  })
+})
+
+describe('세션 — 캐릭터 한 마리씩 숨기기', () => {
+  it('한 마리를 숨기면 그 방만 숨겨지고 나머지는 그대로다', async () => {
+    const ctx = makeSession()
+    const a = await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    const b = await ctx.session.createTeam({ name: '개발팀', nickname: '나영' })
+    const teamA = a.memberships[0].team.id
+    const teamB = b.memberships.find((m) => m.team.id !== teamA)!.team.id
+
+    const state = ctx.session.setHidden(teamA, true)
+
+    expect(state.memberships.find((m) => m.team.id === teamA)!.hidden).toBe(true)
+    expect(state.memberships.find((m) => m.team.id === teamB)!.hidden).toBe(false)
+  })
+
+  it('숨김 상태는 저장소에 남지 않는다 — 껐다 켜면 사라진다', async () => {
+    const ctx = makeSession()
+    const created = await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    const teamId = created.memberships[0].team.id
+
+    ctx.session.setHidden(teamId, true)
+
+    // `hidden` 은 `PetSettings` 에 아예 없는 칸이다 — 저장할 자리 자체가 없다는 것을
+    // 타입으로도, 여기서 직접 열거해서도 확인한다.
+    expect(Object.keys(ctx.store.peek().pets[teamId] ?? {})).not.toContain('hidden')
+  })
+
+  it('모두 숨기기 뒤 모두 보이기를 하면 개별로 숨겨 둔 것까지 전부 돌아온다', async () => {
+    const ctx = makeSession()
+    const a = await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    const b = await ctx.session.createTeam({ name: '개발팀', nickname: '나영' })
+    const teamA = a.memberships[0].team.id
+    const teamB = b.memberships.find((m) => m.team.id !== teamA)!.team.id
+
+    ctx.session.setHidden(teamA, true)
+    ctx.session.setAllHidden(true)
+    const state = ctx.session.setAllHidden(false)
+
+    expect(state.memberships.every((m) => !m.hidden)).toBe(true)
+    expect(ctx.session.isHidden(teamA)).toBe(false)
+    expect(ctx.session.isHidden(teamB)).toBe(false)
+  })
+
+  it('숨긴 방을 나갔다 다시 들어오면 숨김 기억이 남지 않는다', async () => {
+    const ctx = makeSession()
+    const created = await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    const teamId = created.memberships[0].team.id
+
+    ctx.session.setHidden(teamId, true)
+    await ctx.session.leaveTeam(teamId)
+
+    expect(ctx.session.isHidden(teamId)).toBe(false)
+  })
+
+  it('없는 teamId 로 숨기려 해도 아무 일도 없다', () => {
+    const ctx = makeSession()
+    expect(() => ctx.session.setHidden('없는팀', true)).not.toThrow()
+    expect(ctx.session.isHidden('없는팀')).toBe(false)
+  })
+
+  it('숨기고 부르는 것은 재우기 상태를 건드리지 않는다', async () => {
+    const ctx = makeSession()
+    const created = await ctx.session.createTeam({ name: '디자인팀', nickname: '나영' })
+    const teamId = created.memberships[0].team.id
+
+    ctx.session.setAsleep(teamId, true)
+    ctx.session.setHidden(teamId, true)
+    ctx.session.setHidden(teamId, false)
+
+    expect(ctx.session.snapshot().memberships[0].pet.asleep).toBe(true)
   })
 })
 

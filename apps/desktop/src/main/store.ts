@@ -68,7 +68,6 @@ export interface StoredState {
   memberships: CachedMembership[]
   /** teamId → 그 팀 캐릭터를 어디에 얼마만 하게 띄울지, 무슨 신호를 보낼지 */
   pets: Record<string, PetSettings>
-  petVisible: boolean
   /** 아직 안 고른 상태는 null. 처음 실행할 때 운영체제 언어를 보고 정해진다. */
   language: string | null
   /** 절전 강도. 아직 안 고르면 'balanced' 로 본다 (shared/power.ts) */
@@ -103,7 +102,6 @@ const DEFAULTS: StoredState = {
   nickname: '',
   memberships: [],
   pets: {},
-  petVisible: true,
   language: null,
   power: null,
   lastUpdateCheck: null,

@@ -82,6 +82,8 @@ export interface TeamApi {
   setSignal: (teamId: string, signal: string) => Promise<AppState>
   /** 이 방을 재우거나 깨운다. 재우면 오는 신호에 반응하지 않는다 (내 기기에만 저장된다) */
   setAsleep: (teamId: string, asleep: boolean) => Promise<AppState>
+  /** 이 방 캐릭터를 화면에서 치우거나 다시 부른다 (앱을 껐다 켜면 전부 나온다) */
+  setHidden: (teamId: string, hidden: boolean) => Promise<AppState>
 
   /** 그 팀의 특정 멤버 한 명만 콕 찌른다. 너무 자주 부르면 false 가 돌아온다. */
   tapMember: (teamId: string, memberId: string) => Promise<boolean>

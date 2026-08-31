@@ -337,6 +337,56 @@ function SleepRow({
   )
 }
 
+/**
+ * 이 방 캐릭터를 화면에서 치우고 다시 부른다.
+ *
+ * **보이는 것 이야기다.** 재우기(위 `SleepRow`)와 아무 관계가 없다 — 숨겨도 방의
+ * 신호는 그대로 오가고, 남에게 나는 여전히 '접속 중' 이다(기획서 "숨기기는 한
+ * 마리씩").
+ *
+ * 여기 말고 트레이의 방별 메뉴에도 같은 것이 있다. 캐릭터 우클릭 메뉴에는 숨기기만
+ * 있다 — 숨은 캐릭터는 우클릭할 자리가 없기 때문이다. 그래서 **되돌릴 수 있는 두
+ * 자리 중 하나가 여기다.** 이 칸을 없애면 한 마리를 숨긴 사람이 그 한 마리만 부르는
+ * 길을 잃는다.
+ */
+function HideRow({
+  teamId,
+  hidden,
+  t,
+  run,
+  toast,
+}: {
+  teamId: string
+  hidden: boolean
+  t: Translate
+  run: (action: () => Promise<unknown>) => Promise<void>
+  toast: (message: string) => void
+}) {
+  return (
+    <div className="flex items-center gap-[12px] bg-card rounded-card px-[14px] py-[12px]">
+      <div className="flex-1 min-w-0">
+        <div className="font-bold text-[13px]">
+          {hidden ? t('detail.hidden') : t('detail.shown')}
+        </div>
+        <div className="text-[12px] text-ink-soft leading-[1.4] break-keep">
+          {hidden ? t('detail.hiddenHint') : t('detail.shownHint')}
+        </div>
+      </div>
+      <button
+        className={hidden ? ui.buttonTiny : ui.buttonTinyGhost}
+        onClick={() =>
+          run(async () => {
+            await window.teamApi.setHidden(teamId, !hidden)
+            toast(t(hidden ? 'toast.unhid' : 'toast.hid'))
+          })
+        }
+      >
+        {hidden ? t('detail.show') : t('detail.hide')}
+      </button>
+    </div>
+  )
+}
+
 function CharacterPicker({
   teamId,
   selectedKey,
@@ -510,6 +560,11 @@ export function TeamDetail() {
           run={run}
           toast={show}
         />
+      </section>
+
+      <section className={ui.section}>
+        <h2 className={ui.h2}>{t('detail.hideSection')}</h2>
+        <HideRow teamId={teamId} hidden={entry.hidden} t={t} run={run} toast={show} />
       </section>
 
       <div className={ui.errorLine}>{error}</div>

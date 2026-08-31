@@ -138,7 +138,7 @@ const app = {
       })
       app.pets.set(teamId, { window, pointer })
 
-      // 캐릭터를 없애는 길은 트레이의 "숨기기" 와 방 나가기뿐이다. 그래서 평소에는
+      // 캐릭터를 없애는 길은 숨기기(세 자리)와 방 나가기뿐이다. 그래서 평소에는
       // 닫히지 않게 막는다 (맥의 ⌘W 가 여기로 온다).
       //
       // **종료 중에는 막지 않는다.** 여기서 막으면 Electron 이 "닫지 못한 창" 으로
@@ -161,12 +161,15 @@ const app = {
       })
 
       // 창이 다 뜬 뒤라야 알아듣는다. 숨은 채로 태어난 창은 여기서 곧바로 멈춘다.
-      window.webContents.on('did-finish-load', () => app.setRendering(window))
+      window.webContents.on('did-finish-load', () => app.setRendering(teamId))
 
-      if (!store.get('petVisible')) window.hide()
+      // 새로 태어나는 캐릭터는 언제나 보인다 — '모두 숨기기' 를 눌러 둔 채로 새
+      // 방에 들어가도 그 방 캐릭터는 나온다(승인된 결정). 한 번도 숨긴 적 없는
+      // 방이라 `hiddenTeams` 에 그 id 가 있을 수 없으므로 아래 `applyPetVisibility()`
+      // 도 이 창을 건드리지 않는다.
     })
 
-    app.tray?.refresh()
+    app.applyPetVisibility()
   },
 
   openTeamWindow() {
@@ -246,20 +249,44 @@ const app = {
     app.session?.setAsleep(teamId, asleep)
   },
 
-  isPetVisible() {
-    return Boolean(store.get('petVisible'))
+  isPetHidden(teamId: string) {
+    return Boolean(app.session?.isHidden(teamId))
   },
 
-  setPetVisible(visible: boolean) {
-    store.set({ petVisible: visible })
-    for (const { window, pointer } of app.pets.values()) {
+  /** 캐릭터 한 마리를 숨기거나 다시 부른다 (세 자리에서 온다) */
+  setPetHidden(teamId: string, hidden: boolean) {
+    app.session?.setHidden(teamId, hidden)
+    app.applyPetVisibility()
+  },
+
+  /** 트레이의 '모두' 하나뿐 */
+  setAllPetsHidden(hidden: boolean) {
+    app.session?.setAllHidden(hidden)
+    app.applyPetVisibility()
+  },
+
+  /**
+   * 지금의 숨김 상태를 창에 그대로 반영한다.
+   *
+   * **몇 번을 불러도 결과가 같다.** 그래서 숨기기를 부른 자리와 `syncPetWindows()`
+   * 양쪽에서 부담 없이 부른다. 실제로 두 번 불리는 길이 있다 — `session.setHidden()`
+   * 이 `publish()` 하면 `session.on('teams')` 가 `syncPetWindows()` 를 부르고, 그
+   * 안에서 한 번, 위 `setPetHidden()` 에서 또 한 번이다. 그 순서에 기대지 않으려고
+   * 일부러 양쪽 모두에서 부른다.
+   */
+  applyPetVisibility() {
+    for (const [teamId, { window, pointer }] of app.pets) {
       if (window.isDestroyed()) continue
-      // 끄는 도중에 창이 사라지면 커서를 좇던 타이머가 갈 곳을 잃는다
-      if (!visible) pointer.endDrag()
-      if (visible) window.showInactive()
-      else window.hide()
+      if (app.isPetHidden(teamId)) {
+        // 끌던 중에 창이 사라지면 커서를 좇던 타이머가 갈 곳을 잃는다
+        pointer.endDrag()
+        window.hide()
+      } else if (!window.isVisible()) {
+        window.showInactive()
+      }
     }
-    if (!visible) app.closeSizePanel()
+    // 숨은 캐릭터 옆에 크기 조절 창만 덩그러니 남지 않게 한다
+    if (app.sizePanelTeamId && app.isPetHidden(app.sizePanelTeamId)) app.closeSizePanel()
     app.setRendering()
     app.tray?.refresh()
   },
@@ -268,6 +295,9 @@ const app = {
   openSizePanel(teamId: string) {
     const petWindow = app.petWindow(teamId)
     if (!petWindow || petWindow.isDestroyed()) return
+    // 숨어 있는 캐릭터 옆에는 놓을 자리가 없다. 트레이 방별 메뉴에서 '크기 조절' 을
+    // 흐려 두지만, 그 메뉴가 뜬 사이에 상태가 바뀔 수 있어 여기서도 막는다.
+    if (app.isPetHidden(teamId)) return
 
     app.sizePanelTeamId = teamId
     if (!app.sizeWindow || app.sizeWindow.isDestroyed()) {
@@ -321,16 +351,19 @@ const app = {
    * 캐릭터 창들에게 지금 그려도 되는지 알린다.
    *
    * 아무도 안 보는 그림을 그릴 이유가 없다. 숨긴 창도, 잠든 컴퓨터도 마찬가지다.
-   * 숨긴 창은 브라우저가 알아서 멈춰 줄 것 같지만 실제로는 그렇지 않다 — 재보니
-   * 숨겨 놓아도 CPU 가 그대로였다. 그래서 여기서 직접 껐다 켠다.
+   * 숨긴 창은 브라우저가 알아서 멈춰 줄 것 같지만 실제로는 그렇지 않다.
    *
-   * @param only 방금 만들어진 창 하나에만 알릴 때
+   * **이제 판단이 방마다 다르다** — 한 마리만 숨기면 그 창만 멈추고 나머지는 계속
+   * 그린다.
+   *
+   * @param onlyTeamId 방금 만들어진 창 하나에만 알릴 때
    */
-  setRendering(only: BrowserWindow | null = null) {
-    const active = app.awake && app.isPetVisible()
-    const targets = only ? [only] : [...app.pets.values()].map((pet) => pet.window)
-    for (const window of targets) {
-      if (!window.isDestroyed()) window.webContents.send('render', active)
+  setRendering(onlyTeamId: string | null = null) {
+    const teamIds = onlyTeamId ? [onlyTeamId] : [...app.pets.keys()]
+    for (const teamId of teamIds) {
+      const window = app.petWindow(teamId)
+      if (!window || window.isDestroyed()) continue
+      window.webContents.send('render', app.awake && !app.isPetHidden(teamId))
     }
   },
 
