@@ -116,6 +116,14 @@ function createSession({
   const connections = new Map<string, ConnectionState>()
   /** teamId → 마지막으로 보낸 시각 */
   const lastTapAt = new Map<string, number>()
+  /**
+   * 지금 화면에서 치워 둔 방들 (기획서 "숨기기는 한 마리씩").
+   *
+   * **저장소에 남기지 않는다.** 이 파일의 다른 런타임 상태(`onlineIds`·`connections`)와
+   * 같은 자리에 두는 이유가 그것이다 — 저장할 방법이 아예 없어야 실수로 남지 않는다.
+   * 앱을 껐다 켜면 캐릭터가 전부 나온다.
+   */
+  const hiddenTeams = new Set<string>()
   let update: UpdateInfo | null = null
   /** 다시 붙어 보기까지의 대기. 성공하면 처음으로 되돌린다. */
   let retryStep = 0
@@ -217,6 +225,7 @@ function createSession({
         onlineIds: onlineIds.get(entry.team.id) ?? [],
         connection: connections.get(entry.team.id) ?? 'idle',
         pet: store.pet(entry.team.id),
+        hidden: hiddenTeams.has(entry.team.id),
       })),
       notifications,
       hasUnreadNotifications: notifications.some((entry) => entry.at > seenAt),
@@ -297,6 +306,9 @@ function createSession({
     onlineIds.delete(teamId)
     connections.delete(teamId)
     lastTapAt.delete(teamId)
+    // 안 지우면, 숨겨 둔 방을 나갔다가 **같은 방에 다시 들어왔을 때** 캐릭터가 숨은
+    // 채로 태어난다. 그 사람에게는 캐릭터가 안 나오는 고장으로 보인다.
+    hiddenTeams.delete(teamId)
   }
 
   /** 서버가 준 목록으로 소속을 갈아끼운다 */
@@ -664,6 +676,40 @@ function createSession({
     /** 그 방이 지금 재워져 있는가 (트레이·캐릭터 메뉴가 글자를 고를 때 본다) */
     isAsleep(teamId: string) {
       return Boolean(store.pet(teamId).asleep)
+    },
+
+    /**
+     * 캐릭터 한 마리를 숨기거나 다시 부른다.
+     *
+     * **창을 실제로 감추는 것은 여기가 아니다** — 여기는 상태만 바꾸고 알린다. 창을
+     * 만지는 일은 메인 프로세스의 `applyPetVisibility()` 가 한다. 그래서 이것만 직접
+     * 부르면 상태는 바뀌는데 캐릭터는 그대로 있는 어긋남이 생긴다. 부르는 자리는
+     * 언제나 `app.setPetHidden()` 이다.
+     */
+    setHidden(teamId: string, hidden: boolean) {
+      if (!memberships.has(teamId)) return snapshot()
+      if (hidden) hiddenTeams.add(teamId)
+      else hiddenTeams.delete(teamId)
+      publish()
+      return snapshot()
+    },
+
+    /**
+     * 트레이의 '모두' 하나뿐 (기획서: 캐릭터 우클릭 메뉴에는 '모두' 가 없다).
+     *
+     * **'모두 보이기' 는 한 마리씩 숨겨 둔 기억까지 지운다.** '모두' 라고 적어 두고 몇을
+     * 남겨 두면 고장으로 읽힌다.
+     */
+    setAllHidden(hidden: boolean) {
+      hiddenTeams.clear()
+      if (hidden) for (const teamId of memberships.keys()) hiddenTeams.add(teamId)
+      publish()
+      return snapshot()
+    },
+
+    /** 그 방 캐릭터가 지금 숨어 있는가 (트레이·메뉴가 글자를 고를 때 본다) */
+    isHidden(teamId: string) {
+      return hiddenTeams.has(teamId)
     },
 
     /**

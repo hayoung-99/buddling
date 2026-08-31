@@ -99,6 +99,12 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
   handle('sleep:set', ({ teamId, asleep }: { teamId: string; asleep: boolean }) =>
     session.setAsleep(teamId, Boolean(asleep)),
   )
+  // **`session.setHidden()` 을 직접 부르지 않는다.** 그러면 상태만 바뀌고 창은
+  // 그대로 있다. 창을 감추는 일까지 하는 것은 `app.setPetHidden()` 이다.
+  handle('hidden:set', ({ teamId, hidden }: { teamId: string; hidden: boolean }) => {
+    app.setPetHidden(teamId, Boolean(hidden))
+    return session.snapshot()
+  })
 
   handle('team:tap', (payload: { teamId: string; toMemberId?: string | null }) =>
     session.tap(payload),
@@ -149,7 +155,10 @@ function registerIpc({ session, app }: { session: Session; app: AppShell }) {
           session.setAsleep(teamId, !asleep)
         },
       },
-      { label: t('app.hideAll'), click: () => app.setPetVisible(false) },
+      // 숨기는 세 자리 중 하나. 여기에는 '다시 부르기' 가 없다 — 숨은 캐릭터는 우클릭할
+      // 자리가 없어서 이 메뉴 자체를 열 수 없다. 되돌리는 길은 트레이 방별 메뉴와 방 창이다.
+      // '모두 숨기기' 도 여기 두지 않는다 (기획서: '모두' 는 트레이 한 곳뿐).
+      { label: t('app.hide'), click: () => app.setPetHidden(teamId, true) },
     ])
     // buddling 종료(프로세스 완전 종료)는 트레이 메뉴에서만 할 수 있다 — 여기 quit
     // 항목이 없어도, 이 메뉴가 열려 있는 동안 트레이나 ⌘Q 로 종료가 시작되면 여전히

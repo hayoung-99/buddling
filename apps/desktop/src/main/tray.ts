@@ -12,6 +12,7 @@
 import path from 'node:path'
 import { Tray, Menu, nativeImage } from 'electron'
 import { t } from './i18n'
+import { allToggle } from './pet-hiding'
 import type { AppState } from '@buddling/shared/state'
 
 const ICON = path.join(__dirname, '..', '..', 'assets', 'trayTemplate.png')
@@ -36,8 +37,9 @@ export interface TrayHost {
   openNotifications(): void
   isAsleep(teamId: string): boolean
   setAsleep(teamId: string, asleep: boolean): void
-  isPetVisible(): boolean
-  setPetVisible(visible: boolean): void
+  isPetHidden(teamId: string): boolean
+  setPetHidden(teamId: string, hidden: boolean): void
+  setAllPetsHidden(hidden: boolean): void
   quit(): void
   /** 메뉴를 띄우기 직전에 알린다 — 종료가 메뉴를 밟고 지나가지 않게 한다 (`quit.ts`) */
   menuOpened(menu: Menu): void
@@ -69,20 +71,36 @@ function createTray(app: TrayHost): TrayHandle {
     const teamItems = memberships.length
       ? memberships.map((entry) => {
           const asleep = app.isAsleep(entry.team.id)
+          const hidden = app.isPetHidden(entry.team.id)
           return {
             label: t('app.teamSummary', { name: entry.team.name, count: entry.members.length }),
             submenu: [
               { label: t('app.detail'), click: () => app.openTeamDetail(entry.team.id) },
-              { label: t('app.resize'), click: () => app.openSizePanel(entry.team.id) },
+              // 숨어 있는 캐릭터 옆에는 크기 조절 창을 놓을 자리가 없다
+              {
+                label: t('app.resize'),
+                enabled: !hidden,
+                click: () => app.openSizePanel(entry.team.id),
+              },
               // 회의가 막 시작돼 지금 당장 조용히 하고 싶을 때 창을 찾아 여는 것은 늦다
               {
                 label: asleep ? t('app.wake') : t('app.sleep'),
                 click: () => app.setAsleep(entry.team.id, !asleep),
               },
+              // 숨은 캐릭터를 다시 부르는 두 자리 중 하나. 나머지 하나는 방 창이다
+              // (우클릭 메뉴에는 둘 수 없다 — 숨은 캐릭터는 우클릭할 자리가 없다)
+              {
+                label: hidden ? t('app.show') : t('app.hide'),
+                click: () => app.setPetHidden(entry.team.id, !hidden),
+              },
             ],
           }
         })
       : [{ label: t('app.noTeams'), enabled: false }]
+
+    const toggle = allToggle(
+      memberships.map((entry) => ({ hidden: app.isPetHidden(entry.team.id) })),
+    )
 
     menu = Menu.buildFromTemplate([
       ...teamItems,
@@ -91,8 +109,9 @@ function createTray(app: TrayHost): TrayHandle {
       { label: t('notifications.title'), click: () => app.openNotifications() },
       { label: t('app.settings'), click: () => app.openSettings() },
       {
-        label: app.isPetVisible() ? t('app.hideAll') : t('app.showAll'),
-        click: () => app.setPetVisible(!app.isPetVisible()),
+        label: toggle.action === 'hide' ? t('app.hideAll') : t('app.showAll'),
+        enabled: toggle.enabled,
+        click: () => app.setAllPetsHidden(toggle.action === 'hide'),
       },
       { type: 'separator' },
       { label: t('app.quit'), click: () => app.quit() },
