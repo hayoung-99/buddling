@@ -344,9 +344,12 @@ main 에 머지 → 랜딩페이지는 바로 배포되고,
 - **비공개 저장소의 릴리스 파일은 외부인이 받을 수 없습니다.**
 - **코드 서명이 없어 처음 열 때 경고가 뜹니다.** 넘기는 방법을 README·랜딩페이지·
   릴리스 노트에 함께 적어 두었습니다. 이 안내가 없으면 대부분 여기서 포기합니다.
-- **Windows 는 자동으로 업데이트됩니다.** 조용히 받아 두었다가 방 창의 배너를
-  누르면 적용되고, 안 눌러도 다음에 종료할 때 갈아끼워집니다. macOS 는 코드 서명이
-  없으면 구조적으로 불가능해서 "새 버전이 나왔어요" 안내만 띄웁니다.
+- **Windows 와 Linux 는 자동으로 업데이트됩니다.** 조용히 받아 두었다가 방 창의
+  배너를 누르면 적용되고, 안 눌러도 다음에 종료할 때 갈아끼워집니다. **Linux 는
+  조건부입니다** — 받은 AppImage 를 그대로 실행 중이고 그 폴더를 손댈 수 있을 때만
+  이 길로 가고, 아니면 macOS 와 같은 알림 길로 갑니다(자세한 근거는
+  [design/linux-build-pipeline.md](design/linux-build-pipeline.md)). macOS 는 코드
+  서명이 없으면 구조적으로 불가능해서 "새 버전이 나왔어요" 안내만 띄웁니다.
 
 ### 랜딩페이지
 
@@ -375,6 +378,7 @@ npm run check:site  # 스스로 어긋나지 않았는지 (CI 도 이걸 돌린�
 | 화면 속 아이콘을 라이브러리 것으로 | [docs/design/library-icons.md](design/library-icons.md) | 구현 완료 (리뷰 대기) |
 | 종료가 앱을 완전히 끝내게 | [docs/design/quit-fully-terminates.md](design/quit-fully-terminates.md) | 구현 완료 (리뷰 대기) |
 | 캐릭터를 한 마리씩 숨기기 | [docs/design/pet-hide-individual.md](design/pet-hide-individual.md) | 구현 완료 (리뷰 대기) |
+| 리눅스 빌드·배포 파이프라인 | [docs/design/linux-build-pipeline.md](design/linux-build-pipeline.md) | 구현 완료 (리뷰 대기) |
 
 ---
 

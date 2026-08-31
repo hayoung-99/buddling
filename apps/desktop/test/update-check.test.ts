@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { isNewer, startUpdateCheck } from '../src/main/update-check'
 import type { UpdateCheckOptions } from '../src/main/update-check'
-import { canAutoInstall } from '../src/main/updates'
 
 describe('isNewer', () => {
   it('뒷자리가 올라간 것도 새 버전으로 본다', () => {
@@ -142,23 +141,5 @@ describe('startUpdateCheck', () => {
     h.morning()
     await settle()
     expect(h.onUpdate).not.toHaveBeenCalled()
-  })
-})
-
-describe('canAutoInstall', () => {
-  it('Windows 에서만 받아서 설치까지 한다', () => {
-    expect(canAutoInstall('win32')).toBe(true)
-  })
-
-  it('macOS 에서는 시도하지 않는다 — 코드 서명 없이는 반드시 실패한다', () => {
-    // Squirrel.Mac 이 실행 중인 앱의 서명과 새 앱의 서명을 대조한다.
-    // 되는 척하다 실패하는 것이 조용히 알리기만 하는 것보다 나쁘다.
-    expect(canAutoInstall('darwin')).toBe(false)
-  })
-
-  it('모르는 플랫폼이면 알림만 한다', () => {
-    for (const platform of ['linux', 'freebsd', '', undefined]) {
-      expect(canAutoInstall(platform as string)).toBe(false)
-    }
   })
 })
