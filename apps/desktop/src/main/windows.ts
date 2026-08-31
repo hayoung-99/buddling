@@ -83,9 +83,9 @@ function createPetWindow({ teamId, index = 0 }: { teamId: string; index?: number
     fullscreenable: false,
     maximizable: false,
     minimizable: false,
-    // 캐릭터를 없애는 길은 트레이의 "숨기기"와 팀 나가기뿐이다.
-    // 이걸 열어 두면 맥에서 ⌘W 로 캐릭터가 닫혀 버린다.
-    closable: false,
+    // 캐릭터를 없애는 길은 트레이의 "숨기기"와 팀 나가기뿐이다. 맥에서 ⌘W 로 캐릭터가
+    // 닫혀 버리는 것을 막는 것은 여기가 아니라 `main.ts` 의 `close` 가드다 —
+    // `closable: false` 로 두면 종료 자체가 통째로 취소된다 (`quit.ts` 참고).
     title: 'Buddling',
     webPreferences: {
       preload: preloadScript('pet'),
