@@ -12,7 +12,7 @@
 import path from 'node:path'
 import { BrowserWindow, screen } from 'electron'
 import store from './store'
-import { clampScale, petSizeFor, nextPetBounds, PET_BASE_SIZE } from './pet-size'
+import { clampScale, petSizeFor, nextPetBounds, sizePanelPosition, PET_BASE_SIZE } from './pet-size'
 import type { Size } from './pet-size'
 import type { PetSettings } from '@buddling/shared/state'
 
@@ -153,16 +153,7 @@ function placeSizeWindow(sizeWindow: BrowserWindow | null, petWindow: BrowserWin
 
   const pet = petWindow.getBounds()
   const { workArea } = screen.getDisplayMatching(pet)
-  const gap = 8
-
-  let x = Math.round(pet.x + pet.width / 2 - SIZE_PANEL.width / 2)
-  let y = pet.y + pet.height + gap
-  if (y + SIZE_PANEL.height > workArea.y + workArea.height) {
-    y = pet.y - SIZE_PANEL.height - gap // 아래에 자리가 없으면 위로
-  }
-
-  x = Math.min(Math.max(x, workArea.x + 8), workArea.x + workArea.width - SIZE_PANEL.width - 8)
-  y = Math.min(Math.max(y, workArea.y + 8), workArea.y + workArea.height - SIZE_PANEL.height - 8)
+  const { x, y } = sizePanelPosition({ pet, panel: SIZE_PANEL, workArea })
 
   sizeWindow.setBounds({ x, y, ...SIZE_PANEL })
 }
