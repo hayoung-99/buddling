@@ -6,6 +6,7 @@ import {
   clampScale,
   petSizeFor,
   nextPetBounds,
+  sizePanelPosition,
 } from '../src/main/pet-size'
 import type { Rect } from '../src/main/pet-size'
 
@@ -102,5 +103,41 @@ describe('nextPetBounds', () => {
   it('범위 밖 배율을 줘도 허용 크기 안에서 처리한다', () => {
     const huge = nextPetBounds({ bounds: boundsFor(1), scale: 99, workArea: WIDE })
     expect(huge.width).toBe(petSizeFor(MAX_SCALE).width)
+  })
+})
+
+describe('sizePanelPosition', () => {
+  const PANEL = { width: 244, height: 56 }
+
+  it('아래에 자리가 있으면 캐릭터 창 바로 아래 8px 간격에 붙는다', () => {
+    const pet = boundsFor(1, { x: 1000, y: 200 })
+    const { y } = sizePanelPosition({ pet, panel: PANEL, workArea: WIDE })
+    expect(y).toBe(pet.y + pet.height + 8)
+  })
+
+  it(
+    '아래에 자리가 없어 위로 옮길 때, 스케일이 달라도 캐릭터(머리)와의 간격이 그대로다 — ' +
+      '창 맨 꼭대기를 기준으로 삼으면 스케일이 클수록 카메라 구도의 머리 위 여백까지 ' +
+      '함께 늘어나 패널이 캐릭터와 멀어져 보인다',
+    () => {
+      // 화면 아래쪽에 딱 붙여 두어 아래로는 자리가 없게 만든다. 위로는 넉넉하다.
+      const gaps = [0.25, 1, 2].map((scale) => {
+        const size = petSizeFor(scale)
+        const pet = { x: 1000, y: WIDE.height - size.height, ...size }
+        const { y } = sizePanelPosition({ pet, panel: PANEL, workArea: WIDE })
+        // 머리 위 끝(HEAD_TOP_FRACTION 만큼 창 위에서 내려온 지점)과 패널 아랫변 사이 간격
+        const headTop = pet.y + pet.height * 0.317
+        return headTop - (y + PANEL.height)
+      })
+
+      for (const gap of gaps) expect(gap).toBeCloseTo(8, 0)
+    },
+  )
+
+  it('화면 가장자리를 넘지 않도록 되민다', () => {
+    const pet = { x: 0, y: 0, ...PET_BASE_SIZE }
+    const { x, y } = sizePanelPosition({ pet, panel: PANEL, workArea: WIDE })
+    expect(x).toBeGreaterThanOrEqual(WIDE.x)
+    expect(y).toBeGreaterThanOrEqual(WIDE.y)
   })
 })
