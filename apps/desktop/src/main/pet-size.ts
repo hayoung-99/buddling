@@ -159,6 +159,32 @@ function sizePanelPosition({
   return { x, y }
 }
 
+/**
+ * 드래그 중인 캐릭터 창의 세로 위치를 화면 안으로 되민다.
+ *
+ * 창 자체(투명 여백 포함)가 화면 밖으로 나가는 것은 상관없다 — 실제로 보이는 머리
+ * 위 끝과 발밑만 `workArea` 안에 있으면 된다. 창의 raw 위/아랫변을 기준으로 막으면
+ * `HEAD_TOP_FRACTION`·`FEET_BOTTOM_FRACTION` 이 설명하는 여백이 창 크기(스케일)에
+ * 비례해 커지는 탓에, 큰 캐릭터는 화면 가장자리에 닿기 한참 전에 드래그가 막히고
+ * 작은 캐릭터는 화면 끝까지 끌리는 것으로 보인다 — 실제로 신고된 증상이 이것이다.
+ */
+function clampPetY({
+  y,
+  height,
+  workArea,
+}: {
+  y: number
+  height: number
+  workArea: Rect
+}): number {
+  let next = y
+  const headTop = next + height * HEAD_TOP_FRACTION
+  if (headTop < workArea.y) next += workArea.y - headTop
+  const feetBottom = next + height * FEET_BOTTOM_FRACTION
+  if (feetBottom > workArea.y + workArea.height) next -= feetBottom - (workArea.y + workArea.height)
+  return Math.round(next)
+}
+
 export {
   PET_BASE_SIZE,
   MIN_SCALE,
@@ -167,4 +193,5 @@ export {
   petSizeFor,
   nextPetBounds,
   sizePanelPosition,
+  clampPetY,
 }

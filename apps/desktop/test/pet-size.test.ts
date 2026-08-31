@@ -7,6 +7,7 @@ import {
   petSizeFor,
   nextPetBounds,
   sizePanelPosition,
+  clampPetY,
 } from '../src/main/pet-size'
 import type { Rect } from '../src/main/pet-size'
 
@@ -162,5 +163,70 @@ describe('sizePanelPosition', () => {
     const { x, y } = sizePanelPosition({ pet, panel: PANEL, workArea: WIDE })
     expect(x).toBeGreaterThanOrEqual(WIDE.x)
     expect(y).toBeGreaterThanOrEqual(WIDE.y)
+  })
+})
+
+describe('clampPetY', () => {
+  // pet-size.ts 의 상수와 같은 값. 창의 raw 위/아랫변이 아니라 이 비율로 재야
+  // 스케일이 달라도 캐릭터(머리~발)가 닿는 화면 가장자리가 똑같은지 검증할 수 있다.
+  const HEAD_TOP_FRACTION = 0.317
+  const FEET_BOTTOM_FRACTION = 0.7985
+
+  it('머리 위 끝이 화면 위로 넘어가지 않도록 아래로 되민다', () => {
+    for (const scale of [0.25, 1, 2]) {
+      const { height } = petSizeFor(scale)
+      // 머리가 화면 밖(음수)으로 한참 나가도록 일부러 위로 많이 올린 y
+      const y = -height
+      const clamped = clampPetY({ y, height, workArea: WIDE })
+      const headTop = clamped + height * HEAD_TOP_FRACTION
+      expect(headTop).toBeCloseTo(WIDE.y, 0)
+    }
+  })
+
+  it('발밑이 화면 아래로 넘어가지 않도록 위로 되민다', () => {
+    for (const scale of [0.25, 1, 2]) {
+      const { height } = petSizeFor(scale)
+      // 발이 화면 밖(작업 영역 아래)으로 한참 나가도록 일부러 많이 내린 y
+      const y = WIDE.height
+      const clamped = clampPetY({ y, height, workArea: WIDE })
+      const feetBottom = clamped + height * FEET_BOTTOM_FRACTION
+      expect(feetBottom).toBeCloseTo(WIDE.y + WIDE.height, 0)
+    }
+  })
+
+  it(
+    '작은 캐릭터와 큰 캐릭터가 도달할 수 있는 화면상 머리/발 위치가 같다 — ' +
+      '신고된 증상(큰 캐릭터가 작은 캐릭터보다 위/아래로 훨씬 덜 움직인다)의 반대를 확인한다',
+    () => {
+      const tops = [0.25, 1, 2].map((scale) => {
+        const { height } = petSizeFor(scale)
+        const clamped = clampPetY({ y: -height, height, workArea: WIDE })
+        return clamped + height * HEAD_TOP_FRACTION
+      })
+      const bottoms = [0.25, 1, 2].map((scale) => {
+        const { height } = petSizeFor(scale)
+        const clamped = clampPetY({ y: WIDE.height, height, workArea: WIDE })
+        return clamped + height * FEET_BOTTOM_FRACTION
+      })
+
+      // 정수 좌표로 반올림하는 자리라 스케일마다 1px 미만의 오차는 생길 수 있지만,
+      // 그 이상 벌어지면 신고된 증상(스케일마다 도달 범위가 다르다)이 재현된 것이다.
+      for (const top of tops) expect(Math.abs(top - tops[0])).toBeLessThanOrEqual(1)
+      for (const bottom of bottoms) expect(Math.abs(bottom - bottoms[0])).toBeLessThanOrEqual(1)
+    },
+  )
+
+  it('화면 안에 이미 있으면 그대로 둔다', () => {
+    const { height } = petSizeFor(1)
+    const y = 200
+    expect(clampPetY({ y, height, workArea: WIDE })).toBe(y)
+  })
+
+  it('원점이 (0,0)이 아닌 보조 모니터에서도 그 모니터 작업 영역 기준으로 되민다', () => {
+    const secondary = { x: 2560, y: -200, width: 1920, height: 1080 }
+    const { height } = petSizeFor(1)
+    const clamped = clampPetY({ y: secondary.y - height, height, workArea: secondary })
+    const headTop = clamped + height * HEAD_TOP_FRACTION
+    expect(headTop).toBeCloseTo(secondary.y, 0)
   })
 })

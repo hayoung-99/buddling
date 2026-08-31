@@ -11,6 +11,8 @@
 
 import { screen } from 'electron'
 import type { BrowserWindow } from 'electron'
+import { clampPetY } from './pet-size'
+import type { Rect } from './pet-size'
 
 const FOLLOW_INTERVAL = 16 // 약 60fps
 
@@ -27,6 +29,14 @@ const DRAG_TIMEOUT = 10000
 interface Drag {
   offsetX: number
   offsetY: number
+  /**
+   * 창 높이와 그 창이 속한 모니터의 작업 영역. 세로 위치를 캐릭터가 실제로 보이는
+   * 범위(머리~발) 기준으로 화면 안에 되밀 때 쓴다 (`clampPetY`). 매 프레임(16ms)
+   * 다시 구하지 않고 드래그 시작 때 한 번만 잰다 — 드래그 중에는 크기도 모니터도
+   * 바뀌지 않는다고 보기 때문이다.
+   */
+  height: number
+  workArea: Rect
   timer: ReturnType<typeof setInterval>
   watchdog: ReturnType<typeof setTimeout>
 }
@@ -60,16 +70,25 @@ function attachPointerControl(
   function follow() {
     if (!drag || window.isDestroyed()) return
     const cursor = screen.getCursorScreenPoint()
-    window.setPosition(Math.round(cursor.x - drag.offsetX), Math.round(cursor.y - drag.offsetY))
+    const x = Math.round(cursor.x - drag.offsetX)
+    const rawY = Math.round(cursor.y - drag.offsetY)
+    // 창(투명 여백 포함)이 아니라 캐릭터가 실제로 보이는 머리~발 범위를 화면 안에
+    // 붙잡아 둔다 — 창 변을 그대로 쓰면 스케일이 클수록 여백까지 커져서 큰 캐릭터가
+    // 작은 캐릭터보다 훨씬 일찍 가장자리에서 멈춘 것처럼 보인다.
+    const y = clampPetY({ y: rawY, height: drag.height, workArea: drag.workArea })
+    window.setPosition(x, y)
   }
 
   function startDrag() {
     if (drag) return
     const cursor = screen.getCursorScreenPoint()
-    const [x, y] = window.getPosition()
+    const bounds = window.getBounds()
+    const { workArea } = screen.getDisplayMatching(bounds)
     drag = {
-      offsetX: cursor.x - x,
-      offsetY: cursor.y - y,
+      offsetX: cursor.x - bounds.x,
+      offsetY: cursor.y - bounds.y,
+      height: bounds.height,
+      workArea,
       timer: setInterval(follow, FOLLOW_INTERVAL),
       watchdog: setTimeout(endDrag, DRAG_TIMEOUT),
     }
