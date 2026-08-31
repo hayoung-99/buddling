@@ -83,6 +83,13 @@ function createPetWindow({ teamId, index = 0 }: { teamId: string; index?: number
     fullscreenable: false,
     maximizable: false,
     minimizable: false,
+    // 맥에서 프레임 없는 창에 기본으로 켜지는 옵션인데, 이게 켜져 있으면 macOS 가
+    // `setPosition()` 에 어떤 값을 주든 창 위쪽이 화면 작업 영역(`workArea.y`, 메뉴바
+    // 바로 아래) 위로는 절대 못 올라가게 조용히 되돌린다 — 아래쪽은 그런 제약이
+    // 없어서 위로만 드래그 범위가 막힌 것처럼 보였다. 이 창은 투명 창이라 모서리
+    // 자체가 화면에 드러나지 않으므로(3D 캐릭터 실루엣만 보인다) 꺼도 눈으로 달라질
+    // 것이 없다. Windows·Linux 에서는 이 옵션 자체가 없는 셈이라(macOS 전용) 무시된다.
+    roundedCorners: false,
     // 캐릭터를 없애는 길은 숨기기(세 자리)와 팀 나가기뿐이다. 맥에서 ⌘W 로 캐릭터가
     // 닫혀 버리는 것을 막는 것은 여기가 아니라 `main.ts` 의 `close` 가드다 —
     // `closable: false` 로 두면 종료 자체가 통째로 취소된다 (`quit.ts` 참고).
