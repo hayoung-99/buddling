@@ -11,6 +11,7 @@
 
 import { screen } from 'electron'
 import type { BrowserWindow } from 'electron'
+import { dragPosition } from './pet-size'
 
 const FOLLOW_INTERVAL = 16 // 약 60fps
 
@@ -27,6 +28,12 @@ const DRAG_TIMEOUT = 10000
 interface Drag {
   offsetX: number
   offsetY: number
+  /**
+   * 창 높이. 세로 위치를 캐릭터가 실제로 보이는 범위(머리~발) 기준으로 화면 안에
+   * 되밀 때 쓴다 (`clampPetY`). 드래그 중에는 크기가 바뀌지 않으므로 시작 때 한
+   * 번만 잰다 — **작업 영역(`workArea`)은 이렇게 캐싱하지 않는다**, 바로 아래 참고.
+   */
+  height: number
   timer: ReturnType<typeof setInterval>
   watchdog: ReturnType<typeof setTimeout>
 }
@@ -60,16 +67,32 @@ function attachPointerControl(
   function follow() {
     if (!drag || window.isDestroyed()) return
     const cursor = screen.getCursorScreenPoint()
-    window.setPosition(Math.round(cursor.x - drag.offsetX), Math.round(cursor.y - drag.offsetY))
+    // 커서가 지금 있는 모니터의 작업 영역을 매 프레임 다시 구한다 — 드래그를
+    // 시작한 모니터 것을 캐싱해 두면, 세로 위치가 서로 다른 모니터 여러 대를 쓰는
+    // 사람이 커서를 다른 모니터로 넘기는 순간 `dragPosition()` 이 엉뚱한(원래
+    // 모니터의) 화면 범위로 y 를 붙잡아 캐릭터가 커서에서 세로로 떨어져 보인다.
+    // `getDisplayMatching()` 은 사각형이 필요해 창의 bounds 를 넘기게 되는데, 그건
+    // "커서가 어디 있는지"가 아니라 "창이 지금 어디 있는지"라 한 프레임 뒤처진다 —
+    // 그래서 커서 좌표로 바로 매칭하는 `getDisplayNearestPoint()` 를 쓴다.
+    const { workArea } = screen.getDisplayNearestPoint(cursor)
+    const { x, y } = dragPosition({
+      cursor,
+      offsetX: drag.offsetX,
+      offsetY: drag.offsetY,
+      height: drag.height,
+      workArea,
+    })
+    window.setPosition(x, y)
   }
 
   function startDrag() {
     if (drag) return
     const cursor = screen.getCursorScreenPoint()
-    const [x, y] = window.getPosition()
+    const bounds = window.getBounds()
     drag = {
-      offsetX: cursor.x - x,
-      offsetY: cursor.y - y,
+      offsetX: cursor.x - bounds.x,
+      offsetY: cursor.y - bounds.y,
+      height: bounds.height,
       timer: setInterval(follow, FOLLOW_INTERVAL),
       watchdog: setTimeout(endDrag, DRAG_TIMEOUT),
     }

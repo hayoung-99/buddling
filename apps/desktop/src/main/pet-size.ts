@@ -159,6 +159,61 @@ function sizePanelPosition({
   return { x, y }
 }
 
+/**
+ * 드래그 중인 캐릭터 창의 세로 위치를 화면 안으로 되민다.
+ *
+ * 창 자체(투명 여백 포함)가 화면 밖으로 나가는 것은 상관없다 — 실제로 보이는 머리
+ * 위 끝과 발밑만 `workArea` 안에 있으면 된다. 창의 raw 위/아랫변을 기준으로 막으면
+ * `HEAD_TOP_FRACTION`·`FEET_BOTTOM_FRACTION` 이 설명하는 여백이 창 크기(스케일)에
+ * 비례해 커지는 탓에, 큰 캐릭터는 화면 가장자리에 닿기 한참 전에 드래그가 막히고
+ * 작은 캐릭터는 화면 끝까지 끌리는 것으로 보인다 — 실제로 신고된 증상이 이것이다.
+ */
+function clampPetY({
+  y,
+  height,
+  workArea,
+}: {
+  y: number
+  height: number
+  workArea: Rect
+}): number {
+  let next = y
+  const headTop = next + height * HEAD_TOP_FRACTION
+  if (headTop < workArea.y) next += workArea.y - headTop
+  const feetBottom = next + height * FEET_BOTTOM_FRACTION
+  if (feetBottom > workArea.y + workArea.height) next -= feetBottom - (workArea.y + workArea.height)
+  return Math.round(next)
+}
+
+/**
+ * 드래그 중 매 프레임 창이 옮겨 갈 위치.
+ *
+ * `click-through.ts` 의 `follow()` 가 매 프레임 부르는 계산을 Electron 없이 테스트할
+ * 수 있게 뽑아 두었다. **`workArea` 는 반드시 그 프레임에서 새로 구해 넘겨야 한다** —
+ * 드래그를 시작한 모니터의 것을 캐싱해 재사용하면, 세로 위치가 서로 다른 모니터
+ * 여러 대를 쓰는 사람이 커서를 다른 모니터로 넘기는 순간 `clampPetY()` 가 엉뚱한(원래
+ * 모니터의) 범위로 y 를 붙잡아 캐릭터가 커서에서 세로로 떨어져 보인다 — 실제로
+ * 그렇게 캐싱해 두었다가 걷어낸 적이 있다.
+ */
+function dragPosition({
+  cursor,
+  offsetX,
+  offsetY,
+  height,
+  workArea,
+}: {
+  cursor: { x: number; y: number }
+  offsetX: number
+  offsetY: number
+  height: number
+  workArea: Rect
+}): { x: number; y: number } {
+  const x = Math.round(cursor.x - offsetX)
+  const rawY = Math.round(cursor.y - offsetY)
+  const y = clampPetY({ y: rawY, height, workArea })
+  return { x, y }
+}
+
 export {
   PET_BASE_SIZE,
   MIN_SCALE,
@@ -167,4 +222,6 @@ export {
   petSizeFor,
   nextPetBounds,
   sizePanelPosition,
+  clampPetY,
+  dragPosition,
 }
