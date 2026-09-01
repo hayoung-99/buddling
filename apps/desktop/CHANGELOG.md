@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.9.0](https://github.com/hayoung-99/buddling/compare/v0.8.0...v0.9.0) (2026-09-01)
+
+
+### 새로운 것
+
+* **app:** rename the five characters ([#96](https://github.com/hayoung-99/buddling/issues/96)) ([0f3dba4](https://github.com/hayoung-99/buddling/commit/0f3dba48a25c00b905cf5d776b3e6662f4b2a53f))
+* **desktop:** add Linux to the release build and let it self-update ([#112](https://github.com/hayoung-99/buddling/issues/112)) ([e176cf4](https://github.com/hayoung-99/buddling/commit/e176cf4ea47eaaf842321f612020f389e2135a05))
+* **desktop:** add room host and kicking members ([#99](https://github.com/hayoung-99/buddling/issues/99)) ([96ced27](https://github.com/hayoung-99/buddling/commit/96ced27308cb4fc371e25fb5615277fde7753914))
+* **desktop:** add the notification screen and its room-event feed ([#101](https://github.com/hayoung-99/buddling/issues/101)) ([f744e06](https://github.com/hayoung-99/buddling/commit/f744e06d62fe3ce972caf1e936b0744ce7216996))
+* **desktop:** cover windows with an offline screen and cache notifications for offline reading ([#102](https://github.com/hayoung-99/buddling/issues/102)) ([7d8a512](https://github.com/hayoung-99/buddling/commit/7d8a5129f07cad0aea505f90739ac579784daeb2))
+* **desktop:** hide characters one at a time instead of all at once ([#111](https://github.com/hayoung-99/buddling/issues/111)) ([bac0b49](https://github.com/hayoung-99/buddling/commit/bac0b49e283b8dedd62c47f863504b225609973b))
+* **desktop:** polish the room create/join form ([#104](https://github.com/hayoung-99/buddling/issues/104)) ([400a565](https://github.com/hayoung-99/buddling/commit/400a56509a3bb3634d218754e75ce67bc2ed3bc3))
+* **desktop:** reskin onboarding screen with warm palette, icons and display font ([#95](https://github.com/hayoung-99/buddling/issues/95)) ([0853352](https://github.com/hayoung-99/buddling/commit/0853352e93c2a8c7c42a1b36d03c73be4ff6dca3))
+* **desktop:** swap the five in-window icons for lucide-react ([#105](https://github.com/hayoung-99/buddling/issues/105)) ([141eafc](https://github.com/hayoung-99/buddling/commit/141eafc4270483fe9762b9792c76d6bee09abfb4))
+
+
+### 고친 것
+
+* **desktop:** anchor the size panel to the character's head, not the window top ([#113](https://github.com/hayoung-99/buddling/issues/113)) ([db24a6e](https://github.com/hayoung-99/buddling/commit/db24a6e8f6f24bf04f84c9e0abeab41be62197b3))
+* **desktop:** clamp pet drag to the character's visible edges, not the window's ([#117](https://github.com/hayoung-99/buddling/issues/117)) ([888605f](https://github.com/hayoung-99/buddling/commit/888605f8ebb9e1169462227f5f544827f448477e))
+* **desktop:** even out the spacing around the room form divider ([#108](https://github.com/hayoung-99/buddling/issues/108)) ([0f35f38](https://github.com/hayoung-99/buddling/commit/0f35f384e74f1dbd9220d18a6a48fbc904c83183))
+* **desktop:** install electron binary before launching it ([#107](https://github.com/hayoung-99/buddling/issues/107)) ([8d660d6](https://github.com/hayoung-99/buddling/commit/8d660d61a158d582816e3d4a5d10f499e86b4221))
+* **desktop:** make quit fully terminate the process ([#110](https://github.com/hayoung-99/buddling/issues/110)) ([676f72c](https://github.com/hayoung-99/buddling/commit/676f72cedf57b2b8ff0b5c2d39c69094ae1dbd00))
+* **desktop:** show the paw icon in every window's header ([#109](https://github.com/hayoung-99/buddling/issues/109)) ([6b01588](https://github.com/hayoung-99/buddling/commit/6b01588cd07deb3d7a312c22634cd0f272f4b96f))
+* **desktop:** submit the nickname the screen actually shows ([#106](https://github.com/hayoung-99/buddling/issues/106)) ([65dd4a3](https://github.com/hayoung-99/buddling/commit/65dd4a385ed1533a434cf59f74cd3af4f4a4b2ba))
+
 ## [0.8.0](https://github.com/hayoung-99/buddling/compare/v0.7.0...v0.8.0) (2026-08-26)
 
 
